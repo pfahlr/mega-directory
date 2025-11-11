@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { createLogger, createRequestLogger } = require('./logger');
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_LISTING_STATUS = 'INACTIVE';
@@ -59,16 +60,34 @@ function resolveConfig(overrides = {}) {
 }
 
 function createServer(overrides = {}) {
-  const config = resolveConfig(overrides);
+  const { logger: loggerOverride, logLevel, ...configOverrides } = overrides;
+  const config = resolveConfig(configOverrides);
+  const logger =
+    loggerOverride ||
+    createLogger({
+      level: typeof logLevel === 'string' ? logLevel : undefined
+    });
   const app = express();
 
   app.locals.config = config;
   app.locals.ingestionStore = createListingStore();
+  app.locals.logger = logger;
+  app.locals.health = { startedAt: new Date() };
 
+  app.use(createRequestLogger(logger));
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+    const now = new Date();
+    const startedAt = app.locals.health.startedAt;
+    app.locals.health.lastCheck = now;
+    res.json({
+      status: 'ok',
+      uptime: process.uptime(),
+      startedAt: startedAt.toISOString(),
+      timestamp: now.toISOString(),
+      environment: process.env.NODE_ENV || 'development'
+    });
   });
 
   app.post('/v1/admin/auth', createAdminAuthHandler(config));
@@ -197,7 +216,11 @@ function startServer() {
   const { port } = app.locals.config ?? { port: DEFAULT_PORT };
 
   app.listen(port, () => {
-    console.log(`API server running at http://localhost:${port}`);
+    const logger = getLogger(app);
+    logger.info(
+      { event: 'api.start', port, environment: process.env.NODE_ENV || 'development' },
+      `API server running at http://localhost:${port}`
+    );
   });
 }
 
@@ -209,10 +232,19 @@ module.exports = {
   createServer
 };
 
+function getLogger(app) {
+  return (app && app.locals && app.locals.logger) || console;
+}
+
 function createListingIngestionHandler(app) {
   return (req, res) => {
+    const logger = getLogger(app);
     const payloads = normalizeListingBatch(req.body);
     if (!payloads) {
+      logger.warn(
+        { event: 'listings.ingest.invalid', reason: 'bad-shape' },
+        'Invalid listing payload received'
+      );
       return res
         .status(400)
         .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
@@ -230,12 +262,29 @@ function createListingIngestionHandler(app) {
       .map((item) => ({ index: item.index, messages: item.result.errors }));
 
     if (invalidEntries.length > 0) {
+      logger.warn(
+        {
+          event: 'listings.ingest.invalid',
+          reason: 'validation-failed',
+          failures: invalidEntries.length
+        },
+        'Rejected crawler listings batch due to validation errors'
+      );
       return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
     }
 
     const store = app.locals.ingestionStore;
     const savedRecords = validations.map((validation, index) =>
       store.insert(validation.value, payloads[index])
+    );
+    const categories = Array.from(new Set(savedRecords.map((record) => record.categorySlug)));
+    logger.info(
+      {
+        event: 'listings.ingested',
+        ingestedCount: savedRecords.length,
+        categories
+      },
+      'Accepted crawler listings batch'
     );
 
     return res.status(202).json({

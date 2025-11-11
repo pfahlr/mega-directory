@@ -60,6 +60,51 @@ class DummySession:
         return DummyResponse("")
 
 
+class RecordingLogger:
+    def __init__(self) -> None:
+        self.records = []
+
+    def info(self, message: str, *args, **kwargs) -> None:
+        formatted = message % args if args else message
+        self.records.append(
+            {
+                "level": "info",
+                "message": formatted,
+                "extra": kwargs,
+            }
+        )
+
+    def debug(self, message: str, *args, **kwargs) -> None:  # pragma: no cover - helper
+        formatted = message % args if args else message
+        self.records.append(
+            {
+                "level": "debug",
+                "message": formatted,
+                "extra": kwargs,
+            }
+        )
+
+    def warning(self, message: str, *args, **kwargs) -> None:  # pragma: no cover - helper
+        formatted = message % args if args else message
+        self.records.append(
+            {
+                "level": "warning",
+                "message": formatted,
+                "extra": kwargs,
+            }
+        )
+
+    def error(self, message: str, *args, **kwargs) -> None:  # pragma: no cover - helper
+        formatted = message % args if args else message
+        self.records.append(
+            {
+                "level": "error",
+                "message": formatted,
+                "extra": kwargs,
+            }
+        )
+
+
 def test_run_crawler_batches_locations_and_limits_results() -> None:
     config = {
         "api_endpoint": "https://api.example.com",
@@ -284,3 +329,31 @@ def test_run_crawler_can_post_to_dev_and_prod_targets() -> None:
         "https://dev.example.com/v1/crawler/listings",
         "https://prod.example.com/v1/crawler/listings",
     }
+
+
+def test_run_crawler_emits_logging_metadata() -> None:
+    config = {
+        "api_targets": [
+            {
+                "name": "dev",
+                "endpoint": "https://dev.example.com/v1/crawler/listings",
+                "token": "dev-token",
+            }
+        ],
+        "targets": [
+            {
+                "category": "Photographers",
+                "locations": ["Grand Rapids MI"],
+                "listings_per_location": 1,
+            }
+        ],
+    }
+    session = DummySession(SAMPLE_HTML)
+    logger = RecordingLogger()
+
+    run_crawler(config, session=session, logger=logger)
+
+    assert logger.records, "expected crawler to log activity"
+    assert any(
+        "Posting 1 listings to dev" in record["message"] for record in logger.records
+    ), "expected post log entry"

@@ -90,13 +90,36 @@ function runRoute(route, req, res) {
   return res;
 }
 
-test('health endpoint reports ok', () => {
-  const app = createServer(baseConfig);
+function createStubLogger() {
+  const calls = [];
+  const logger = {
+    calls,
+    info(...args) {
+      calls.push({ level: 'info', args });
+    },
+    warn(...args) {
+      calls.push({ level: 'warn', args });
+    },
+    error(...args) {
+      calls.push({ level: 'error', args });
+    },
+    child() {
+      return logger;
+    }
+  };
+  return logger;
+}
+
+test('health endpoint reports monitoring metadata', () => {
+  const app = createServer({ ...baseConfig, logger: createStubLogger() });
   const route = findRoute(app, 'get', '/health');
   const res = runRoute(route, createRequest(), createResponse());
 
   assert.strictEqual(res.statusCode, 200);
-  assert.deepStrictEqual(res.body, { status: 'ok' });
+  assert.strictEqual(res.body.status, 'ok');
+  assert.ok(typeof res.body.uptime === 'number');
+  assert.ok(res.body.timestamp);
+  assert.ok(res.body.startedAt);
 });
 
 test('admin ping rejects missing token', () => {
@@ -288,6 +311,26 @@ test('crawler listing ingestion accepts batches and reports metadata', () => {
   assert.strictEqual(records.length, 2);
   assert.strictEqual(records[0].categorySlug, 'builders');
   assert.strictEqual(records[1].categorySlug, 'photographers');
+});
+
+test('crawler listing ingestion logs batch summary', () => {
+  const logger = createStubLogger();
+  const app = createServer({ ...baseConfig, logger });
+  const route = findRoute(app, 'post', '/v1/crawler/listings');
+  const req = createRequest({
+    method: 'POST',
+    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
+    body: buildListingPayload({ slug: null })
+  });
+
+  runRoute(route, req, createResponse());
+
+  const infoLog = logger.calls.find((entry) => entry.level === 'info');
+  assert.ok(infoLog, 'expected ingestion handler to log summary');
+  const [metadata] = infoLog.args;
+  assert.strictEqual(metadata.event, 'listings.ingested');
+  assert.strictEqual(metadata.ingestedCount, 1);
+  assert.deepStrictEqual(metadata.categories, ['electricians']);
 });
 
 test('crawler listing ingestion validates payload shape and reports errors', () => {

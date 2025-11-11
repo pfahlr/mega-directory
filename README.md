@@ -43,6 +43,13 @@ docker compose up --build
 
 Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) before running Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
 
+## Logging & Monitoring
+
+- The Express API emits JSON logs (request + application events) to stdout. Override the level with `LOG_LEVEL=info` or `debug` as needed—Railway and Docker automatically capture the output.
+- `GET /health` now returns uptime metadata so monitors like UptimeRobot or Better Stack can alert when the service fails its liveness probe.
+- The Python crawler uses the standard `logging` module; set `CRAWLER_LOG_LEVEL` (defaults to `DEBUG` locally, `INFO` in production) to tune verbosity when running long jobs.
+- See `docs/monitoring.md` for tips on wiring the `/health` endpoint into UptimeRobot and for tailing logs via Railway CLI.
+
 ## Railway Deployment
 
 The repository is ready to deploy on [Railway](https://railway.app) using the Dockerfiles under `api/` and `astro/`. Follow the step-by-step guide in `docs/deployment/railway.md` to provision the Postgres plugin, deploy the two services, and wire their environment variables together.
