@@ -1,0 +1,68 @@
+<%- include('../partials/page-start', { title: 'Listing Review', active: 'listings' }) %>
+<section class="panel stack gap-md">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Moderation</p>
+      <h2>Review incoming listings</h2>
+      <p class="muted">Edit listing details, capture manual notes, and choose whether to approve or deactivate each entry.</p>
+    </div>
+    <div class="badge">Pending <strong><%= listings.length %></strong></div>
+  </header>
+
+  <% if (typeof savedCount === 'number') { %>
+    <div class="alert success">Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %> just now.</div>
+  <% } %>
+
+  <% if (!listings.length) { %>
+    <p class="empty-state">No listings need attention. Check back after the crawler runs.</p>
+  <% } else { %>
+    <form method="POST" action="/listings" class="stack gap-lg">
+      <% listings.forEach((listing, index) => { %>
+        <% const submittedLabel = new Date(listing.submittedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+        <% const updatedLabel = new Date(listing.lastUpdated).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+        <article class="listing-card stack gap-sm">
+          <input type="hidden" name="listings[<%= index %>][id]" value="<%= listing.id %>" />
+          <header class="listing-card__header">
+            <div class="stack gap-xxs">
+              <p class="eyebrow"><%= listing.category %> • <%= listing.location %></p>
+              <label class="field-label">Business name
+                <input class="field-control" type="text" name="listings[<%= index %>][businessName]" value="<%= listing.businessName %>" />
+              </label>
+            </div>
+            <label class="field-label status-field">Status
+              <select class="field-control" name="listings[<%= index %>][status]">
+                <option value="pending" <%= listing.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                <option value="approved" <%= listing.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                <option value="deactivated" <%= listing.status === 'deactivated' ? 'selected' : '' %>>Deactivate</option>
+              </select>
+            </label>
+          </header>
+
+          <div class="listing-card__meta">
+            <div class="stack gap-xxs">
+              <label class="field-label">Website URL
+                <input class="field-control" type="url" name="listings[<%= index %>][website]" value="<%= listing.website %>" placeholder="https://example.com" />
+              </label>
+              <p class="muted">Phone <strong><%= listing.phone %></strong></p>
+              <p class="muted">Quality score <strong><%= listing.score %>/100</strong> • Source <strong><%= listing.source %></strong></p>
+              <p class="muted">Submitted <strong><%= submittedLabel %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
+            </div>
+            <div class="notes-field">
+              <label class="field-label">Moderator notes
+                <textarea class="field-control" name="listings[<%= index %>][notes]" rows="4" placeholder="Add verification notes or follow-ups"><%= listing.notes %></textarea>
+              </label>
+            </div>
+          </div>
+
+          <p class="summary"><%= listing.summary %></p>
+        </article>
+      <% }) %>
+
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Save changes</button>
+        <p class="muted">Changes persist in memory for this demo app.</p>
+      </div>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/page-end') %>

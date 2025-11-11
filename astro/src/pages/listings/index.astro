@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { directoryCatalog } from '../../data/directory-catalog.js';
+import { buildDirectoryGroups } from '../../lib/directory-helpers.js';
+
+const groups = buildDirectoryGroups(directoryCatalog);
+const totalLocations = groups.reduce((sum, group) => sum + group.locations.length, 0);
+const totalListings = groups.reduce((sum, group) => sum + group.totalListings, 0);
+
+const navItems = [
+  { href: '#overview', label: 'Overview' },
+  { href: '#directories', label: 'Directories' },
+];
+
+const heroStats = [
+  { label: 'Active categories', value: groups.length },
+  { label: 'Locations tracked', value: totalLocations },
+  { label: 'Listings scored', value: totalListings },
+];
+---
+
+<BaseLayout
+  title="Directory Listings"
+  description="Server-rendered directories grouped by category and location, tuned for score-aware browsing."
+  navItems={navItems}
+>
+  <section id="overview" class="glass-panel space-y-6 p-6">
+    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">Mega Directory</p>
+    <div class="space-y-4">
+      <h1 class="text-3xl font-semibold text-white">Browse every live directory</h1>
+      <p class="text-sm text-slate-300">
+        Directories aggregate crawler data, manual review, and accessibility checks. Each card below
+        links to a fully server-rendered page where listings are sorted by score with reviewer notes
+        and tooltips for score breakdowns.
+      </p>
+    </div>
+    <dl class="grid gap-4 sm:grid-cols-3">
+      {heroStats.map((stat) => (
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+          <dt class="text-xs uppercase tracking-[0.3em] text-slate-400">{stat.label}</dt>
+          <dd class="text-2xl font-semibold text-white">{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section id="directories" class="space-y-10">
+    {groups.map((category) => (
+      <section class="space-y-6">
+        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">{category.category.name}</p>
+            <h2 class="text-2xl font-semibold text-white">{category.category.description ?? 'Curated listings with reviewer guardrails.'}</h2>
+          </div>
+          <p class="text-sm text-slate-400">{category.totalListings} listings scored</p>
+        </div>
+        <div class="space-y-6">
+          {category.locations.map((location) => (
+            <article class="card-surface space-y-5 p-6">
+              <header class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Location</p>
+                  <h3 class="text-xl font-semibold text-white">{location.location.name}</h3>
+                </div>
+                <p class="text-sm text-slate-400">{location.totalListings} listings</p>
+              </header>
+              <div class="grid gap-4 md:grid-cols-2">
+                {location.directories.map((directory) => (
+                  <div class="glass-panel flex h-full flex-col gap-4 p-4">
+                    <div>
+                      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">{directory.name}</p>
+                      <p class="text-lg font-semibold text-white">{directory.heroTitle}</p>
+                      <p class="text-sm text-slate-400">{directory.heroSubtitle}</p>
+                    </div>
+                    <dl class="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
+                      <div>
+                        <dt class="text-xs uppercase tracking-[0.3em]">Coverage</dt>
+                        <dd class="text-white">{directory.stats?.coverage ?? 'Regional'}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-xs uppercase tracking-[0.3em]">Response SLA</dt>
+                        <dd class="text-white">{directory.stats?.responseSla ?? '—'}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-xs uppercase tracking-[0.3em]">Listings</dt>
+                        <dd class="text-white">{directory.stats?.listingCount ?? directory.listings.length}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-xs uppercase tracking-[0.3em]">Avg score</dt>
+                        <dd class="text-white">{directory.stats?.averageScore ?? '—'}</dd>
+                      </div>
+                    </dl>
+                    <a
+                      class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:border-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+                      href={directory.path}
+                    >
+                      Open {location.location.name} directory
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+  </section>
+</BaseLayout>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title ? `${title} | ${appName}` : appName %></title>
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <p class="eyebrow">Internal</p>
+        <h1><%= appName %></h1>
+      </div>
+      <nav class="site-nav">
+        <a href="/listings" class="nav-link <%= active === 'listings' ? 'is-active' : '' %>">Listings</a>
+        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container page-content">
