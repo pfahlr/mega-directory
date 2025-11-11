@@ -43,3 +43,57 @@ Tasks: 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middl
 ⚠️  No new or modified files detected for commit (excluding logs).
 -------------------------------------------
 🟡 Executing task: 08_setup_featured_listings_logic
+✅ Task 08_setup_featured_listings_logic completed successfully.
+📝 Committing files for 08_setup_featured_listings_logic...
+[main 07849f3] Codex Task: 08_setup_featured_listings_logic
+ 1 file changed, 139 insertions(+)
+📝 Commit created: 07849f315ad5b9131aa11b8519ccef5245eabc36
+🧯 Rollback with: git reset --soft 07849f315ad5b9131aa11b8519ccef5245eabc36^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 09_add_category_meta_and_seo_controls
+✅ Task 09_add_category_meta_and_seo_controls completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 10_scaffold_python_crawler_agent
+✅ Task 10_scaffold_python_crawler_agent completed successfully.
+📝 Committing files for 10_scaffold_python_crawler_agent...
+[main e1c5f2c] Codex Task: 10_scaffold_python_crawler_agent
+ 1 file changed, 217 insertions(+), 4 deletions(-)
+📝 Commit created: e1c5f2c38540fd9ab218855638d141fe3d46c1a6
+🧯 Rollback with: git reset --soft e1c5f2c38540fd9ab218855638d141fe3d46c1a6^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 11_llm_field_generation_via_jinja2
+✅ Task 11_llm_field_generation_via_jinja2 completed successfully.
+📝 Committing files for 11_llm_field_generation_via_jinja2...
+[main 9a2fdb7] Codex Task: 11_llm_field_generation_via_jinja2
+ 1 file changed, 201 insertions(+), 4 deletions(-)
+📝 Commit created: 9a2fdb7911fe0d9c2a611bd1eae7374571dba958
+🧯 Rollback with: git reset --soft 9a2fdb7911fe0d9c2a611bd1eae7374571dba958^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 12_post_listings_from_crawler_to_api_server
+✅ Task 12_post_listings_from_crawler_to_api_server completed successfully.
+📝 Committing files for 12_post_listings_from_crawler_to_api_server...
+[main ff8a8d9] Codex Task: 12_post_listings_from_crawler_to_api_server
+ 3 files changed, 216 insertions(+), 5 deletions(-)
+📝 Commit created: ff8a8d90e1fac44887da8f275686622ac0d1f65c
+🧯 Rollback with: git reset --soft ff8a8d90e1fac44887da8f275686622ac0d1f65c^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 13_create_json_crawler_configuration_schema
+✅ Task 13_create_json_crawler_configuration_schema completed successfully.
+📝 Committing files for 13_create_json_crawler_configuration_schema...
+[main a664589] Codex Task: 13_create_json_crawler_configuration_schema
+ 2 files changed, 2 insertions(+)
+📝 Commit created: a664589ad9ed751b075e6d21e60dea1d56f0cf3a
+🧯 Rollback with: git reset --soft a664589ad9ed751b075e6d21e60dea1d56f0cf3a^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 14_scaffold_admin_ui_application
+✅ Task 14_scaffold_admin_ui_application completed successfully.
+📝 Committing files for 14_scaffold_admin_ui_application...
+[main c004c6c] Codex Task: 14_scaffold_admin_ui_application
+ 3 files changed, 19 insertions(+), 34 deletions(-)
+ delete mode 100644 admin/routes/review.js
+ delete mode 100644 admin/views/review.ejs
+📝 Commit created: c004c6c878eda8305a7d4e13e78b8d65d347f7dc
+🧯 Rollback with: git reset --soft c004c6c878eda8305a7d4e13e78b8d65d347f7dc^ && git restore --staged .
+-------------------------------------------
+🎉 All tasks completed successfully.
