@@ -1,0 +1,23 @@
+{
+  "api_endpoint": "http://localhost:3001/api/new-listings",
+  "api_token": "changeme",
+  "targets": [
+    {
+      "category": "Real Estate",
+      "locations": ["New York", "San Francisco"],
+      "subdomain": "realestate.local",
+      "keywords": ["ocean view", "downtown"],
+      "listings_per_location": 50,
+      "fields": {
+        "title": { "source": "scrape" },
+        "price": { "source": "scrape" },
+        "description": {
+          "source": "ai",
+          "provider": "openai",
+          "model": "gpt-4",
+          "prompt_template": "Write a friendly listing description for a {{ category }} in {{ location }}. Details: {{ details }}."
+        }
+      }
+    }
+  ]
+}
