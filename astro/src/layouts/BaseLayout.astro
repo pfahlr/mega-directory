@@ -1,14 +1,77 @@
 ---
-const { title = 'Mega Directory' } = Astro.props;
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import '../styles/global.css';
+
+const {
+  title = 'Mega Directory',
+  description = 'Curated business listings with human-friendly scoring and best-in-class accessibility.',
+  navItems,
+  showHeader = true,
+  showFooter = true,
+} = Astro.props;
+
+const siteName = 'Mega Directory';
+const computedTitle = title === siteName ? siteName : `${title} · ${siteName}`;
+const resolvedNavItems =
+  navItems ??
+  [
+    { href: '#listings', label: 'Listings' },
+    { href: '#categories', label: 'Categories' },
+    { href: '#insights', label: 'Insights' },
+  ];
 ---
 
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>{title}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{computedTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={computedTitle} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:description" content={description} />
+    <meta name="theme-color" content="#020617" />
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      as="style"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <script is:inline>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: '#34d399',
+              surface: '#020617',
+              ink: '#e2e8f0',
+            },
+          },
+        },
+      };
+    </script>
+    <script
+      defer
+      src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"
+      integrity="sha384-rZ84qxd6QbaO5jM90oCbGyF/F7fs/3Gzdh0dX8GZFODdgNpTiFqouBZfyqCkCmDY"
+      crossorigin="anonymous"
+    ></script>
   </head>
-  <body class="font-sans bg-white text-black">
-    <slot />
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    {showHeader && <SiteHeader navItems={resolvedNavItems} />}
+    <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+      <main id="main-content" class="flex-1 space-y-14 pb-10 pt-4">
+        <slot />
+      </main>
+      {showFooter && <SiteFooter />}
+    </div>
   </body>
 </html>
