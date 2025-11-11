@@ -1,0 +1,3027 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7293-9c01-7370-b296-81c034f6b76f
+--------
+user
+Implement the functionality described in codex/TASKS/14_scaffold_admin_ui_application.yaml, then verify with any available tests.
+
+thinking
+**Preparing to gather instructions and plan**
+exec
+/bin/zsh -lc ls in /var/home/rick/Development/mega-directory succeeded in 37ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+
+thinking
+**Reading task file**
+exec
+/bin/zsh -lc 'cat codex/TASKS/14_scaffold_admin_ui_application.yaml' in /var/home/rick/Development/mega-directory succeeded in 87ms:
+id: 14
+title: Scaffold Admin UI Application
+description: Create a lightweight standalone app for reviewing and editing incoming
+  listings and category SEO fields.
+dependencies:
+- 2
+- 5
+
+thinking
+**Checking TASKS directory**
+exec
+/bin/zsh -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Exploring instructions and admin directory**
+exec
+/bin/zsh -lc 'ls admin' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+index.js
+package.json
+routes
+views
+
+thinking
+**Checking for existing admin package**
+exec
+/bin/zsh -lc 'cat admin/package.json' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+{
+  "name": "mega-directory-admin",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.19.2"
+  }
+}
+
+thinking
+**Inspecting admin UI setup**
+exec
+/bin/zsh -lc "sed -n '1,160p' admin/index.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 4000;
+
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
+app.get('/', (req, res) => {
+  res.redirect('/review');
+});
+
+app.use('/review', require('./routes/review'));
+
+app.listen(port, () => {
+  console.log(`Admin app listening at http://localhost:${port}`);
+});
+
+thinking
+**Checking routes directory contents**
+exec
+/bin/zsh -lc 'ls admin/routes' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+review.js
+
+thinking
+**Opening file**
+exec
+/bin/zsh -lc "sed -n '1,200p' admin/routes/review.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const express = require('express');
+const router = express.Router();
+
+router.get('/', async (req, res) => {
+  const listings = []; // Placeholder: fetch from API or DB
+  res.render('review', { listings });
+});
+
+module.exports = router;
+
+thinking
+**Inspecting views**
+exec
+/bin/zsh -lc 'ls admin/views' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+review.ejs
+
+thinking
+**Opening file**
+exec
+/bin/zsh -lc "sed -n '1,200p' admin/views/review.ejs" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review Listings</title>
+</head>
+<body>
+  <h1>Pending Listings</h1>
+  <form method="POST" action="/review">
+    <% listings.forEach((listing, index) => { %>
+      <div>
+        <input type="text" name="listings[<%= index %>][link_text]" value="<%= listing.link_text %>" />
+        <label>Save <input type="checkbox" name="listings[<%= index %>][save]" checked /></label>
+        <label>Deactivate <input type="checkbox" name="listings[<%= index %>][deactivate]" /></label>
+      </div>
+    <% }) %>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>
+
+thinking
+**Searching for admin UI instructions**
+exec
+/bin/zsh -lc 'cat codex/TASKS/CODEX_TODO.md' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+# CODEX TODO
+
+This document lists the Codex tasks in their recommended execution order.
+Each task corresponds to a YAML file under `/codex/TASKS/`.
+
+---
+
+## 00 - Repository Setup
+
+- [ ] 00_prepare_repository.yaml — Prepare the repository structure, move directories into place, update README and docker-compose config.
+
+---
+
+## 01–05 - Core Scaffolding
+
+- [ ] 01_initialize_astro_frontend.yaml — Scaffold the Astro SSR frontend site.
+- [ ] 02_initialize_api_server.yaml — Set up the Express/PostgreSQL API server with base routing and JWT auth.
+- [ ] 03_initialize_database_schema.yaml — Define and migrate core tables: listings, categories, locations, directory.
+- [ ] 04_initialize_admin_app.yaml — Scaffold a separate admin web interface with basic routing and layout.
+- [ ] 05_initialize_python_crawler.yaml — Bootstrap the external Python-based crawler project with config loading and CLI entrypoint.
+
+thinking
+**Comparing task numbering systems**
+exec
+/bin/zsh -lc 'rg -n "Scaffold Admin" -n' in /var/home/rick/Development/mega-directory succeeded in 114ms:
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:37:title: Scaffold Admin UI Application
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:200:/bin/zsh -lc 'rg -n "Scaffold Admin" -n' in /var/home/rick/Development/mega-directory
+codex/TASKS/14_scaffold_admin_ui_application.yaml:2:title: Scaffold Admin UI Application
+
+thinking
+**Checking log for instructions**
+exec
+/bin/zsh -lc "sed -n '1,200p' codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7293-9c01-7370-b296-81c034f6b76f
+--------
+user
+Implement the functionality described in codex/TASKS/14_scaffold_admin_ui_application.yaml, then verify with any available tests.
+
+thinking
+**Preparing to gather instructions and plan**
+exec
+/bin/zsh -lc ls in /var/home/rick/Development/mega-directory succeeded in 37ms:
+admin
+agents
+
+thinking
+**Checking for more log data**
+exec
+/bin/zsh -lc "sed -n '200,400p' codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+/bin/zsh -lc 'rg -n "Scaffold Admin" -n' in /var/home/rick/Development/mega-directory succeeded in 114ms:
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:37:title: Scaffold Admin UI Application
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:200:/bin/zsh -lc 'rg -n "Scaffold Admin" -n' in /var/home/rick/Development/mega-directory
+codex/TASKS/14_scaffold_admin_ui_application.yaml:2:title: Scaffold Admin UI Application
+
+thinking
+**Checking log for instructions**
+exec
+/bin/zsh -lc "sed -n '1,200p' codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7293-9c01-7370-b296-81c034f6b76f
+--------
+
+thinking
+**Searching admin references in docs**
+exec
+/bin/zsh -lc 'rg -n "admin" -n docs' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+docs/AGENTS.md:39:* Authentication (token-based or admin login)
+docs/AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+docs/AGENTS.md:89:* Manage admin APIs for listing approval and SEO editing
+
+thinking
+**Searching README for admin UI instructions**
+exec
+/bin/zsh -lc 'rg -n "admin" README.md' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+31:cd admin && npm install
+48:The admin interface and crawler agent run outside Docker so that they can be operated from developer machines or private servers.
+52:  cd admin
+68:/admin             - Standalone moderation UI
+
+thinking
+**Opening README for instructions**
+exec
+/bin/zsh -lc "sed -n '1,200p' README.md" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+# Mega Directory
+
+Mega Directory is a server-rendered directory listing platform built with Astro, Express, and Prisma. It supports dynamic subdomains, AI-generated content enrichment, and moderation workflows.
+
+## Features
+
+- 🛰️ Subdomain-based regional directories (e.g. electricians.nyc.example.com)
+- ⚡ Express API with JWT-based auth
+- 🧠 AI agents for crawling, enrichment, and moderation (via OpenRouter)
+- 🧩 Admin dashboard for approving or rejecting listings
+- 💅 Tailwind CSS and minimal JavaScript for accessibility and performance
+- 🐳 Dockerized and deployable behind Cloudflare with SSR
+
+## Tech Stack
+
+- Astro (SSR)
+- Express.js
+- Prisma + PostgreSQL
+- Tailwind CSS
+- OpenRouter (AI Agents)
+
+thinking
+**Searching for Admin UI specifications**
+exec
+/bin/zsh -lc "sed -n '1,200p' docs/AGENTS.md" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+# AGENTS.md
+
+This document outlines the purpose and operation of each core agent in the **Mega Directory** project architecture.
+
+---
+
+## 🧠 Crawler Agent (Python)
+
+**Purpose:**
+Collect business listings from predefined online sources, optionally enhance them using LLMs, and send the data to the API server.
+
+**Key Technologies:**
+
+* Python 3.x
+* `requests`, `beautifulsoup4`, `requests-cache`, `jinja2`
+* External LLM APIs (OpenRouter, OpenAI, Google Gemini)
+
+**Responsibilities:**
+
+* Fetch listings using category/location/keyword-driven config
+
+thinking
+**Analyzing admin interface requirements**
+exec
+/bin/zsh -lc 'cat codex.yaml' in /var/home/rick/Development/mega-directory succeeded in 87ms:
+version: 1
+tasks:
+  - id: '00'
+    path: codex/TASKS/00_prepare_repository.yaml
+  - id: '01'
+    path: codex/TASKS/01_initialize_astro_frontend.yaml
+  - id: '02'
+    path: codex/TASKS/02_setup_api_server_with_express_and_jwt_auth.yaml
+  - id: '03'
+    path: codex/TASKS/03_design_postgresql_schema.yaml
+  - id: '04'
+    path: codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml
+  - id: '05'
+    path: codex/TASKS/05_admin_auth_route_&_middleware.yaml
+  - id: '06'
+    path: codex/TASKS/06_frontend_directory_page_rendering.yaml
+  - id: '07'
+    path: codex/TASKS/07_frontend_subcategory_ui_&_layout.yaml
+  - id: '08'
+    path: codex/TASKS/08_setup_featured_listings_logic.yaml
+
+thinking
+**Searching for detailed instructions**
+exec
+/bin/zsh -lc 'ls codex' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+LOGS
+TASKS
+
+thinking
+**Planning admin UI scaffold**
+exec
+/bin/zsh -lc "cat 'codex/TASKS/15_admin_ui:_listing_review_table.yaml'" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 15
+title: 'Admin UI: Listing Review Table'
+description: Paginate and edit new listings with Save and Deactivate checkboxes. Submit
+  changes to API.
+dependencies:
+- 4
+- 14
+
+thinking
+**Mapping task dependencies and setup**
+exec
+/bin/zsh -lc "cat 'codex/TASKS/16_admin_ui:_category_location_approval.yaml'" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 16
+title: 'Admin UI: Category/Location Approval'
+description: Show new discovered category+location pairs for approval. On accept,
+  add to DB.
+dependencies:
+- 3
+- 14
+
+thinking
+**Not enough context to summarize**
+exec
+/bin/zsh -lc "cat 'codex/TASKS/17_admin_ui:_seo_field_editor.yaml'" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 17
+title: 'Admin UI: SEO Field Editor'
+description: Allow meta title/description editing for category and category+location
+  combinations.
+dependencies:
+- 9
+- 14
+
+thinking
+**Outlining admin app scaffolding**
+Plan update
+  → Review existing admin app structure and task requirements to understand needed scaffolding.
+  • Implement Express/EJS admin UI scaffold with sample data, routes, and views for listings review and SEO editing.
+  • Run any available tests or document why none can be run.
+
+thinking
+**Updating plan status**
+Plan update
+  ✓ Review existing admin app structure and task requirements to understand needed scaffolding.
+  → Implement Express/EJS admin UI scaffold with sample data, routes, and views for listings review and SEO editing.
+  • Run any available tests or document why none can be run.
+
+thinking
+**Planning admin project restructuring and implementation**
+
+I'm mapping out detailed steps to restructure the admin project for absolute paths, set up sample data and services for listings and SEO entries, create routes and views for listings and SEO editing, update static assets and templates, and remove old review routes to align with the new multi-route admin app design. This includes creating necessary directories with shell commands and ensuring consistent data flow and rendering.
+exec
+/bin/zsh -lc 'mkdir -p admin/data admin/services admin/public/css admin/views/listings admin/views/seo admin/views/partials' in /var/home/rick/Development/mega-directory succeeded in 130ms:
+
+
+thinking
+**Preparing to delete obsolete view and route files**
+exec
+/bin/zsh -lc 'rm -f admin/routes/review.js admin/views/review.ejs' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+
+
+thinking
+**Updating admin/index.js with new routers and 404 handler**
+
+I'm preparing to update the admin/index.js file to include the path module, add listings and SEO routers, set up view engine with EJS, and add a 404 handler that renders a not-found view. Since the not-found view doesn't exist yet, I'll note creating it later but focus now on applying the patch to integrate these changes smoothly.
+file update
+M /var/home/rick/Development/mega-directory/admin/index.js
+@@ -1,2 +1,7 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+@@ -4,3 +9,7 @@
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+@@ -8,10 +17,14 @@
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M admin/index.js
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Building admin module components**
+
+I'm planning out detailed implementations for data, services, routes, views, and CSS in an admin section. This includes listing and SEO data and services, Express route handlers, EJS views using partials, and base styling—all carefully structured for maintainability and consistency. I'll also handle form data parsing, status validations, and friendly UI details like counts and formatted timestamps. This comprehensive setup will enable smooth admin management interfaces.
+exec
+/bin/zsh -lc 'mkdir -p admin/views/errors' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Choosing file creation method**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/data/listings.js
+module.exports = [
+  {
+    id: 'lst_nova_electric',
+    businessName: 'Nova Electric Co.',
+    category: 'Electricians',
+    location: 'Brooklyn, NY',
+    website: 'https://novaelectric.example.com',
+    phone: '(347) 555-0112',
+    summary: '24/7 emergency electricians covering every borough with rapid dispatch teams.',
+    notes: 'Crawler ingestion flagged missing license number.',
+    score: 82,
+    status: 'pending',
+    source: 'Crawler Feed A',
+    submittedAt: '2024-05-22T09:30:00-04:00',
+    lastUpdated: '2024-05-22T09:30:00-04:00',
+  },
+  {
+    id: 'lst_green_canopy',
+    businessName: 'Green Canopy Tree Care',
+    category: 'Arborists',
+    location: 'Portland, OR',
+    website: 'https://greencanopy.example.com',
+    phone: '(503) 555-0198',
+    summary: 'ISA-certified arborists specializing in storm cleanup and preventative trimming.',
+    notes: 'Imported from Google Maps listing with 4.9 rating.',
+    score: 91,
+    status: 'pending',
+    source: 'Crawler Feed B',
+    submittedAt: '2024-05-21T14:10:00-07:00',
+    lastUpdated: '2024-05-21T14:10:00-07:00',
+  },
+  {
+    id: 'lst_lakeside_plumbing',
+    businessName: 'Lakeside Plumbing & Heating',
+    category: 'Plumbers',
+    location: 'Cleveland, OH',
+    website: 'https://lakesideplumbing.example.com',
+    phone: '(216) 555-0147',
+    summary: 'Residential and commercial plumbers with same-day water heater installs.',
+    notes: 'Need human verification on warranty text.',
+    score: 76,
+    status: 'pending',
+    source: 'Manual Upload',
+    submittedAt: '2024-05-19T08:55:00-04:00',
+    lastUpdated: '2024-05-19T08:55:00-04:00',
+  },
+];
+EOF" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/data/seoEntries.js
+module.exports = [
+  {
+    id: 'seo_electricians',
+    type: 'category',
+    category: 'Electricians',
+    location: null,
+    slug: 'electricians',
+    metaTitle: 'Electricians Near You | Mega Directory',
+    metaDescription: 'Compare licensed electricians for emergency calls, panel upgrades, EV charger installs, and more.',
+    lastUpdated: '2024-05-18T12:00:00-04:00',
+  },
+  {
+    id: 'seo_plumbers',
+    type: 'category',
+    category: 'Plumbers',
+    location: null,
+    slug: 'plumbers',
+    metaTitle: 'Trusted Plumbers | Mega Directory',
+    metaDescription: 'Browse vetted plumbers for leaks, re-pipes, maintenance plans, and emergency dispatch in your city.',
+    lastUpdated: '2024-05-17T17:45:00-04:00',
+  },
+  {
+    id: 'seo_electricians_nyc',
+    type: 'category_location',
+    category: 'Electricians',
+    location: 'New York, NY',
+    slug: 'nyc/electricians',
+    metaTitle: 'Best Electricians in NYC | Mega Directory',
+    metaDescription: 'Top-rated electricians serving all five boroughs with 24/7 emergency coverage.',
+    lastUpdated: '2024-05-20T08:05:00-04:00',
+  },
+  {
+    id: 'seo_plumbers_atx',
+    type: 'category_location',
+    category: 'Plumbers',
+    location: 'Austin, TX',
+    slug: 'austin-tx/plumbers',
+    metaTitle: 'Austin Plumbers | Same-Day Service',
+    metaDescription: 'Licensed Austin plumbing contractors for tankless installs, slab leaks, and maintenance plans.',
+    lastUpdated: '2024-05-16T10:25:00-05:00',
+  },
+];
+EOF" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Creating listings service module**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/services/listingsService.js
+const listings = require('../data/listings');
+
+const ALLOWED_STATUSES = new Set(['pending', 'approved', 'deactivated']);
+
+function getListings() {
+  return listings;
+}
+
+function updateListings(updates = []) {
+  let applied = 0;
+
+  updates.forEach((update) => {
+    if ("'!update || !update.id) {
+      return;
+    }
+
+    const listing = listings.find((item) => item.id === update.id);
+    if (!listing) {
+      return;
+    }
+
+    if (typeof update.businessName === '"'string') {
+      listing.businessName = update.businessName.trim() || listing.businessName;
+    }
+
+    if (typeof update.website === 'string') {
+      listing.website = update.website.trim();
+    }
+
+    if (typeof update.notes === 'string') {
+      listing.notes = update.notes.trim();
+    }
+
+    if (ALLOWED_STATUSES.has(update.status)) {
+      listing.status = update.status;
+    }
+
+    listing.lastUpdated = new Date().toISOString();
+    applied += 1;
+  });
+
+  return applied;
+}
+
+module.exports = {
+  getListings,
+  updateListings,
+};
+EOF" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Adding seoService.js module**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/services/seoService.js
+const entries = require('../data/seoEntries');
+
+function getSeoEntries() {
+  return entries;
+}
+
+function updateSeoEntries(updates = []) {
+  let applied = 0;
+
+  updates.forEach((update) => {
+    if ("'!update || !update.id) {
+      return;
+    }
+
+    const entry = entries.find((item) => item.id === update.id);
+    if (!entry) {
+      return;
+    }
+
+    if (typeof update.metaTitle === '"'string') {
+      entry.metaTitle = update.metaTitle.trim();
+    }
+
+    if (typeof update.metaDescription === 'string') {
+      entry.metaDescription = update.metaDescription.trim();
+    }
+
+    entry.lastUpdated = new Date().toISOString();
+    applied += 1;
+  });
+
+  return applied;
+}
+
+module.exports = {
+  getSeoEntries,
+  updateSeoEntries,
+};
+EOF" in /var/home/rick/Development/mega-directory succeeded in 88ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing route files**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/routes/listings.js
+const express = require('express');
+const { getListings, updateListings } = require('../services/listingsService');
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  const listings = getListings();
+
+  res.render('listings/index', {
+    title: 'Listing Review',
+    listings,
+    savedCount: parseCount(req.query.saved),
+  });
+});
+
+router.post('/', (req, res) => {
+  const updates = normalizePayload(req.body.listings);
+  const updated = updateListings(updates);
+
+  res.redirect("'`/listings?saved=${updated}`);
+});
+
+function normalizePayload(payload) {
+  if (!payload) {
+    return [];
+  }
+
+  const records = Array.isArray(payload) ? payload : Object.values(payload);
+
+  return records.map((record) => ({
+    id: record.id,
+    businessName: record.businessName?.trim() ?? '"'',
+    website: record.website?.trim() ?? '',
+    notes: record.notes?.trim() ?? '',
+    status: record.status ?? 'pending',
+  }));
+}
+
+function parseCount(value) {
+  if ("'!value && value !== 0) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+module.exports = router;
+EOF' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Ensuring payload keys and view consistency**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/routes/seo.js
+const express = require('express');
+const { getSeoEntries, updateSeoEntries } = require('../services/seoService');
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  const entries = getSeoEntries();
+  const categories = entries.filter((entry) => entry.type === 'category');
+  const categoryLocations = entries.filter((entry) => entry.type === 'category_location');
+
+  res.render('seo/index', {
+    title: 'SEO Fields',
+    categories,
+    categoryLocations,
+    totalEntries: entries.length,
+    savedCount: parseCount(req.query.saved),
+  });
+});
+
+router.post('/', (req, res) => {
+  const updates = normalizeEntries(req.body.entries);
+  const updated = updateSeoEntries(updates);
+
+  res.redirect("'`/seo?saved=${updated}`);
+});
+
+function normalizeEntries(entriesPayload) {
+  if (!entriesPayload) {
+    return [];
+  }
+
+  const records = Array.isArray(entriesPayload) ? entriesPayload : Object.values(entriesPayload);
+
+  return records.map((record) => ({
+    id: record.id,
+    metaTitle: record.metaTitle?.trim() ?? '"'',
+    metaDescription: record.metaDescription?.trim() ?? '',
+  }));
+}
+
+function parseCount(value) {
+  if ("'!value && value !== 0) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+module.exports = router;
+EOF' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing for views implementation**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/views/partials/page-start.ejs
+<"'!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title ? `${title} | ${appName}` : appName %></title>
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <p class="eyebrow">Internal</p>
+        <h1><%= appName %></h1>
+      </div>
+      <nav class="site-nav">
+        <a href="/listings" class="nav-link <%= active === '"'listings' ? 'is-active' : '' %>\">Listings</a>
+        <a href=\"/seo\" class=\"nav-link <%= active === 'seo' ? 'is-active' : '' %>\">SEO Fields</a>
+      </nav>
+    </div>
+  </header>
+  <main class=\"container page-content\">
+EOF" in /var/home/rick/Development/mega-directory succeeded in 36ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Checking `appName` definition**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/views/partials/page-end.ejs
+  </main>
+</body>
+</html>
+EOF" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Designing detailed listings view**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/views/listings/index.ejs
+<%- include('../partials/page-start', { title: 'Listing Review', active: 'listings' }) %>
+<section class=\"panel stack gap-md\">
+  <header class=\"panel-header\">
+    <div>
+      <p class=\"eyebrow\">Moderation</p>
+      <h2>Review incoming listings</h2>
+      <p class=\"muted\">Edit listing details, capture manual notes, and choose whether to approve or deactivate each entry.</p>
+    </div>
+    <div class=\"badge\">Pending <strong><%= listings.length %></strong></div>
+  </header>
+
+  <% if (typeof savedCount === 'number') { %>
+    <div class=\"alert success\">Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %> just now.</div>
+  <% } %>
+
+  <% if ("'!listings.length) { %>
+    <p class="empty-state">No listings need attention. Check back after the crawler runs.</p>
+  <% } else { %>
+    <form method="POST" action="/listings" class="stack gap-lg">
+      <% listings.forEach((listing, index) => { %>
+        <% const submittedLabel = new Date(listing.submittedAt).toLocaleString('"'en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+        <% const updatedLabel = new Date(listing.lastUpdated).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+        <article class=\"listing-card stack gap-sm\">
+          <input type=\"hidden\" name=\"listings[<%= index %>][id]\" value=\"<%= listing.id %>\" />
+          <header class=\"listing-card__header\">
+            <div class=\"stack gap-xxs\">
+              <p class=\"eyebrow\"><%= listing.category %> • <%= listing.location %></p>
+              <label class=\"field-label\">Business name
+                <input class=\"field-control\" type=\"text\" name=\"listings[<%= index %>][businessName]\" value=\"<%= listing.businessName %>\" />
+              </label>
+            </div>
+            <label class=\"field-label status-field\">Status
+              <select class=\"field-control\" name=\"listings[<%= index %>][status]\">
+                <option value=\"pending\" <%= listing.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                <option value=\"approved\" <%= listing.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                <option value=\"deactivated\" <%= listing.status === 'deactivated' ? 'selected' : '' %>>Deactivate</option>
+              </select>
+            </label>
+          </header>
+
+          <div class=\"listing-card__meta\">
+            <div class=\"stack gap-xxs\">
+              <label class=\"field-label\">Website URL
+                <input class=\"field-control\" type=\"url\" name=\"listings[<%= index %>][website]\" value=\"<%= listing.website %>\" placeholder=\"https://example.com\" />
+              </label>
+              <p class=\"muted\">Phone <strong><%= listing.phone %></strong></p>
+              <p class=\"muted\">Quality score <strong><%= listing.score %>/100</strong> • Source <strong><%= listing.source %></strong></p>
+              <p class=\"muted\">Submitted <strong><%= submittedLabel %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
+            </div>
+            <div class=\"notes-field\">
+              <label class=\"field-label\">Moderator notes
+                <textarea class=\"field-control\" name=\"listings[<%= index %>][notes]\" rows=\"4\" placeholder=\"Add verification notes or follow-ups\"><%= listing.notes %></textarea>
+              </label>
+            </div>
+          </div>
+
+          <p class=\"summary\"><%= listing.summary %></p>
+        </article>
+      <% }) %>
+
+      <div class=\"form-actions\">
+        <button type=\"submit\" class=\"btn primary\">Save changes</button>
+        <p class=\"muted\">Changes persist in memory for this demo app.</p>
+      </div>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/page-end') %>
+EOF" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Drafting SEO fields page structure**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/views/seo/index.ejs
+<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+<section class=\"panel stack gap-md\">
+  <header class=\"panel-header\">
+    <div>
+      <p class=\"eyebrow\">SEO Toolkit</p>
+      <h2>Category + location metadata</h2>
+      <p class=\"muted\">Refresh page titles and meta descriptions before publishing new directory pages.</p>
+    </div>
+    <div class=\"badge\">Records <strong><%= totalEntries %></strong></div>
+  </header>
+
+  <% if (typeof savedCount === 'number') { %>
+    <div class=\"alert success\">Updated <strong><%= savedCount %></strong> SEO entr<%= savedCount === 1 ? 'y' : 'ies' %>.</div>
+  <% } %>
+
+  <% if ("'!categories.length && !categoryLocations.length) { %>
+    <p class="empty-state">No SEO fields available yet.</p>
+  <% } else { %>
+    <form method="POST" action="/seo" class="stack gap-lg">
+      <% if (categories.length) { %>
+        <section class="stack gap-sm">
+          <div class="section-heading">
+            <h3>Category templates</h3>
+            <p class="muted"><%= categories.length %> base categories</p>
+          </div>
+          <% categories.forEach((entry) => { %>
+            <% const updatedLabel = new Date(entry.lastUpdated).toLocaleString('"'en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+            <article class=\"seo-card stack gap-sm\">
+              <input type=\"hidden\" name=\"entries[<%= entry.id %>][id]\" value=\"<%= entry.id %>\" />
+              <header>
+                <p class=\"eyebrow\"><%= entry.category %></p>
+                <p class=\"muted\">Slug <strong><%= entry.slug %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
+              </header>
+              <label class=\"field-label\">Meta title
+                <input class=\"field-control\" type=\"text\" name=\"entries[<%= entry.id %>][metaTitle]\" value=\"<%= entry.metaTitle %>\" />
+              </label>
+              <label class=\"field-label\">Meta description
+                <textarea class=\"field-control\" name=\"entries[<%= entry.id %>][metaDescription]\" rows=\"3\"><%= entry.metaDescription %></textarea>
+              </label>
+            </article>
+          <% }) %>
+        </section>
+      <% } %>
+
+      <% if (categoryLocations.length) { %>
+        <section class=\"stack gap-sm\">
+          <div class=\"section-heading\">
+            <h3>Category + location</h3>
+            <p class=\"muted\"><%= categoryLocations.length %> localized variants</p>
+          </div>
+          <% categoryLocations.forEach((entry) => { %>
+            <% const updatedLabel = new Date(entry.lastUpdated).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }); %>
+            <article class=\"seo-card stack gap-sm\">
+              <input type=\"hidden\" name=\"entries[<%= entry.id %>][id]\" value=\"<%= entry.id %>\" />
+              <header>
+                <p class=\"eyebrow\"><%= entry.category %> • <%= entry.location %></p>
+                <p class=\"muted\">Slug <strong><%= entry.slug %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
+              </header>
+              <label class=\"field-label\">Meta title
+                <input class=\"field-control\" type=\"text\" name=\"entries[<%= entry.id %>][metaTitle]\" value=\"<%= entry.metaTitle %>\" />
+              </label>
+              <label class=\"field-label\">Meta description
+                <textarea class=\"field-control\" name=\"entries[<%= entry.id %>][metaDescription]\" rows=\"3\"><%= entry.metaDescription %></textarea>
+              </label>
+            </article>
+          <% }) %>
+        </section>
+      <% } %>
+
+      <div class=\"form-actions\">
+        <button type=\"submit\" class=\"btn primary\">Save SEO copy</button>
+        <p class=\"muted\">Changes are stored in memory until real API wiring is complete.</p>
+      </div>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/page-end') %>
+EOF" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Checking for missing error view**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/views/errors/not-found.ejs
+<%- include('../partials/page-start', { title: 'Not found' }) %>
+<section class=\"panel stack gap-sm\">
+  <h2>We could not find that page</h2>
+  <p class=\"muted\">Use the navigation above to jump back into the moderation tools.</p>
+  <div>
+    <a class=\"btn\" href=\"/listings\">Go to listing review</a>
+  </div>
+</section>
+<%- include('../partials/page-end') %>
+EOF" in /var/home/rick/Development/mega-directory succeeded in 42ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Creating admin CSS stylesheet**
+exec
+/bin/zsh -lc "cat <<'EOF' > admin/public/css/admin.css
+:root {
+  --bg-body: #f5f6fb;
+  --bg-panel: #ffffff;
+  --bg-header: #0f172a;
+  --text-body: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --success-bg: #ecfdf5;
+  --success-text: #047857;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-body);
+  line-height: 1.4;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.container {
+  width: min(1100px, 92vw);
+  margin: 0 auto;
+}
+
+.site-header {
+  background: var(--bg-header);
+  color: #fff;
+  padding: 1.5rem 0;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.site-header .eyebrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.site-nav {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+}
+
+.nav-link.is-active,
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.page-content {
+  padding: 2rem 0 3rem;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-sm {
+  gap: 0.75rem;
+}
+
+.gap-md {
+  gap: 1.25rem;
+}
+
+.gap-lg {
+  gap: 2rem;
+}
+
+.gap-xxs {
+  gap: 0.35rem;
+}
+
+.badge {
+  background: #e0ecff;
+  color: var(--accent-dark);
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.alert {
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font-weight: 500;
+}
+
+.alert.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.listing-card,
+.seo-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.listing-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.listing-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: block;
+}
+
+.field-control {
+  width: 100%;
+  margin-top: 0.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.field-control:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.4);
+  outline-offset: 2px;
+}
+
+.notes-field textarea {
+  min-height: 110px;
+}
+
+.summary {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e5e7eb;
+  color: var(--text-body);
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: var(--accent-dark);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .panel-header,
+  .listing-card__header {
+    flex-direction: column;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-nav {
+    flex-wrap: wrap;
+  }
+}
+EOF" in /var/home/rick/Development/mega-directory succeeded in 90ms:
+
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Verifying admin setup and test availability**
+exec
+/bin/zsh -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 51ms:
+## main...origin/main [ahead 5]
+ M admin/index.js
+ D admin/routes/review.js
+ D admin/views/review.ejs
+ M codex/LOGS/codex_run_2025-11-11_04-26-54.log
+ M codex/LOGS/tasklog_08_setup_featured_listings_logic_1762855542.log
+?? admin/data/
+?? admin/public/
+?? admin/routes/listings.js
+?? admin/routes/seo.js
+?? admin/services/
+?? admin/views/errors/
+?? admin/views/listings/
+?? admin/views/partials/
+?? admin/views/seo/
+?? agents/crawler/config/targets.schema.json
+?? agents/crawler/tests/
+?? astro/src/components/DirectoryListing.astro
+?? astro/src/components/DirectoryPage.astro
+?? astro/src/data/
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Assessing untracked files and test verification**
+Plan update
+Implemented new Express routes, services, and EJS views for listings and SEO editors. No automated tests exist in the admin workspace, so none were run.
+  ✓ Review existing admin app structure and task requirements to understand needed scaffolding.
+  ✓ Implement Express/EJS admin UI scaffold with sample data, routes, and views for listings review and SEO editing.
+  ✓ Run any available tests or document why none can be run.
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing line number references**
+exec
+/bin/zsh -lc 'nl -ba admin/index.js' in /var/home/rick/Development/mega-directory succeeded in 89ms:
+     1	const path = require('path');
+     2	const express = require('express');
+     3	
+     4	const listingsRouter = require('./routes/listings');
+     5	const seoRouter = require('./routes/seo');
+     6	
+     7	const app = express();
+     8	const port = process.env.PORT || 4000;
+     9	
+    10	app.set('view engine', 'ejs');
+    11	app.set('views', path.join(__dirname, 'views'));
+    12	app.locals.appName = 'Mega Directory Admin';
+    13	
+    14	app.use(express.static(path.join(__dirname, 'public')));
+    15	app.use(express.urlencoded({ extended: true }));
+    16	app.use(express.json());
+    17	
+    18	app.get('/', (req, res) => {
+    19	  res.redirect('/listings');
+    20	});
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Searching for route file line numbers**
+exec
+/bin/zsh -lc 'nl -ba admin/routes/listings.js' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	const express = require('express');
+     2	const { getListings, updateListings } = require('../services/listingsService');
+     3	
+     4	const router = express.Router();
+     5	
+     6	router.get('/', (req, res) => {
+     7	  const listings = getListings();
+     8	
+     9	  res.render('listings/index', {
+    10	    title: 'Listing Review',
+    11	    listings,
+    12	    savedCount: parseCount(req.query.saved),
+    13	  });
+    14	});
+    15	
+    16	router.post('/', (req, res) => {
+    17	  const updates = normalizePayload(req.body.listings);
+    18	  const updated = updateListings(updates);
+    19	
+    20	  res.redirect(`/listings?saved=${updated}`);
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Requesting specific file lines**
+exec
+/bin/zsh -lc 'nl -ba admin/routes/seo.js' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+     1	const express = require('express');
+     2	const { getSeoEntries, updateSeoEntries } = require('../services/seoService');
+     3	
+     4	const router = express.Router();
+     5	
+     6	router.get('/', (req, res) => {
+     7	  const entries = getSeoEntries();
+     8	  const categories = entries.filter((entry) => entry.type === 'category');
+     9	  const categoryLocations = entries.filter((entry) => entry.type === 'category_location');
+    10	
+    11	  res.render('seo/index', {
+    12	    title: 'SEO Fields',
+    13	    categories,
+    14	    categoryLocations,
+    15	    totalEntries: entries.length,
+    16	    savedCount: parseCount(req.query.saved),
+    17	  });
+    18	});
+    19	
+    20	router.post('/', (req, res) => {
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing service file references**
+exec
+/bin/zsh -lc 'nl -ba admin/services/listingsService.js' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	const listings = require('../data/listings');
+     2	
+     3	const ALLOWED_STATUSES = new Set(['pending', 'approved', 'deactivated']);
+     4	
+     5	function getListings() {
+     6	  return listings;
+     7	}
+     8	
+     9	function updateListings(updates = []) {
+    10	  let applied = 0;
+    11	
+    12	  updates.forEach((update) => {
+    13	    if (!update || !update.id) {
+    14	      return;
+    15	    }
+    16	
+    17	    const listing = listings.find((item) => item.id === update.id);
+    18	    if (!listing) {
+    19	      return;
+    20	    }
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Locating seoService.js file**
+exec
+/bin/zsh -lc 'nl -ba admin/services/seoService.js' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	const entries = require('../data/seoEntries');
+     2	
+     3	function getSeoEntries() {
+     4	  return entries;
+     5	}
+     6	
+     7	function updateSeoEntries(updates = []) {
+     8	  let applied = 0;
+     9	
+    10	  updates.forEach((update) => {
+    11	    if (!update || !update.id) {
+    12	      return;
+    13	    }
+    14	
+    15	    const entry = entries.find((item) => item.id === update.id);
+    16	    if (!entry) {
+    17	      return;
+    18	    }
+    19	
+    20	    if (typeof update.metaTitle === 'string') {
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Planning data file references**
+exec
+/bin/zsh -lc 'nl -ba admin/data/listings.js' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+     1	module.exports = [
+     2	  {
+     3	    id: 'lst_nova_electric',
+     4	    businessName: 'Nova Electric Co.',
+     5	    category: 'Electricians',
+     6	    location: 'Brooklyn, NY',
+     7	    website: 'https://novaelectric.example.com',
+     8	    phone: '(347) 555-0112',
+     9	    summary: '24/7 emergency electricians covering every borough with rapid dispatch teams.',
+    10	    notes: 'Crawler ingestion flagged missing license number.',
+    11	    score: 82,
+    12	    status: 'pending',
+    13	    source: 'Crawler Feed A',
+    14	    submittedAt: '2024-05-22T09:30:00-04:00',
+    15	    lastUpdated: '2024-05-22T09:30:00-04:00',
+    16	  },
+    17	  {
+    18	    id: 'lst_green_canopy',
+    19	    businessName: 'Green Canopy Tree Care',
+    20	    category: 'Arborists',
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Locating seoEntries.js file**
+exec
+/bin/zsh -lc 'nl -ba admin/data/seoEntries.js' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+     1	module.exports = [
+     2	  {
+     3	    id: 'seo_electricians',
+     4	    type: 'category',
+     5	    category: 'Electricians',
+     6	    location: null,
+     7	    slug: 'electricians',
+     8	    metaTitle: 'Electricians Near You | Mega Directory',
+     9	    metaDescription: 'Compare licensed electricians for emergency calls, panel upgrades, EV charger installs, and more.',
+    10	    lastUpdated: '2024-05-18T12:00:00-04:00',
+    11	  },
+    12	  {
+    13	    id: 'seo_plumbers',
+    14	    type: 'category',
+    15	    category: 'Plumbers',
+    16	    location: null,
+    17	    slug: 'plumbers',
+    18	    metaTitle: 'Trusted Plumbers | Mega Directory',
+    19	    metaDescription: 'Browse vetted plumbers for leaks, re-pipes, maintenance plans, and emergency dispatch in your city.',
+    20	    lastUpdated: '2024-05-17T17:45:00-04:00',
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing to view file with line numbers**
+exec
+/bin/zsh -lc 'nl -ba admin/views/listings/index.ejs' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+     1	<%- include('../partials/page-start', { title: 'Listing Review', active: 'listings' }) %>
+     2	<section class="panel stack gap-md">
+     3	  <header class="panel-header">
+     4	    <div>
+     5	      <p class="eyebrow">Moderation</p>
+     6	      <h2>Review incoming listings</h2>
+     7	      <p class="muted">Edit listing details, capture manual notes, and choose whether to approve or deactivate each entry.</p>
+     8	    </div>
+     9	    <div class="badge">Pending <strong><%= listings.length %></strong></div>
+    10	  </header>
+    11	
+    12	  <% if (typeof savedCount === 'number') { %>
+    13	    <div class="alert success">Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %> just now.</div>
+    14	  <% } %>
+    15	
+    16	  <% if (!listings.length) { %>
+    17	    <p class="empty-state">No listings need attention. Check back after the crawler runs.</p>
+    18	  <% } else { %>
+    19	    <form method="POST" action="/listings" class="stack gap-lg">
+    20	      <% listings.forEach((listing, index) => { %>
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing to add lines to admin/views/seo/index.ejs**
+exec
+/bin/zsh -lc 'nl -ba admin/views/seo/index.ejs' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+     1	<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+     2	<section class="panel stack gap-md">
+     3	  <header class="panel-header">
+     4	    <div>
+     5	      <p class="eyebrow">SEO Toolkit</p>
+     6	      <h2>Category + location metadata</h2>
+     7	      <p class="muted">Refresh page titles and meta descriptions before publishing new directory pages.</p>
+     8	    </div>
+     9	    <div class="badge">Records <strong><%= totalEntries %></strong></div>
+    10	  </header>
+    11	
+    12	  <% if (typeof savedCount === 'number') { %>
+    13	    <div class="alert success">Updated <strong><%= savedCount %></strong> SEO entr<%= savedCount === 1 ? 'y' : 'ies' %>.</div>
+    14	  <% } %>
+    15	
+    16	  <% if (!categories.length && !categoryLocations.length) { %>
+    17	    <p class="empty-state">No SEO fields available yet.</p>
+    18	  <% } else { %>
+    19	    <form method="POST" action="/seo" class="stack gap-lg">
+    20	      <% if (categories.length) { %>
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Summarizing admin UI changes and verification steps**
+
+I’m preparing a clear summary of the admin UI scaffold’s key additions and removals, referencing main files and line ranges for clarity. I’ll mention the new listings and SEO routes, layout partials, CSS updates, and note the removal of the review route. I’ll also cover the lack of tests and advise installing dependencies before running due to missing node_modules. I plan to mention running simple require checks for syntax but skip actual test runs, concluding with suggestions for next steps like hooking API endpoints.
+exec
+/bin/zsh -lc 'nl -ba admin/views/partials/page-start.ejs' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+     1	<!DOCTYPE html>
+     2	<html lang="en">
+     3	<head>
+     4	  <meta charset="utf-8" />
+     5	  <meta name="viewport" content="width=device-width, initial-scale=1" />
+     6	  <title><%= title ? `${title} | ${appName}` : appName %></title>
+     7	  <link rel="stylesheet" href="/css/admin.css" />
+     8	</head>
+     9	<body>
+    10	  <header class="site-header">
+    11	    <div class="container header-inner">
+    12	      <div>
+    13	        <p class="eyebrow">Internal</p>
+    14	        <h1><%= appName %></h1>
+    15	      </div>
+    16	      <nav class="site-nav">
+    17	        <a href="/listings" class="nav-link <%= active === 'listings' ? 'is-active' : '' %>">Listings</a>
+    18	        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+    19	      </nav>
+    20	    </div>
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Checking for partial file lines**
+exec
+/bin/zsh -lc 'nl -ba admin/views/partials/page-end.ejs' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+     1	  </main>
+     2	</body>
+     3	</html>
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing CSS and view references**
+exec
+/bin/zsh -lc 'nl -ba admin/views/errors/not-found.ejs' in /var/home/rick/Development/mega-directory succeeded in 36ms:
+     1	<%- include('../partials/page-start', { title: 'Not found' }) %>
+     2	<section class="panel stack gap-sm">
+     3	  <h2>We could not find that page</h2>
+     4	  <p class="muted">Use the navigation above to jump back into the moderation tools.</p>
+     5	  <div>
+     6	    <a class="btn" href="/listings">Go to listing review</a>
+     7	  </div>
+     8	</section>
+     9	<%- include('../partials/page-end') %>
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing CSS file snippet details**
+exec
+/bin/zsh -lc "nl -ba admin/public/css/admin.css | sed -n '1,200p'" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	:root {
+     2	  --bg-body: #f5f6fb;
+     3	  --bg-panel: #ffffff;
+     4	  --bg-header: #0f172a;
+     5	  --text-body: #111827;
+     6	  --text-muted: #6b7280;
+     7	  --border-color: #e5e7eb;
+     8	  --accent: #2563eb;
+     9	  --accent-dark: #1d4ed8;
+    10	  --success-bg: #ecfdf5;
+    11	  --success-text: #047857;
+    12	}
+    13	
+    14	* {
+    15	  box-sizing: border-box;
+    16	}
+    17	
+    18	body {
+    19	  margin: 0;
+    20	  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+
+thinking
+**Preparing detailed admin summary**
+
+I'm collecting line references properly—each referencing a single start line only—to comply with formatting rules. I’m planning a clear summary highlighting the expanded Express/EJS admin UI with key file references and including useful next steps, testing notes, and verification advice to make everything easy to follow.
+codex
+Built a fuller Express/EJS admin UI that lets moderators review listings and edit SEO metadata.
+
+- Wired the server to load static assets/views via absolute paths, mount the listings and SEO routers, and fall back to a themed 404 page so navigation works across the new screens (`admin/index.js:1`).
+- Seeded the UI with representative in-memory listings and SEO records plus lightweight services that accept update payloads, letting the forms behave realistically until the API is wired up (`admin/data/listings.js:1`, `admin/services/listingsService.js:1`, `admin/data/seoEntries.js:1`, `admin/services/seoService.js:1`).
+- Listing review now renders moderator-friendly cards with editable fields, status selectors, and POST handling that reports how many records were saved (`admin/routes/listings.js:1`, `admin/views/listings/index.ejs:1`).
+- SEO editor separates category templates from localized variants and reuses the same normalize/update flow so titles/descriptions can be tweaked inline (`admin/routes/seo.js:1`, `admin/views/seo/index.ejs:1`).
+- Added shared page chrome plus utility styles to give the standalone app a polished feel and consistent navigation across sections (`admin/views/partials/page-start.ejs:1`, `admin/views/errors/not-found.ejs:1`, `admin/public/css/admin.css:1`).
+
+Tests: not run (the `admin` package currently exposes only `dev`/`start` scripts, so no automated tests are available).
+
+Next steps: 1) Connect these forms to the real admin API endpoints as they come online (Tasks 15–17). 2) Add the auth middleware from Task 5 so only approved admins can reach the new routes.
+file update:
+diff --git a/admin/index.js b/admin/index.js
+index b89ca35cff19041a0022003b03fd16f599bbe315..224c891093863cd3dd36b6410877aac052bfb1bc
+--- a/admin/index.js
++++ b/admin/index.js
+@@ -1,19 +1,32 @@
++const path = require('path');
+ const express = require('express');
++
++const listingsRouter = require('./routes/listings');
++const seoRouter = require('./routes/seo');
++
+ const app = express();
+ const port = process.env.PORT || 4000;
+ 
+-app.use(express.static('public'));
++app.set('view engine', 'ejs');
++app.set('views', path.join(__dirname, 'views'));
++app.locals.appName = 'Mega Directory Admin';
++
++app.use(express.static(path.join(__dirname, 'public')));
+ app.use(express.urlencoded({ extended: true }));
+ app.use(express.json());
+ 
+-app.set('view engine', 'ejs');
+-app.set('views', './views');
+-
+ app.get('/', (req, res) => {
+-  res.redirect('/review');
++  res.redirect('/listings');
+ });
+ 
+-app.use('/review', require('./routes/review'));
++app.use('/listings', listingsRouter);
++app.use('/seo', seoRouter);
++
++app.use((req, res) => {
++  res.status(404).render('errors/not-found', {
++    title: 'Not Found',
++  });
++});
+ 
+ app.listen(port, () => {
+   console.log(`Admin app listening at http://localhost:${port}`);
+
+tokens used
+111,437
+Built a fuller Express/EJS admin UI that lets moderators review listings and edit SEO metadata.
+
+- Wired the server to load static assets/views via absolute paths, mount the listings and SEO routers, and fall back to a themed 404 page so navigation works across the new screens (`admin/index.js:1`).
+- Seeded the UI with representative in-memory listings and SEO records plus lightweight services that accept update payloads, letting the forms behave realistically until the API is wired up (`admin/data/listings.js:1`, `admin/services/listingsService.js:1`, `admin/data/seoEntries.js:1`, `admin/services/seoService.js:1`).
+- Listing review now renders moderator-friendly cards with editable fields, status selectors, and POST handling that reports how many records were saved (`admin/routes/listings.js:1`, `admin/views/listings/index.ejs:1`).
+- SEO editor separates category templates from localized variants and reuses the same normalize/update flow so titles/descriptions can be tweaked inline (`admin/routes/seo.js:1`, `admin/views/seo/index.ejs:1`).
+- Added shared page chrome plus utility styles to give the standalone app a polished feel and consistent navigation across sections (`admin/views/partials/page-start.ejs:1`, `admin/views/errors/not-found.ejs:1`, `admin/public/css/admin.css:1`).
+
+Tests: not run (the `admin` package currently exposes only `dev`/`start` scripts, so no automated tests are available).
+
+Next steps: 1) Connect these forms to the real admin API endpoints as they come online (Tasks 15–17). 2) Add the auth middleware from Task 5 so only approved admins can reach the new routes.

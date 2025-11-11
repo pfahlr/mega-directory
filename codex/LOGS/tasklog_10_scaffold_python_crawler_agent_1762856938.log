@@ -1,0 +1,5372 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7276-2d3f-79e3-885a-9bb03b408882
+--------
+user
+Implement the functionality described in codex/TASKS/10_scaffold_python_crawler_agent.yaml, then verify with any available tests.
+
+thinking
+**Preparing to implement crawler agent task**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 119ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+
+thinking
+**Opening TASKS file**
+exec
+bash -lc 'cat codex/TASKS/10_scaffold_python_crawler_agent.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 10
+title: Scaffold Python Crawler Agent
+description: Build Python module using requests, BeautifulSoup4, and requests-cache.
+  Read from config and support category-location batches.
+dependencies: []
+
+thinking
+**Inspecting agents directory**
+exec
+bash -lc 'ls agents' in /var/home/rick/Development/mega-directory succeeded in 47ms:
+crawler
+
+thinking
+**Inspecting agents/crawler directory**
+exec
+bash -lc 'ls agents/crawler' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+config
+crawler.py
+main.py
+targets.example.json
+
+thinking
+**Opening main crawler file**
+exec
+bash -lc "sed -n '1,200p' agents/crawler/main.py" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+import json
+from crawler import run_crawler
+
+if __name__ == "__main__":
+    with open("config/targets.json", "r") as f:
+        config = json.load(f)
+    run_crawler(config)
+
+thinking
+**Identifying need for crawler module**
+exec
+bash -lc "sed -n '1,200p' agents/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 90ms:
+def run_crawler(config):
+    for target in config['targets']:
+        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+        # Implement scraping + LLM generation logic
+
+thinking
+**Searching for configuration files**
+exec
+bash -lc 'cat agents/crawler/targets.example.json' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+{
+  "api_endpoint": "http://localhost:3001/api/new-listings",
+  "api_token": "changeme",
+  "targets": [
+    {
+      "category": "Real Estate",
+      "locations": ["New York", "San Francisco"],
+      "subdomain": "realestate.local",
+      "keywords": ["ocean view", "downtown"],
+      "listings_per_location": 50,
+      "fields": {
+        "title": { "source": "scrape" },
+        "price": { "source": "scrape" },
+        "description": {
+          "source": "ai",
+          "provider": "openai",
+          "model": "gpt-4",
+          "prompt_template": "Write a friendly listing description for a {{ category }} in {{ location }}. Details: {{ details }}."
+        }
+      }
+
+thinking
+**Checking for config folder**
+exec
+bash -lc 'ls agents/crawler/config' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+targets.json
+
+thinking
+**Checking configuration details**
+exec
+bash -lc 'cat agents/crawler/config/targets.json' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+{
+  "api_endpoint": "http://localhost:3000/api/new-listings",
+  "api_token": "YOUR_API_TOKEN_HERE",
+  "targets": [
+    {
+      "category": "Electricians",
+      "locations": [
+        "Holland MI"
+      ],
+      "subdomain": "electricians.example.com",
+      "keywords": [
+        "licensed",
+        "residential",
+        "commercial"
+      ],
+      "listings_per_location": 50,
+      "fields": {
+        "title": {
+          "source": "scrape"
+        },
+
+thinking
+**Planning Python crawler implementation**
+
+I’m outlining how to build a Python crawler module with requests, BeautifulSoup4, and requests-cache, based on config-driven category-location batches. I need to check the repo structure for tests and dependencies, confirm TDD expectations, and decide on a multi-step plan to implement and test this functionality properly. Exploring existing tasks and directory files will help clarify requirements and approach.
+exec
+bash -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 93ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Exploring test setup and dependencies**
+exec
+bash -lc 'rg -n "pytest" -g"*.py" -n' in /var/home/rick/Development/mega-directory exited 1 in 216ms:
+
+
+thinking
+**Checking for testing frameworks**
+exec
+bash -lc "find . -maxdepth 2 -name 'pyproject.toml' -o -name 'requirements.txt'" in /var/home/rick/Development/mega-directory succeeded in 91ms:
+
+
+thinking
+**Exploring deeper for dependencies**
+exec
+bash -lc "sed -n '1,200p' README.md" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+# Mega Directory
+
+Mega Directory is a server-rendered directory listing platform built with Astro, Express, and Prisma. It supports dynamic subdomains, AI-generated content enrichment, and moderation workflows.
+
+## Features
+
+- 🛰️ Subdomain-based regional directories (e.g. electricians.nyc.example.com)
+- ⚡ Express API with JWT-based auth
+- 🧠 AI agents for crawling, enrichment, and moderation (via OpenRouter)
+- 🧩 Admin dashboard for approving or rejecting listings
+- 💅 Tailwind CSS and minimal JavaScript for accessibility and performance
+- 🐳 Dockerized and deployable behind Cloudflare with SSR
+
+## Tech Stack
+
+- Astro (SSR)
+- Express.js
+- Prisma + PostgreSQL
+- Tailwind CSS
+- OpenRouter (AI Agents)
+
+thinking
+**Planning TDD and crawler setup**
+
+I’m outlining how to implement the crawler with TDD by writing failing tests first and mocking network calls due to internet restrictions. I’ll inspect the `agents/crawler` folder for dependencies and config patterns, then plan tests around caching, requests, and config reading, while looking for more docs on the crawler using a smart search.
+exec
+bash -lc 'rg -n "crawler" -n' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+AGENTS.md:88:* Accept and validate new data from the crawler
+codex.yaml:24:    path: codex/TASKS/10_scaffold_python_crawler_agent.yaml
+codex.yaml:28:    path: codex/TASKS/12_post_listings_from_crawler_to_api_server.yaml
+codex.yaml:30:    path: codex/TASKS/13_create_json_crawler_configuration_schema.yaml
+docs/AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+docs/AGENTS.md:88:* Accept and validate new data from the crawler
+api/test/server.test.js:12:  crawlerBearerToken: 'crawler-token'
+api/test/server.test.js:197:test('crawler ping rejects invalid bearer token', () => {
+api/test/server.test.js:199:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:210:test('crawler ping accepts matching bearer token', () => {
+api/test/server.test.js:212:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:215:    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` }
+api/test/server.test.js:220:  assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+api/test/server.test.js:223:test('crawler listing ingestion rejects missing bearer token', () => {
+api/test/server.test.js:225:  const route = findRoute(app, 'post', '/v1/crawler/listings');
+api/test/server.test.js:236:test('crawler listing ingestion stores sanitized listings as inactive', () => {
+api/test/server.test.js:238:  const route = findRoute(app, 'post', '/v1/crawler/listings');
+api/test/server.test.js:241:    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
+api/test/server.test.js:264:test('crawler listing ingestion accepts batches and reports metadata', () => {
+
+thinking
+**Investigating previous task logs**
+exec
+bash -lc "sed -n '1,200p' codex/LOGS/tasklog_10_scaffold_python_crawler_agent_1762856938.log" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7276-2d3f-79e3-885a-9bb03b408882
+--------
+user
+Implement the functionality described in codex/TASKS/10_scaffold_python_crawler_agent.yaml, then verify with any available tests.
+
+thinking
+**Preparing to implement crawler agent task**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 119ms:
+admin
+agents
+
+thinking
+**Continuing log review**
+exec
+bash -lc "sed -n '200,400p' codex/LOGS/tasklog_10_scaffold_python_crawler_agent_1762856938.log" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+
+I’m outlining how to implement the crawler with TDD by writing failing tests first and mocking network calls due to internet restrictions. I’ll inspect the `agents/crawler` folder for dependencies and config patterns, then plan tests around caching, requests, and config reading, while looking for more docs on the crawler using a smart search.
+exec
+bash -lc 'rg -n "crawler" -n' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+AGENTS.md:88:* Accept and validate new data from the crawler
+codex.yaml:24:    path: codex/TASKS/10_scaffold_python_crawler_agent.yaml
+codex.yaml:28:    path: codex/TASKS/12_post_listings_from_crawler_to_api_server.yaml
+codex.yaml:30:    path: codex/TASKS/13_create_json_crawler_configuration_schema.yaml
+docs/AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+docs/AGENTS.md:88:* Accept and validate new data from the crawler
+api/test/server.test.js:12:  crawlerBearerToken: 'crawler-token'
+api/test/server.test.js:197:test('crawler ping rejects invalid bearer token', () => {
+api/test/server.test.js:199:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:210:test('crawler ping accepts matching bearer token', () => {
+api/test/server.test.js:212:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:215:    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` }
+api/test/server.test.js:220:  assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+api/test/server.test.js:223:test('crawler listing ingestion rejects missing bearer token', () => {
+api/test/server.test.js:225:  const route = findRoute(app, 'post', '/v1/crawler/listings');
+
+thinking
+**Planning implementation based on task specs**
+
+I’m reviewing the current session log but realize it’s just a replay of actions taken. Instead, I’ll focus on planning the Python module that uses requests, BeautifulSoup4, and requests-cache, while reading configuration and supporting category-location batches. To gather full requirements, I’ll check related tasks 11, 12, and 13 in the `codex/TASKS` directory to ensure consistent scaffolding and understand any dependencies. I’m grabbing the first 200 lines of task 11 now.
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/11_llm_field_generation_via_jinja2.yaml" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 11
+title: LLM Field Generation via Jinja2
+description: Add dynamic field generation with provider/model config, jinja2 templates,
+  and token substitution.
+dependencies:
+- 10
+
+thinking
+**Checking for clarification**
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/12_post_listings_from_crawler_to_api_server.yaml" in /var/home/rick/Development/mega-directory succeeded in 154ms:
+id: 12
+title: POST Listings from Crawler to API Server
+description: After field population, push data to API using HTTP and token. Validate
+  integration against dev and prod targets.
+dependencies:
+- 4
+- 10
+
+thinking
+**Planning crawler module design and testing**
+
+I'm figuring out a Python crawler scaffold using requests, BeautifulSoup, and requests-cache, aiming for configurable category-location batches. I want to build classes like `Crawler` and config dataclasses, plus tests to verify caching and parsing logic, all while considering environment dependencies and test setup before coding.
+exec
+bash -lc "python - <<'PY'
+import importlib
+for name in ('requests','bs4','requests_cache'):
+    try:
+        importlib.import_module(name)
+        print(name + ': ok')
+    except Exception as exc:
+        print(name + ': missing ' + str(exc))
+PY" in /var/home/rick/Development/mega-directory succeeded in 1.70s:
+requests: ok
+bs4: ok
+requests_cache: missing No module named 'requests_cache'
+
+thinking
+**Considering fallback for requests-cache dependency**
+
+I’m thinking through how to handle the missing `requests-cache` module, given network restrictions prevent installing it. Implementing a minimal stub that mimics its `CachedSession` interface could satisfy the requirement, allowing the crawler to use caching without the actual package. I want to design this fallback carefully so the rest of the code can rely on `requests_cache`, while planning to structure the crawler around config-driven category-location batches and testing coverage. Next, I’ll formalize a plan to create tests, fallback stubs, and the crawler implementation step by step.
+Plan update
+  → Inspect crawler requirements and define expected behavior based on config + task file.
+  • Add Pytest coverage that captures crawler batching, parsing, and caching expectations (tests should fail).
+  • Implement crawler scaffolding using requests, BeautifulSoup4, and requests-cache to satisfy tests.
+  • Run tests / lint checks and verify everything passes.
+
+thinking
+**Updating plan progress**
+Plan update
+  ✓ Inspect crawler requirements and define expected behavior based on config + task file.
+  → Add Pytest coverage that captures crawler batching, parsing, and caching expectations (tests should fail).
+  • Implement crawler scaffolding using requests, BeautifulSoup4, and requests-cache to satisfy tests.
+  • Run tests / lint checks and verify everything passes.
+
+thinking
+**Designing tests and data structures**
+exec
+bash -lc 'mkdir -p agents/crawler/tests' in /var/home/rick/Development/mega-directory succeeded in 263ms:
+
+
+thinking
+**Designing crawler test file**
+file update
+A /var/home/rick/Development/mega-directory/agents/crawler/tests/test_crawler.py
+from types import SimpleNamespace
+
+import pytest
+
+import crawler
+from crawler import run_crawler
+
+
+SAMPLE_HTML = """
+<section>
+  <article data-listing>
+    <a class="listing-link" href="https://example.com/acme">
+      <span class="listing-title">ACME Electric</span>
+    </a>
+    <p class="listing-description">Licensed and insured electricians.</p>
+  </article>
+  <article data-listing>
+    <a class="listing-link" href="https://example.com/brightsparks">
+      <span class="listing-title">Bright Sparks</span>
+    </a>
+    <p class="listing-description">24/7 emergency specialists.</p>
+  </article>
+</section>
+"""
+
+
+class DummyResponse:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+    def raise_for_status(self) -> None:
+        return None
+
+
+class DummySession:
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.calls = []
+
+    def get(self, url: str, timeout: float = 10) -> DummyResponse:
+        self.calls.append((url, timeout))
+        return DummyResponse(self.text)
+
+
+def test_run_crawler_batches_locations_and_limits_results() -> None:
+    config = {
+        "api_endpoint": "https://api.example.com",
+        "api_token": "token",
+        "targets": [
+            {
+                "category": "Electricians",
+                "subdomain": "electric.example.com",
+                "locations": ["Holland MI", "Grand Rapids MI"],
+                "keywords": ["licensed"],
+                "listings_per_location": 1,
+            }
+        ],
+    }
+    dummy_session = DummySession(SAMPLE_HTML)
+
+    batches = run_crawler(config, session=dummy_session)
+
+    assert len(batches) == 2
+    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
+    assert all(batch.category == "Electricians" for batch in batches)
+    assert all(len(batch.listings) == 1 for batch in batches)
+    assert all("licensed" in call[0] for call in dummy_session.calls)
+
+
+def test_parse_listings_honors_custom_selectors() -> None:
+    html = """
+    <ul>
+      <li class="company">
+        <h2>Firm A</h2>
+        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
+        <div class="details">Great service.</div>
+      </li>
+      <li class="company">
+        <h2>Firm B</h2>
+        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
+        <div class="details">Family owned.</div>
+      </li>
+    </ul>
+    """
+    target = {
+        "category": "Consultants",
+        "locations": ["NYC"],
+        "selectors": {
+            "listing": ".company",
+            "title": "h2",
+            "link": "[data-role='landing']",
+            "description": ".details",
+        },
+    }
+    crawler_instance = crawler.Crawler(session=DummySession(html))
+
+    parsed = crawler_instance.parse_listings(html, target, "NYC")
+
+    assert len(parsed) == 2
+    assert parsed[0].title == "Firm A"
+    assert parsed[0].url == "https://example.com/firm-a"
+    assert parsed[0].snippet == "Great service."
+
+
+def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = {}
+
+    class FakeCachedSession:
+        def __init__(self, *args, **kwargs):
+            captured["args"] = args
+            captured["kwargs"] = kwargs
+
+        def get(self, *_args, **_kwargs):
+            return DummyResponse(SAMPLE_HTML)
+
+    monkeypatch.setattr(
+        crawler,
+        "requests_cache",
+        SimpleNamespace(CachedSession=FakeCachedSession),
+    )
+
+    config = {
+        "api_endpoint": "https://api.example.com",
+        "api_token": "token",
+        "targets": [
+            {
+                "category": "Electricians",
+                "subdomain": "electric.example.com",
+                "locations": ["Holland MI"],
+            }
+        ],
+    }
+
+    batches = run_crawler(config)
+
+    assert captured["kwargs"]["expire_after"] > 0
+    assert len(batches) == 1
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+A agents/crawler/tests/test_crawler.py
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..e5aa638f1dd185217f22c1dc6036cb6c41fd340a
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,137 @@
++from types import SimpleNamespace
++
++import pytest
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..e5aa638f1dd185217f22c1dc6036cb6c41fd340a
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,137 @@
++from types import SimpleNamespace
++
++import pytest
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Verifying test imports and class definitions**
+exec
+bash -lc 'pytest agents/crawler/tests' in /var/home/rick/Development/mega-directory exited 2 in 11.38s:
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0
+rootdir: /var/home/rick/Development/mega-directory
+plugins: Faker-37.8.0, xdist-3.8.0, mock-3.15.1, metadata-3.1.1, cov-7.0.0, asyncio-1.2.0, html-4.1.1, hypothesis-6.141.1, anyio-4.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+____________ ERROR collecting agents/crawler/tests/test_crawler.py _____________
+ImportError while importing test module '/var/home/rick/Development/mega-directory/agents/crawler/tests/test_crawler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agents/crawler/tests/test_crawler.py:5: in <module>
+    import crawler
+E   ModuleNotFoundError: No module named 'crawler'
+=========================== short test summary info ============================
+ERROR agents/crawler/tests/test_crawler.py
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..e5aa638f1dd185217f22c1dc6036cb6c41fd340a
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,137 @@
++from types import SimpleNamespace
++
++import pytest
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Adjusting test import paths**
+file update
+M /var/home/rick/Development/mega-directory/agents/crawler/tests/test_crawler.py
+@@ -1,2 +1,4 @@
++from pathlib import Path
+ from types import SimpleNamespace
++import sys
+ 
+@@ -4,2 +6,6 @@
+ 
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
+ import crawler
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M agents/crawler/tests/test_crawler.py
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Verifying test failure due to missing functionality**
+exec
+bash -lc 'pytest agents/crawler/tests' in /var/home/rick/Development/mega-directory exited 1 in 1.49s:
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0
+rootdir: /var/home/rick/Development/mega-directory
+plugins: Faker-37.8.0, xdist-3.8.0, mock-3.15.1, metadata-3.1.1, cov-7.0.0, asyncio-1.2.0, html-4.1.1, hypothesis-6.141.1, anyio-4.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+agents/crawler/tests/test_crawler.py FFF                                 [100%]
+
+=================================== FAILURES ===================================
+____________ test_run_crawler_batches_locations_and_limits_results _____________
+
+    def test_run_crawler_batches_locations_and_limits_results() -> None:
+        config = {
+            "api_endpoint": "https://api.example.com",
+            "api_token": "token",
+            "targets": [
+                {
+                    "category": "Electricians",
+                    "subdomain": "electric.example.com",
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Updating plan progress**
+Plan update
+  ✓ Inspect crawler requirements and define expected behavior based on config + task file.
+  ✓ Add Pytest coverage that captures crawler batching, parsing, and caching expectations (tests should fail).
+  → Implement crawler scaffolding using requests, BeautifulSoup4, and requests-cache to satisfy tests.
+  • Run tests / lint checks and verify everything passes.
+file update:
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Implementing web crawler core**
+
+I'm designing and implementing the main web crawler functionality, including the `Crawler` class with its key methods, `Listing` and `CrawlerBatch` dataclasses, and a fallback shim for the optional `requests_cache` dependency. This handles caching gracefully even if the cache module is missing, ensuring robustness across environments. I'm also carefully managing URL building, HTML parsing using BeautifulSoup, and session handling for both real runs and tests without network calls.
+file update
+M /var/home/rick/Development/mega-directory/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+apply_patch(auto_approved=true) exited 0 in 84ms:
+Success. Updated the following files:
+M agents/crawler/crawler.py
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Verifying imports and fallback compatibility**
+exec
+bash -lc 'pytest agents/crawler/tests' in /var/home/rick/Development/mega-directory succeeded in 1.70s:
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0
+rootdir: /var/home/rick/Development/mega-directory
+plugins: Faker-37.8.0, xdist-3.8.0, mock-3.15.1, metadata-3.1.1, cov-7.0.0, asyncio-1.2.0, html-4.1.1, hypothesis-6.141.1, anyio-4.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+agents/crawler/tests/test_crawler.py ...                                 [100%]
+
+============================== 3 passed in 0.80s ===============================
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Deciding which tests to run**
+Plan update
+  ✓ Inspect crawler requirements and define expected behavior based on config + task file.
+  ✓ Add Pytest coverage that captures crawler batching, parsing, and caching expectations (tests should fail).
+  ✓ Implement crawler scaffolding using requests, BeautifulSoup4, and requests-cache to satisfy tests.
+  ✓ Run tests / lint checks and verify everything passes.
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Checking git status for changes**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 119ms:
+## main...origin/main [ahead 1]
+ M agents/crawler/crawler.py
+ M codex/LOGS/codex_run_2025-11-11_04-26-54.log
+ M codex/LOGS/tasklog_08_setup_featured_listings_logic_1762855542.log
+?? agents/crawler/tests/
+?? astro/src/components/DirectoryListing.astro
+?? astro/src/components/DirectoryPage.astro
+?? astro/src/data/
+?? astro/src/lib/
+?? astro/src/pages/listings/
+?? astro/test/
+?? codex/LOGS/tasklog_08_setup_featured_listings_logic_1762855542.log.done
+?? codex/LOGS/tasklog_09_add_category_meta_and_seo_controls_1762856433.log
+?? codex/LOGS/tasklog_09_add_category_meta_and_seo_controls_1762856433.log.done
+?? codex/LOGS/tasklog_10_scaffold_python_crawler_agent_1762856938.log
+?? codex/TASKS/work_list
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Preparing final summary details**
+exec
+bash -lc "nl -ba agents/crawler/crawler.py | sed -n '1,200p'" in /var/home/rick/Development/mega-directory succeeded in 91ms:
+     1	from __future__ import annotations
+     2	
+     3	from dataclasses import dataclass, field
+     4	from typing import Any, Dict, Iterable, List, Optional
+     5	from urllib.parse import quote_plus, urljoin
+     6	
+     7	import requests
+     8	from bs4 import BeautifulSoup
+     9	
+    10	try:
+    11	    import requests_cache
+    12	except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
+    13	    from types import SimpleNamespace
+    14	
+    15	    class _ShimCachedSession(requests.Session):
+    16	        """Minimal drop-in replacement when requests-cache is unavailable."""
+    17	
+    18	        def __init__(self, *args, **kwargs):
+    19	            super().__init__()
+    20	            self._cache: Dict[Any, requests.Response] = {}
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Continuing to review key functions**
+exec
+bash -lc "nl -ba agents/crawler/crawler.py | sed -n '200,320p'" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+   200	        return f"https://{value.strip('/')}"
+   201	
+   202	    @staticmethod
+   203	    def _normalize_url(
+   204	        href: str,
+   205	        subdomain: Optional[str],
+   206	    ) -> str:
+   207	        if not href:
+   208	            return ""
+   209	        if href.startswith("http://") or href.startswith("https://"):
+   210	            return href
+   211	        base = Crawler._normalize_subdomain(subdomain) or "https://"
+   212	        return urljoin(base + "/", href.lstrip("/"))
+   213	
+   214	
+   215	def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
+   216	    crawler = Crawler(session=session)
+   217	    return crawler.run(config)
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Preparing test file line references**
+exec
+bash -lc 'nl -ba agents/crawler/tests/test_crawler.py' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+     1	from pathlib import Path
+     2	from types import SimpleNamespace
+     3	import sys
+     4	
+     5	import pytest
+     6	
+     7	AGENT_DIR = Path(__file__).resolve().parents[1]
+     8	if str(AGENT_DIR) not in sys.path:
+     9	    sys.path.insert(0, str(AGENT_DIR))
+    10	
+    11	import crawler
+    12	from crawler import run_crawler
+    13	
+    14	
+    15	SAMPLE_HTML = """
+    16	<section>
+    17	  <article data-listing>
+    18	    <a class="listing-link" href="https://example.com/acme">
+    19	      <span class="listing-title">ACME Electric</span>
+    20	    </a>
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+
+thinking
+**Summarizing crawler module update and tests**
+
+I’m putting together a clear summary highlighting the path injection changes, the new crawler module features like `CrawlerBatch` and fallback shim for `requests_cache`, and the added tests verifying various behaviors. I’ll also note running pytest on the crawler tests and mention the adhesives aggregator, plus point out no changes elsewhere and possible natural next steps in the project.
+codex
+**Crawler Scaffold**
+- `agents/crawler/crawler.py:1-216` now exposes `Listing`/`CrawlerBatch` dataclasses plus a `Crawler` class that wires up a `requests_cache.CachedSession` (with a built-in shim when the dependency isn’t installed), iterates category/location/keyword batches, fetches pages via `requests`, and parses them with BeautifulSoup using configurable selectors, normalized URLs, and per-location limits before returning structured batches through `run_crawler`.
+
+**Tests**
+- `agents/crawler/tests/test_crawler.py:1-143` adds a pytest suite (with a helper to ensure the crawler module is importable) covering location batching/limits, selector-driven parsing, and confirmation that a cached session is created by default.
+
+**Verification**
+- `pytest agents/crawler/tests`
+
+Next ideas: (1) hook up Jinja-powered LLM field generation per task 11, or (2) implement the API posting workflow so batches flow into the Express ingestion endpoints.
+file update:
+diff --git a/agents/crawler/crawler.py b/agents/crawler/crawler.py
+index a29238dd156d162c3779a33dc614cb18fef1c86a..1dd992dbbb8a1f2c44a434014566e39606f26761
+--- a/agents/crawler/crawler.py
++++ b/agents/crawler/crawler.py
+@@ -1,4 +1,217 @@
+-def run_crawler(config):
+-    for target in config['targets']:
+-        print(f"Running crawler for category: {target['category']} in locations: {target.get('locations', [])}")
+-        # Implement scraping + LLM generation logic
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any, Dict, Iterable, List, Optional
++from urllib.parse import quote_plus, urljoin
++
++import requests
++from bs4 import BeautifulSoup
++
++try:
++    import requests_cache
++except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
++    from types import SimpleNamespace
++
++    class _ShimCachedSession(requests.Session):
++        """Minimal drop-in replacement when requests-cache is unavailable."""
++
++        def __init__(self, *args, **kwargs):
++            super().__init__()
++            self._cache: Dict[Any, requests.Response] = {}
++
++        def get(self, url: str, *args, **kwargs):
++            key = (url, tuple(sorted(kwargs.items())))
++            if key not in self._cache:
++                self._cache[key] = super().get(url, *args, **kwargs)
++            return self._cache[key]
++
++    requests_cache = SimpleNamespace(CachedSession=_ShimCachedSession)  # type: ignore[assignment]
++
++
++DEFAULT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
++DEFAULT_TIMEOUT = 15
++DEFAULT_SEARCH_TEMPLATE = (
++    "{subdomain}/search?category={category}&location={location}&keyword={keyword}"
++)
++DEFAULT_SELECTORS = {
++    "listing": "[data-listing], article",
++    "title": ".listing-title, h2, h3, a",
++    "link": "a",
++    "description": ".listing-description, p",
++}
++
++
++@dataclass
++class Listing:
++    title: str
++    url: str
++    snippet: str
++    extras: Dict[str, Any] = field(default_factory=dict)
++
++
++@dataclass
++class CrawlerBatch:
++    category: str
++    location: str
++    subdomain: Optional[str]
++    listings: List[Listing]
++    metadata: Dict[str, Any] = field(default_factory=dict)
++
++    def as_payload(self) -> Dict[str, Any]:
++        return {
++            "category": self.category,
++            "location": self.location,
++            "subdomain": self.subdomain,
++            "listings": [listing.__dict__ for listing in self.listings],
++            "metadata": self.metadata,
++        }
++
++
++class Crawler:
++    def __init__(
++        self,
++        session: Optional[requests.Session] = None,
++        cache_name: str = "crawler_cache",
++        expire_after: int = DEFAULT_CACHE_EXPIRE,
++        request_timeout: int = DEFAULT_TIMEOUT,
++    ) -> None:
++        self.session = session or requests_cache.CachedSession(
++            cache_name=cache_name,
++            backend="sqlite",
++            expire_after=expire_after,
++        )
++        self.request_timeout = request_timeout
++
++    def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
++        batches: List[CrawlerBatch] = []
++        for target in config.get("targets", []):
++            for location_batch in self._iter_location_batches(target):
++                listings = self.fetch_listings(target, location_batch)
++                limit = target.get("listings_per_location")
++                if isinstance(limit, int) and limit > 0:
++                    listings = listings[:limit]
++                meta = {
++                    "search_url": location_batch["search_url"],
++                    "keyword": location_batch.get("keyword"),
++                }
++                batches.append(
++                    CrawlerBatch(
++                        category=target.get("category", ""),
++                        location=location_batch["location"],
++                        subdomain=target.get("subdomain"),
++                        listings=listings,
++                        metadata=meta,
++                    )
++                )
++        return batches
++
++    def fetch_listings(
++        self,
++        target: Dict[str, Any],
++        location_batch: Dict[str, Any],
++    ) -> List[Listing]:
++        response = self.session.get(
++            location_batch["search_url"],
++            timeout=target.get("request_timeout", self.request_timeout),
++        )
++        response.raise_for_status()
++        return self.parse_listings(
++            response.text,
++            target,
++            location_batch["location"],
++            keyword=location_batch.get("keyword"),
++        )
++
++    def parse_listings(
++        self,
++        html: str,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str] = None,
++    ) -> List[Listing]:
++        selectors = {**DEFAULT_SELECTORS, **target.get("selectors", {})}
++        soup = BeautifulSoup(html, "html.parser")
++        elements = soup.select(selectors["listing"])
++        listings: List[Listing] = []
++
++        for element in elements:
++            title_node = element.select_one(selectors["title"])
++            link_node = element.select_one(selectors["link"])
++            desc_node = element.select_one(selectors["description"])
++
++            title = title_node.get_text(strip=True) if title_node else ""
++            url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
++            snippet = desc_node.get_text(strip=True) if desc_node else ""
++
++            if not title and not url:
++                continue
++
++            normalized_url = self._normalize_url(url, target.get("subdomain"))
++            listings.append(
++                Listing(
++                    title=title,
++                    url=normalized_url,
++                    snippet=snippet,
++                    extras={"location": location, "keyword": keyword},
++                )
++            )
++
++        return listings
++
++    def _iter_location_batches(
++        self,
++        target: Dict[str, Any],
++    ) -> Iterable[Dict[str, Any]]:
++        keywords = target.get("keywords") or [None]
++        for location in target.get("locations", []):
++            for keyword in keywords:
++                yield {
++                    "location": location,
++                    "keyword": keyword,
++                    "search_url": self.build_search_url(target, location, keyword),
++                }
++
++    def build_search_url(
++        self,
++        target: Dict[str, Any],
++        location: str,
++        keyword: Optional[str],
++    ) -> str:
++        template = target.get("search_url_template") or DEFAULT_SEARCH_TEMPLATE
++        substitutions = {
++            "subdomain": self._normalize_subdomain(target.get("subdomain")),
++            "category": quote_plus(target.get("category", "")),
++            "location": quote_plus(location),
++            "keyword": quote_plus(keyword or ""),
++        }
++        url = template.format(**substitutions)
++        if url.startswith("//"):
++            url = f"https:{url}"
++        if not url.startswith("http"):
++            url = f"https://{url.lstrip('/')}"
++        return url
++
++    @staticmethod
++    def _normalize_subdomain(value: Optional[str]) -> str:
++        if not value:
++            return ""
++        if value.startswith("http://") or value.startswith("https://"):
++            return value.rstrip("/")
++        return f"https://{value.strip('/')}"
++
++    @staticmethod
++    def _normalize_url(
++        href: str,
++        subdomain: Optional[str],
++    ) -> str:
++        if not href:
++            return ""
++        if href.startswith("http://") or href.startswith("https://"):
++            return href
++        base = Crawler._normalize_subdomain(subdomain) or "https://"
++        return urljoin(base + "/", href.lstrip("/"))
++
++
++def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
++    crawler = Crawler(session=session)
++    return crawler.run(config)
+diff --git a/agents/crawler/tests/test_crawler.py b/agents/crawler/tests/test_crawler.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c2688a7628e49fafaf7cc39a46da6deee7c6cb2
+--- /dev/null
++++ b/agents/crawler/tests/test_crawler.py
+@@ -0,0 +1,143 @@
++from pathlib import Path
++from types import SimpleNamespace
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++import crawler
++from crawler import run_crawler
++
++
++SAMPLE_HTML = """
++<section>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/acme">
++      <span class="listing-title">ACME Electric</span>
++    </a>
++    <p class="listing-description">Licensed and insured electricians.</p>
++  </article>
++  <article data-listing>
++    <a class="listing-link" href="https://example.com/brightsparks">
++      <span class="listing-title">Bright Sparks</span>
++    </a>
++    <p class="listing-description">24/7 emergency specialists.</p>
++  </article>
++</section>
++"""
++
++
++class DummyResponse:
++    def __init__(self, text: str) -> None:
++        self.text = text
++
++    def raise_for_status(self) -> None:
++        return None
++
++
++class DummySession:
++    def __init__(self, text: str) -> None:
++        self.text = text
++        self.calls = []
++
++    def get(self, url: str, timeout: float = 10) -> DummyResponse:
++        self.calls.append((url, timeout))
++        return DummyResponse(self.text)
++
++
++def test_run_crawler_batches_locations_and_limits_results() -> None:
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI", "Grand Rapids MI"],
++                "keywords": ["licensed"],
++                "listings_per_location": 1,
++            }
++        ],
++    }
++    dummy_session = DummySession(SAMPLE_HTML)
++
++    batches = run_crawler(config, session=dummy_session)
++
++    assert len(batches) == 2
++    assert {batch.location for batch in batches} == {"Holland MI", "Grand Rapids MI"}
++    assert all(batch.category == "Electricians" for batch in batches)
++    assert all(len(batch.listings) == 1 for batch in batches)
++    assert all("licensed" in call[0] for call in dummy_session.calls)
++
++
++def test_parse_listings_honors_custom_selectors() -> None:
++    html = """
++    <ul>
++      <li class="company">
++        <h2>Firm A</h2>
++        <a href="https://example.com/firm-a" data-role="landing">Visit</a>
++        <div class="details">Great service.</div>
++      </li>
++      <li class="company">
++        <h2>Firm B</h2>
++        <a href="https://example.com/firm-b" data-role="landing">Visit</a>
++        <div class="details">Family owned.</div>
++      </li>
++    </ul>
++    """
++    target = {
++        "category": "Consultants",
++        "locations": ["NYC"],
++        "selectors": {
++            "listing": ".company",
++            "title": "h2",
++            "link": "[data-role='landing']",
++            "description": ".details",
++        },
++    }
++    crawler_instance = crawler.Crawler(session=DummySession(html))
++
++    parsed = crawler_instance.parse_listings(html, target, "NYC")
++
++    assert len(parsed) == 2
++    assert parsed[0].title == "Firm A"
++    assert parsed[0].url == "https://example.com/firm-a"
++    assert parsed[0].snippet == "Great service."
++
++
++def test_run_crawler_uses_cached_session(monkeypatch: pytest.MonkeyPatch) -> None:
++    captured = {}
++
++    class FakeCachedSession:
++        def __init__(self, *args, **kwargs):
++            captured["args"] = args
++            captured["kwargs"] = kwargs
++
++        def get(self, *_args, **_kwargs):
++            return DummyResponse(SAMPLE_HTML)
++
++    monkeypatch.setattr(
++        crawler,
++        "requests_cache",
++        SimpleNamespace(CachedSession=FakeCachedSession),
++    )
++
++    config = {
++        "api_endpoint": "https://api.example.com",
++        "api_token": "token",
++        "targets": [
++            {
++                "category": "Electricians",
++                "subdomain": "electric.example.com",
++                "locations": ["Holland MI"],
++            }
++        ],
++    }
++
++    batches = run_crawler(config)
++
++    assert captured["kwargs"]["expire_after"] > 0
++    assert len(batches) == 1
+
+tokens used
+62,970
+**Crawler Scaffold**
+- `agents/crawler/crawler.py:1-216` now exposes `Listing`/`CrawlerBatch` dataclasses plus a `Crawler` class that wires up a `requests_cache.CachedSession` (with a built-in shim when the dependency isn’t installed), iterates category/location/keyword batches, fetches pages via `requests`, and parses them with BeautifulSoup using configurable selectors, normalized URLs, and per-location limits before returning structured batches through `run_crawler`.
+
+**Tests**
+- `agents/crawler/tests/test_crawler.py:1-143` adds a pytest suite (with a helper to ensure the crawler module is importable) covering location batching/limits, selector-driven parsing, and confirmation that a cached session is created by default.
+
+**Verification**
+- `pytest agents/crawler/tests`
+
+Next ideas: (1) hook up Jinja-powered LLM field generation per task 11, or (2) implement the API posting workflow so batches flow into the Express ingestion endpoints.
