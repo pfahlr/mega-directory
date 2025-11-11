@@ -1,0 +1,4953 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a723d-5bff-7f42-bc56-0490ccf32fce
+--------
+user
+Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+
+thinking
+**Preparing to inspect task file**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+
+thinking
+**Opening codex/TASKS file**
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+id: 4
+title: Implement Listing Ingestion API Endpoint
+description: Create an endpoint to receive scraped/AI-enriched listings. Validate
+  payloads, store inactive by default.
+dependencies:
+- 2
+- 3
+
+thinking
+**Investigating API server and testing approach**
+exec
+bash -lc 'ls api' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+Dockerfile
+index.js
+node_modules
+package.json
+package-lock.json
+test
+
+thinking
+**Opening index.js file**
+exec
+bash -lc "sed -n '1,200p' api/index.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const express = require('express');
+const jwt = require('jsonwebtoken');
+
+const DEFAULT_PORT = 3001;
+
+function resolveConfig(overrides = {}) {
+  const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+  const envPort = Number.isNaN(parsedPort) ? undefined : parsedPort;
+  const baseConfig = {
+    port: overrides.port ?? envPort ?? DEFAULT_PORT,
+    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+    adminJwtIssuer: overrides.adminJwtIssuer ?? process.env.ADMIN_JWT_ISSUER ?? 'mega-directory',
+    adminJwtAudience: overrides.adminJwtAudience ?? process.env.ADMIN_JWT_AUDIENCE ?? 'admin',
+    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN
+  };
+
+  const missing = [];
+  if (!baseConfig.adminJwtSecret) {
+    missing.push('ADMIN_JWT_SECRET');
+  }
+
+thinking
+**Preparing to implement ingestion endpoint**
+exec
+bash -lc 'ls api/test' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+server.test.js
+
+thinking
+**Reviewing test patterns**
+exec
+bash -lc "sed -n '1,200p' api/test/server.test.js" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+const test = require('node:test');
+const assert = require('node:assert');
+const jwt = require('jsonwebtoken');
+const { createServer } = require('..');
+
+const baseConfig = Object.freeze({
+  adminJwtSecret: 'test-admin-secret',
+  adminJwtIssuer: 'mega-directory',
+  adminJwtAudience: 'admin',
+  crawlerBearerToken: 'crawler-token'
+});
+
+function findRoute(app, method, path) {
+  const stack = (app._router && app._router.stack) || (app.router && app.router.stack) || [];
+  const methodName = method.toLowerCase();
+  return stack.find(
+    (layer) => layer.route && layer.route.path === path && layer.route.methods[methodName]
+  );
+}
+
+
+thinking
+**Searching for ingestion endpoint details**
+exec
+bash -lc 'rg -n "ingest" -n' in /var/home/rick/Development/mega-directory succeeded in 98ms:
+codex.yaml:12:    path: codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml
+db/migrations/001_core_schema.sql:127:  "ingestedAt" TIMESTAMPTZ DEFAULT NOW(),
+db/seed.ts:170:      ingestedAt: new Date(),
+db/schema.prisma:165:  ingestedAt       DateTime?        @default(now())
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:13:Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:35:bash -lc "sed -n '1,200p' codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:81:**Preparing to implement ingestion endpoint**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:112:**Searching for ingestion endpoint details**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:114:bash -lc 'rg -n "ingest" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/codex_run_2025-11-11_04-26-54.log:7:Tasks: 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/codex_run_2025-11-11_04-26-54.log:9:🟡 Executing task: 04_implement_listing_ingestion_api_endpoint
+codex/LOGS/tasklog_03_design_postgresql_schema_1762852701.log:345:04_implement_listing_ingestion_api_endpoint.yaml
+codex/LOGS/codex_run_2025-11-11_04-14-04.log:7:Tasks: 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/codex_run_2025-11-11_04-18-20.log:7:Tasks: 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/codex_run_2025-11-11_03-50-22.log:7:Tasks: 02_setup_api_server_with_express_and_jwt_auth 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls
+codex/TASKS/work_list:1:04_implement_listing_ingestion_api_endpoint.yaml
+
+thinking
+**Reviewing previous logs for guidance**
+exec
+bash -lc "sed -n '1,200p' codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a723d-5bff-7f42-bc56-0490ccf32fce
+--------
+user
+Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+
+thinking
+**Preparing to inspect task file**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+
+thinking
+**Continuing to review file contents**
+exec
+bash -lc "sed -n '200,400p' codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+
+
+thinking
+**Searching logs and documentation**
+exec
+bash -lc 'rg -n "crawler" -n' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+AGENTS.md:88:* Accept and validate new data from the crawler
+codex.yaml:24:    path: codex/TASKS/10_scaffold_python_crawler_agent.yaml
+codex.yaml:28:    path: codex/TASKS/12_post_listings_from_crawler_to_api_server.yaml
+codex.yaml:30:    path: codex/TASKS/13_create_json_crawler_configuration_schema.yaml
+docs/AGENTS.md:77:Serve listings to the frontend, receive data from crawler, and power the admin interface.
+docs/AGENTS.md:88:* Accept and validate new data from the crawler
+api/test/server.test.js:10:  crawlerBearerToken: 'crawler-token'
+api/test/server.test.js:116:test('crawler ping rejects invalid bearer token', () => {
+api/test/server.test.js:118:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:129:test('crawler ping accepts matching bearer token', () => {
+api/test/server.test.js:131:  const route = findRoute(app, 'post', '/v1/crawler/ping');
+api/test/server.test.js:134:    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` }
+api/test/server.test.js:139:  assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+api/test/server.test.js:144:    createServer({ crawlerBearerToken: 'only-crawler' });
+api/index.js:14:    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN
+api/index.js:21:  if (!baseConfig.crawlerBearerToken) {
+api/index.js:48:  app.post('/v1/crawler/ping', requireCrawlerToken(config), (_req, res) => {
+api/index.js:49:    res.json({ status: 'crawler-ok' });
+api/index.js:97:    if (!token || token !== config.crawlerBearerToken) {
+
+thinking
+**Checking database schema**
+exec
+bash -lc "sed -n '120,220p' db/schema.prisma" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  categoryId    Int
+  parentId      Int?
+
+  category   Category    @relation(fields: [categoryId], references: [id])
+  parent     Subcategory? @relation("SubcategoryChildren", fields: [parentId], references: [id])
+  children   Subcategory[] @relation("SubcategoryChildren")
+  listings   ListingSubcategory[]
+
+  @@unique([categoryId, slug])
+}
+
+model Listing {
+  id               Int              @id @default(autoincrement())
+  title            String
+  slug             String           @unique
+  tagline          String?
+  summary          String?
+  description      String?
+
+thinking
+**Checking for database connection**
+exec
+bash -lc 'rg -n "prisma" -n api' in /var/home/rick/Development/mega-directory exited 1 in 43ms:
+
+
+thinking
+**Searching for listings in API**
+exec
+bash -lc 'rg -n "Listing" -n api' in /var/home/rick/Development/mega-directory exited 1 in 47ms:
+
+
+thinking
+**Exploring API structure and dependencies**
+exec
+bash -lc 'cat api/package.json' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+{
+  "name": "mega-directory-api",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
+
+thinking
+**Investigating data storage approach**
+exec
+bash -lc "sed -n '1,200p' README.md" in /var/home/rick/Development/mega-directory succeeded in 54ms:
+# Mega Directory
+
+Mega Directory is a server-rendered directory listing platform built with Astro, Express, and Prisma. It supports dynamic subdomains, AI-generated content enrichment, and moderation workflows.
+
+## Features
+
+- 🛰️ Subdomain-based regional directories (e.g. electricians.nyc.example.com)
+- ⚡ Express API with JWT-based auth
+- 🧠 AI agents for crawling, enrichment, and moderation (via OpenRouter)
+- 🧩 Admin dashboard for approving or rejecting listings
+- 💅 Tailwind CSS and minimal JavaScript for accessibility and performance
+- 🐳 Dockerized and deployable behind Cloudflare with SSR
+
+## Tech Stack
+
+- Astro (SSR)
+- Express.js
+- Prisma + PostgreSQL
+- Tailwind CSS
+- OpenRouter (AI Agents)
+
+thinking
+**Planning listing ingestion endpoint**
+exec
+bash -lc 'rg -n "ingestion" -n -g"*"' in /var/home/rick/Development/mega-directory exited 124 in 10.07s:
+codex.yaml:12:    path: codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:13:Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:35:bash -lc "sed -n '1,200p' codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:81:**Preparing to implement ingestion endpoint**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:112:**Searching for ingestion endpoint details**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:115:codex.yaml:12:    path: codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:119:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:13:Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:120:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:35:bash -lc "sed -n '1,200p' codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:121:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:81:**Preparing to implement ingestion endpoint**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:122:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:112:**Searching for ingestion endpoint details**
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:123:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:114:bash -lc 'rg -n "ingest" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:124:codex/LOGS/codex_run_2025-11-11_04-26-54.log:7:Tasks: 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:125:codex/LOGS/codex_run_2025-11-11_04-26-54.log:9:🟡 Executing task: 04_implement_listing_ingestion_api_endpoint
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:126:codex/LOGS/tasklog_03_design_postgresql_schema_1762852701.log:345:04_implement_listing_ingestion_api_endpoint.yaml
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:127:codex/LOGS/codex_run_2025-11-11_04-14-04.log:7:Tasks: 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:128:codex/LOGS/codex_run_2025-11-11_04-18-20.log:7:Tasks: 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:129:codex/LOGS/codex_run_2025-11-11_03-50-22.log:7:Tasks: 02_setup_api_server_with_express_and_jwt_auth 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:130:codex/TASKS/work_list:1:04_implement_listing_ingestion_api_endpoint.yaml
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:135:bash -lc "sed -n '1,200p' codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:148:Implement the functionality described in codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml, then verify with any available tests.
+
+thinking
+**Checking documentation for API specs**
+exec
+bash -lc 'ls docs' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+AGENTS.md
+
+thinking
+**Investigating ingestion requirements**
+exec
+bash -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Opening task 02 for review**
+exec
+bash -lc "sed -n '1,160p' codex/TASKS/02_setup_api_server_with_express_and_jwt_auth.yaml" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+id: 2
+title: Setup API Server with Express and JWT Auth
+description: Create a Node.js Express API server with JWT-based authentication for
+  admin access and a bearer token for crawler communication.
+dependencies: []
+
+thinking
+**Checking for next task**
+exec
+bash -lc "sed -n '1,160p' codex/TASKS/03_design_postgresql_schema.yaml" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+id: 3
+title: Design PostgreSQL Schema
+description: Define tables for directories, listings, subcategories, featured slots,
+  users, and LLM field configuration. Use SQL migrations.
+dependencies: []
+
+thinking
+**Designing ingestion endpoint and storage**
+
+I'm sketching out a minimal RESTful POST endpoint at `/v1/crawler/listings` that requires a crawler token and accepts a JSON payload with fields like title, slug, and categoryId. Since there's no database, I'll store listings in-memory with a default 'PENDING' status, and plan to validate inputs carefully. I'll also explore the existing schema enums to align status values properly. Let's get tests going first to verify this setup!
+exec
+bash -lc 'rg -n "enum ListingStatus" -n db/schema.prisma' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+10:enum ListingStatus {
+exec
+bash -lc "sed -n '1,60p' db/schema.prisma" in /var/home/rick/Development/mega-directory succeeded in 51ms:
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  INACTIVE
+}
+
+enum DirectoryStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+
+thinking
+**Planning new listing ingestion endpoint**
+
+I'm sorting out how to create a POST endpoint to receive and store inactive listings without a DB by building an in-memory store with autogenerated IDs and timestamps. I’ll design it to accept single or batch listings and prepare validation rules while considering existing middleware and test-first development. I want to look at the crawler agent for sample listing data to guide field requirements.
+exec
+bash -lc 'ls agents/crawler' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+config
+crawler.py
+main.py
+targets.example.json
+
+thinking
+**Inspecting example targets file**
+exec
+bash -lc 'cat agents/crawler/targets.example.json' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+{
+  "api_endpoint": "http://localhost:3001/api/new-listings",
+  "api_token": "changeme",
+  "targets": [
+    {
+      "category": "Real Estate",
+      "locations": ["New York", "San Francisco"],
+      "subdomain": "realestate.local",
+      "keywords": ["ocean view", "downtown"],
+      "listings_per_location": 50,
+      "fields": {
+        "title": { "source": "scrape" },
+        "price": { "source": "scrape" },
+        "description": {
+          "source": "ai",
+          "provider": "openai",
+          "model": "gpt-4",
+          "prompt_template": "Write a friendly listing description for a {{ category }} in {{ location }}. Details: {{ details }}."
+        }
+      }
+
+thinking
+**Searching for API documentation**
+exec
+bash -lc 'rg -n "new-listings" -n' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+agents/crawler/targets.example.json:2:  "api_endpoint": "http://localhost:3001/api/new-listings",
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:392:  "api_endpoint": "http://localhost:3001/api/new-listings",
+codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:415:bash -lc 'rg -n "new-listings" -n' in /var/home/rick/Development/mega-directory
+agents/crawler/config/targets.json:2:  "api_endpoint": "http://localhost:3000/api/new-listings",
+
+thinking
+**Checking crawler config file**
+exec
+bash -lc 'cat agents/crawler/config/targets.json' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+{
+  "api_endpoint": "http://localhost:3000/api/new-listings",
+  "api_token": "YOUR_API_TOKEN_HERE",
+  "targets": [
+    {
+      "category": "Electricians",
+      "locations": [
+        "Holland MI"
+      ],
+      "subdomain": "electricians.example.com",
+      "keywords": [
+        "licensed",
+        "residential",
+        "commercial"
+      ],
+      "listings_per_location": 50,
+      "fields": {
+        "title": {
+          "source": "scrape"
+        },
+
+thinking
+**Designing ingestion API and test plan**
+
+I’m mapping out a new ingestion endpoint for listings, aiming for a consistent, restful route like `/v1/crawler/listings` despite crawler config using `/api/new-listings`. I’m planning to implement validation, batch support, default inactive status, and store listings in a modular ingestion store hooked to `app.locals`. Next, I’ll follow TDD with tests for auth, payload validation, and storage, and outline a multi-step plan before coding. Let’s explore this carefully!
+Plan update
+Need structured approach for new ingestion endpoint with validation and storage.
+  → Expand server tests to cover crawler listing ingestion behavior and edge cases
+  • Implement ingestion route, validation helpers, and in-memory store to satisfy tests
+  • Run API test suite and finalize results
+
+
+thinking
+**Designing ingestion tests and validation logic**
+thinking
+**Planning detailed ingestion endpoint tests**
+
+I'm laying out specific test cases for the crawler listing ingestion route, including verifying auth token rejection, payload validation for single and multiple listings, slug auto-generation, response codes, and storing raw payloads with proper timestamps. I’m also preparing to update the test helper `createRequest` to accept a body so POST requests can be properly tested. This groundwork will make test implementation more manageable and thorough.
+file update
+M /var/home/rick/Development/mega-directory/api/test/server.test.js
+@@ -20,3 +20,3 @@
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+@@ -28,2 +28,3 @@
+     headers: normalized,
++    body,
+     get(name) {
+@@ -37,2 +38,13 @@
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M api/test/server.test.js
+file update:
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..1197a4b22745364bc5737692b51a5ea04b821a47
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+
+file update:
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..1197a4b22745364bc5737692b51a5ea04b821a47
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+
+
+thinking
+**Preparing to add tests for builder usage**
+file update
+M /var/home/rick/Development/mega-directory/api/test/server.test.js
+@@ -153,2 +153,98 @@
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M api/test/server.test.js
+file update:
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+file update:
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+
+thinking
+**Implementing listing ingestion API with validation and storage**
+
+There's a lot going on here! I'm preparing to add a new POST route `/v1/crawler/listings` in the Express server that accepts listing payloads, normalizes various input forms (object, array), validates required fields like title, slug, and categorySlug, and sanitizes optional fields such as URLs, emails, and location data. I plan to create an in-memory listing store with `insert` and `all` methods to manage entries with autogenerated IDs and timestamps. The route will authenticate requests, validate listings individually, collect errors, and respond accordingly with success or error status and details. This approach follows TDD but I'll implement the functionality before running tests to avoid premature failures. I'm thinking carefully about preserving immutability, handling edge cases like empty inputs, and ensuring consistent slug generation and field sanitization. Next, I'll add the helpers and store, then integrate the route inside `createServer`.
+thinking
+**Adding constants, route, and helper functions into server setup**
+
+I'm focusing on augmenting the `api/index.js` file by inserting important constants for listing defaults, initializing the ingestion store inside `createServer`, and registering the new POST `/v1/crawler/listings` route with authentication. I'll follow that by adding multiple helper functions at the bottom for payload normalization, validation, slug generation, field sanitization, email and URL checking, location sanitation, and the in-memory listing store implementation. These changes stitch together the server's new listing ingestion capability neatly and support the validation steps prepared earlier.
+file update
+M /var/home/rick/Development/mega-directory/api/index.js
+@@ -4,2 +4,4 @@
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+@@ -36,2 +38,3 @@
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+@@ -51,2 +54,8 @@
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+@@ -120 +129,216 @@
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+apply_patch(auto_approved=true) exited 0 in 7ms:
+Success. Updated the following files:
+M api/index.js
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Verifying data integrity and testing setup**
+
+I'm double-checking that all essential functions and variables like `createListingStore`, `slugify`, and `normalizeListingBatch` are properly defined and behave as expected. I’m making sure the data flows through the store correctly with sanitized inputs and expected outputs. After confirming these details, I plan to run the test suite using `npm test` in the `api` directory to verify everything works smoothly with the new route and validations added.
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory/api succeeded in 654ms:
+
+> mega-directory-api@0.1.0 test
+> node --test
+
+TAP version 13
+# Subtest: test/server.test.js
+ok 1 - test/server.test.js
+  ---
+  duration_ms: 264.576427
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 285.468446
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Updating plan statuses**
+Plan update
+  ✓ Expand server tests to cover crawler listing ingestion behavior and edge cases
+  ✓ Implement ingestion route, validation helpers, and in-memory store to satisfy tests
+  ✓ Run API test suite and finalize results
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Preparing detailed final response**
+exec
+bash -lc "nl -ba api/index.js | sed -n '1,200p'" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+     1	const express = require('express');
+     2	const jwt = require('jsonwebtoken');
+     3	
+     4	const DEFAULT_PORT = 3001;
+     5	const DEFAULT_LISTING_STATUS = 'INACTIVE';
+     6	const MAX_SLUG_LENGTH = 80;
+     7	
+     8	function resolveConfig(overrides = {}) {
+     9	  const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+    10	  const envPort = Number.isNaN(parsedPort) ? undefined : parsedPort;
+    11	  const baseConfig = {
+    12	    port: overrides.port ?? envPort ?? DEFAULT_PORT,
+    13	    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+    14	    adminJwtIssuer: overrides.adminJwtIssuer ?? process.env.ADMIN_JWT_ISSUER ?? 'mega-directory',
+    15	    adminJwtAudience: overrides.adminJwtAudience ?? process.env.ADMIN_JWT_AUDIENCE ?? 'admin',
+    16	    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN
+    17	  };
+    18	
+    19	  const missing = [];
+    20	  if (!baseConfig.adminJwtSecret) {
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Continuing to review reference lines**
+exec
+bash -lc "nl -ba api/index.js | sed -n '200,400p'" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+   200	  if (!slug) {
+   201	    errors.push('slug is required or must be derivable from title');
+   202	  }
+   203	
+   204	  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
+   205	  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
+   206	  if (!categorySlug) {
+   207	    errors.push('categorySlug is required');
+   208	  }
+   209	
+   210	  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
+   211	  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
+   212	  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
+   213	  const summary = sanitizeNullableString(payload.summary);
+   214	  const tagline = sanitizeNullableString(payload.tagline);
+   215	  const notes = sanitizeNullableString(payload.notes);
+   216	  const sourceName = sanitizeNullableString(payload.sourceName);
+   217	  const location = sanitizeLocation(payload.location);
+   218	
+   219	  if (errors.length > 0) {
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Locating test line numbers**
+exec
+bash -lc "nl -ba api/test/server.test.js | sed -n '1,240p'" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+     1	const test = require('node:test');
+     2	const assert = require('node:assert');
+     3	const jwt = require('jsonwebtoken');
+     4	const { createServer } = require('..');
+     5	
+     6	const baseConfig = Object.freeze({
+     7	  adminJwtSecret: 'test-admin-secret',
+     8	  adminJwtIssuer: 'mega-directory',
+     9	  adminJwtAudience: 'admin',
+    10	  crawlerBearerToken: 'crawler-token'
+    11	});
+    12	
+    13	function findRoute(app, method, path) {
+    14	  const stack = (app._router && app._router.stack) || (app.router && app.router.stack) || [];
+    15	  const methodName = method.toLowerCase();
+    16	  return stack.find(
+    17	    (layer) => layer.route && layer.route.path === path && layer.route.methods[methodName]
+    18	  );
+    19	}
+    20	
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Pausing to review more lines**
+exec
+bash -lc "nl -ba api/test/server.test.js | sed -n '240,400p'" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+   240	  assert.strictEqual(res.statusCode, 400);
+   241	  assert.strictEqual(res.body.error, 'Invalid listing payload');
+   242	  assert.ok(Array.isArray(res.body.details));
+   243	  assert.strictEqual(res.body.details.length, 2);
+   244	  assert.strictEqual(res.body.details[0].index, 0);
+   245	  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
+   246	  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
+   247	  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
+   248	});
+   249	
+   250	test('createServer enforces required configuration', () => {
+   251	  assert.throws(() => {
+   252	    createServer({ crawlerBearerToken: 'only-crawler' });
+   253	  }, /Missing required config value/);
+   254	
+   255	  assert.throws(() => {
+   256	    createServer({ adminJwtSecret: 'only-admin' });
+   257	  }, /Missing required config value/);
+   258	});
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+
+thinking
+**Summarizing final response structure and content**
+
+I'll organize the summary to clearly explain the new crawler ingestion endpoint with file and line references for key features and tests, mention running `npm test`, and offer a brief next steps list including wiring the store to a database and extending crawler configs. The response will use bulleted and numbered lists with separate sections for clarity.
+codex
+Added a crawler ingestion workflow so scraped/LLM-enriched listings can be queued for moderation.
+
+**Ingestion Endpoint**
+- Initialize an in-memory listing store when the server boots and expose POST `/v1/crawler/listings` behind the crawler bearer token, returning 202 Accepted with sanitized metadata for each queued record (`api/index.js:34`, `api/index.js:55`, `api/index.js:131`).
+- Normalize batch payloads, enforce required fields, slugify titles/categories, validate optional URLs/emails, capture raw payloads, and always store records with `status: INACTIVE` plus timestamps for future processing (`api/index.js:174`, `api/index.js:187`, `api/index.js:241`).
+- Expanded the test harness to support request bodies and added coverage for auth checks, successful single/batch ingestions, persistence metadata, and validation error reporting (`api/test/server.test.js:21`, `api/test/server.test.js:154`).
+- Tests: `npm test` (`api` workspace).
+
+**Next Steps**
+1. Swap the in-memory store for a Prisma/Postgres implementation once the DB wiring task lands so ingested listings persist across restarts.
+2. Align the crawler configuration to target `/v1/crawler/listings` and consider an integration test that exercises the route via HTTP rather than direct middleware calls.
+file update:
+diff --git a/api/index.js b/api/index.js
+index 0a1f3116ad79342ae2f058272f3027ecd60f6eb7..bb36d69040d50d969fcb5a8b7b3af1d6336779ab
+--- a/api/index.js
++++ b/api/index.js
+@@ -2,6 +2,8 @@
+ const jwt = require('jsonwebtoken');
+ 
+ const DEFAULT_PORT = 3001;
++const DEFAULT_LISTING_STATUS = 'INACTIVE';
++const MAX_SLUG_LENGTH = 80;
+ 
+ function resolveConfig(overrides = {}) {
+   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+@@ -34,6 +36,7 @@
+   const app = express();
+ 
+   app.locals.config = config;
++  app.locals.ingestionStore = createListingStore();
+ 
+   app.use(express.json());
+ 
+@@ -49,6 +52,12 @@
+     res.json({ status: 'crawler-ok' });
+   });
+ 
++  app.post(
++    '/v1/crawler/listings',
++    requireCrawlerToken(config),
++    createListingIngestionHandler(app)
++  );
++
+   return app;
+ }
+ 
+@@ -118,3 +127,218 @@
+ module.exports = {
+   createServer
+ };
++
++function createListingIngestionHandler(app) {
++  return (req, res) => {
++    const payloads = normalizeListingBatch(req.body);
++    if (!payloads) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
++    }
++    if (payloads.length === 0) {
++      return res
++        .status(400)
++        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
++    }
++
++    const validations = payloads.map((payload) => validateListingPayload(payload));
++    const invalidEntries = validations
++      .map((result, index) => ({ index, result }))
++      .filter((item) => !item.result.valid)
++      .map((item) => ({ index: item.index, messages: item.result.errors }));
++
++    if (invalidEntries.length > 0) {
++      return res.status(400).json({ error: 'Invalid listing payload', details: invalidEntries });
++    }
++
++    const store = app.locals.ingestionStore;
++    const savedRecords = validations.map((validation, index) =>
++      store.insert(validation.value, payloads[index])
++    );
++
++    return res.status(202).json({
++      ingestedCount: savedRecords.length,
++      ingested: savedRecords.map(({ id, title, slug, status, categorySlug, ingestedAt }) => ({
++        id,
++        title,
++        slug,
++        status,
++        categorySlug,
++        ingestedAt
++      }))
++    });
++  };
++}
++
++function normalizeListingBatch(payload) {
++  if (Array.isArray(payload)) {
++    return payload.slice();
++  }
++  if (isPlainObject(payload) && Array.isArray(payload.listings)) {
++    return payload.listings.slice();
++  }
++  if (isPlainObject(payload)) {
++    return [payload];
++  }
++  return null;
++}
++
++function validateListingPayload(payload) {
++  const errors = [];
++  if (!isPlainObject(payload)) {
++    return { valid: false, errors: ['Each listing must be an object'] };
++  }
++
++  const title = sanitizeNullableString(payload.title);
++  if (!title) {
++    errors.push('title is required');
++  }
++
++  const slugCandidate = sanitizeNullableString(payload.slug) || title || '';
++  const slug = slugify(slugCandidate);
++  if (!slug) {
++    errors.push('slug is required or must be derivable from title');
++  }
++
++  const categorySlugInput = sanitizeNullableString(payload.categorySlug);
++  const categorySlug = categorySlugInput ? slugify(categorySlugInput) : '';
++  if (!categorySlug) {
++    errors.push('categorySlug is required');
++  }
++
++  const websiteUrl = optionalUrl(payload.websiteUrl, 'websiteUrl', errors);
++  const sourceUrl = optionalUrl(payload.sourceUrl, 'sourceUrl', errors);
++  const contactEmail = optionalEmail(payload.contactEmail, 'contactEmail', errors);
++  const summary = sanitizeNullableString(payload.summary);
++  const tagline = sanitizeNullableString(payload.tagline);
++  const notes = sanitizeNullableString(payload.notes);
++  const sourceName = sanitizeNullableString(payload.sourceName);
++  const location = sanitizeLocation(payload.location);
++
++  if (errors.length > 0) {
++    return { valid: false, errors };
++  }
++
++  return {
++    valid: true,
++    value: {
++      title,
++      slug,
++      categorySlug,
++      websiteUrl,
++      sourceUrl,
++      contactEmail,
++      summary,
++      tagline,
++      notes,
++      sourceName,
++      location
++    }
++  };
++}
++
++function createListingStore() {
++  let nextId = 1;
++  const listings = [];
++  return {
++    insert(listing, rawPayload) {
++      const record = {
++        id: nextId++,
++        title: listing.title,
++        slug: listing.slug,
++        categorySlug: listing.categorySlug,
++        status: DEFAULT_LISTING_STATUS,
++        websiteUrl: listing.websiteUrl ?? null,
++        sourceUrl: listing.sourceUrl ?? null,
++        sourceName: listing.sourceName ?? null,
++        contactEmail: listing.contactEmail ?? null,
++        summary: listing.summary ?? null,
++        tagline: listing.tagline ?? null,
++        notes: listing.notes ?? null,
++        location: listing.location ?? null,
++        ingestedAt: new Date().toISOString(),
++        rawPayload: rawPayload ?? null
++      };
++      listings.push(record);
++      return record;
++    },
++    all() {
++      return listings.slice();
++    }
++  };
++}
++
++function slugify(value, maxLength = MAX_SLUG_LENGTH) {
++  if (typeof value !== 'string') {
++    return '';
++  }
++  const normalized = value
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/-{2,}/g, '-')
++    .replace(/^-+|-+$/g, '')
++    .slice(0, maxLength);
++  return normalized;
++}
++
++function isPlainObject(value) {
++  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
++}
++
++function sanitizeNullableString(value) {
++  if (typeof value !== 'string') {
++    return null;
++  }
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : null;
++}
++
++function optionalUrl(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++  try {
++    const parsed = new URL(value.trim());
++    return parsed.toString();
++  } catch (_err) {
++    errors.push(`${fieldName} must be a valid URL string`);
++    return null;
++  }
++}
++
++function optionalEmail(value, fieldName, errors) {
++  if (value === undefined || value === null) {
++    return null;
++  }
++  if (typeof value !== 'string' || !value.trim()) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  const email = value.trim();
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  if (!emailRegex.test(email)) {
++    errors.push(`${fieldName} must be a valid email address`);
++    return null;
++  }
++  return email.toLowerCase();
++}
++
++function sanitizeLocation(value) {
++  if (!isPlainObject(value)) {
++    return null;
++  }
++  const fields = ['addressLine1', 'addressLine2', 'city', 'region', 'postalCode', 'country'];
++  const location = {};
++  fields.forEach((field) => {
++    const sanitized = sanitizeNullableString(value[field]);
++    if (sanitized) {
++      location[field] = sanitized;
++    }
++  });
++  return Object.keys(location).length > 0 ? location : null;
++}
+diff --git a/api/test/server.test.js b/api/test/server.test.js
+index bafbfc3903bca6f754d711eb4a30ff809c26b7b8..726ee4ff12db9c40f1190e4cbc2efbc30fdf8f59
+--- a/api/test/server.test.js
++++ b/api/test/server.test.js
+@@ -18,7 +18,7 @@
+   );
+ }
+ 
+-function createRequest({ method = 'GET', headers = {} } = {}) {
++function createRequest({ method = 'GET', headers = {}, body } = {}) {
+   const normalized = Object.fromEntries(
+     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])
+   );
+@@ -26,6 +26,7 @@
+   return {
+     method,
+     headers: normalized,
++    body,
+     get(name) {
+       return this.headers[name.toLowerCase()];
+     },
+@@ -35,6 +36,17 @@
+   };
+ }
+ 
++function buildListingPayload(overrides = {}) {
++  return {
++    title: 'Acme Electric Co.',
++    categorySlug: 'electricians',
++    websiteUrl: 'https://acme.test',
++    sourceUrl: 'https://source.test/acme',
++    notes: 'LLM-enriched payload',
++    ...overrides
++  };
++}
++
+ function createResponse() {
+   return {
+     statusCode: 200,
+@@ -139,6 +151,102 @@
+   assert.deepStrictEqual(res.body, { status: 'crawler-ok' });
+ });
+ 
++test('crawler listing ingestion rejects missing bearer token', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    body: buildListingPayload()
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 401);
++  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
++});
++
++test('crawler listing ingestion stores sanitized listings as inactive', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: buildListingPayload({ slug: 'ACME Electric!!', summary: 'Trusted' })
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 1);
++  assert.ok(Array.isArray(res.body.ingested));
++  const [storedSummary] = res.body.ingested;
++  assert.strictEqual(storedSummary.status, 'INACTIVE');
++  assert.strictEqual(storedSummary.title, 'Acme Electric Co.');
++  assert.strictEqual(storedSummary.slug, 'acme-electric');
++
++  const store = app.locals.ingestionStore;
++  const all = store.all();
++  assert.strictEqual(all.length, 1);
++  assert.strictEqual(all[0].status, 'INACTIVE');
++  assert.strictEqual(all[0].slug, 'acme-electric');
++  assert.strictEqual(all[0].title, 'Acme Electric Co.');
++  assert.strictEqual(all[0].rawPayload.title, 'Acme Electric Co.');
++  assert.ok(Date.parse(all[0].ingestedAt));
++});
++
++test('crawler listing ingestion accepts batches and reports metadata', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: 'Bright Builders', categorySlug: 'builders' }),
++      buildListingPayload({ title: 'Northern Lights', categorySlug: 'photographers', slug: null })
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 202);
++  assert.strictEqual(res.body.ingestedCount, 2);
++  assert.strictEqual(res.body.ingested[0].title, 'Bright Builders');
++  assert.strictEqual(res.body.ingested[0].slug, 'bright-builders');
++  assert.strictEqual(res.body.ingested[1].slug, 'northern-lights');
++  assert.ok(Date.parse(res.body.ingested[1].ingestedAt));
++
++  const records = app.locals.ingestionStore.all();
++  assert.strictEqual(records.length, 2);
++  assert.strictEqual(records[0].categorySlug, 'builders');
++  assert.strictEqual(records[1].categorySlug, 'photographers');
++});
++
++test('crawler listing ingestion validates payload shape and reports errors', () => {
++  const app = createServer(baseConfig);
++  const route = findRoute(app, 'post', '/v1/crawler/listings');
++  const payload = {
++    listings: [
++      buildListingPayload({ title: '  ', categorySlug: 'electricians' }),
++      { title: 'Missing category' }
++    ]
++  };
++  const req = createRequest({
++    method: 'POST',
++    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` },
++    body: payload
++  });
++  const res = runRoute(route, req, createResponse());
++
++  assert.strictEqual(res.statusCode, 400);
++  assert.strictEqual(res.body.error, 'Invalid listing payload');
++  assert.ok(Array.isArray(res.body.details));
++  assert.strictEqual(res.body.details.length, 2);
++  assert.strictEqual(res.body.details[0].index, 0);
++  assert.ok(res.body.details[0].messages.some((msg) => msg.includes('title')));
++  assert.ok(res.body.details[1].messages.some((msg) => msg.includes('categorySlug')));
++  assert.strictEqual(app.locals.ingestionStore.all().length, 0);
++});
++
+ test('createServer enforces required configuration', () => {
+   assert.throws(() => {
+     createServer({ crawlerBearerToken: 'only-crawler' });
+
+tokens used
+118,015
+Added a crawler ingestion workflow so scraped/LLM-enriched listings can be queued for moderation.
+
+**Ingestion Endpoint**
+- Initialize an in-memory listing store when the server boots and expose POST `/v1/crawler/listings` behind the crawler bearer token, returning 202 Accepted with sanitized metadata for each queued record (`api/index.js:34`, `api/index.js:55`, `api/index.js:131`).
+- Normalize batch payloads, enforce required fields, slugify titles/categories, validate optional URLs/emails, capture raw payloads, and always store records with `status: INACTIVE` plus timestamps for future processing (`api/index.js:174`, `api/index.js:187`, `api/index.js:241`).
+- Expanded the test harness to support request bodies and added coverage for auth checks, successful single/batch ingestions, persistence metadata, and validation error reporting (`api/test/server.test.js:21`, `api/test/server.test.js:154`).
+- Tests: `npm test` (`api` workspace).
+
+**Next Steps**
+1. Swap the in-memory store for a Prisma/Postgres implementation once the DB wiring task lands so ingested listings persist across restarts.
+2. Align the crawler configuration to target `/v1/crawler/listings` and consider an integration test that exercises the route via HTTP rather than direct middleware calls.
