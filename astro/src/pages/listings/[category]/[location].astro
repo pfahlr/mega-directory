@@ -1,0 +1,65 @@
+---
+import DirectoryPage from '../../../components/DirectoryPage.astro';
+import { directoryCatalog } from '../../../data/directory-catalog.js';
+import {
+  findDirectoryEntry,
+  sortListingsByScore,
+  buildSubcategoryFilterNav,
+  segmentFeaturedListings,
+} from '../../../lib/directory-helpers.js';
+
+export function getStaticPaths() {
+  return directoryCatalog.map((directory) => ({
+    params: {
+      category: directory.category.slug,
+      location: directory.location.slug,
+    },
+  }));
+}
+
+const { category, location } = Astro.params;
+const directory = findDirectoryEntry(directoryCatalog, category, location);
+
+if (!directory) {
+  throw new Error(`Directory not found for ${category}/${location}`);
+}
+
+const sortedListings = sortListingsByScore(directory.listings);
+const { hero: featuredHero, tierTwo: featuredTierTwo, remainingListings } =
+  segmentFeaturedListings(directory);
+const averageScore =
+  sortedListings.length === 0
+    ? '0.0'
+    : (
+        sortedListings.reduce(
+          (sum, listing) => sum + (typeof listing.score === 'number' ? listing.score : 0),
+          0,
+        ) / sortedListings.length
+      ).toFixed(1);
+
+const navItems = [
+  { href: '#hero', label: 'Overview' },
+  { href: '#listings', label: 'Listings' },
+  { href: '#review-notes', label: 'Notes' },
+];
+
+const heroStats = [
+  { label: 'Listings live', value: sortedListings.length },
+  { label: 'Avg score', value: averageScore },
+  { label: 'Coverage', value: directory.stats?.coverage ?? directory.location.name },
+  { label: 'Response SLA', value: directory.stats?.responseSla ?? '—' },
+];
+
+const subcategoryNav = buildSubcategoryFilterNav(directory);
+---
+
+<DirectoryPage
+  directory={directory}
+  navItems={navItems}
+  heroStats={heroStats}
+  featuredHero={featuredHero}
+  featuredTierTwo={featuredTierTwo}
+  listings={remainingListings}
+  totalListings={sortedListings.length}
+  subcategoryNav={subcategoryNav}
+/>
