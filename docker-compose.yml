@@ -5,37 +5,73 @@ services:
     build:
       context: ./api
     ports:
-      - "3001:3001"
-    env_file:
-      - ./api/.env
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
+      ADMIN_JWT_SECRET: local-dev-secret
+      ADMIN_LOGIN_EMAIL: admin@example.com
+      ADMIN_LOGIN_PASSCODE: localpass
+      CRAWLER_BEARER_TOKEN: crawler-dev-token
+      ADMIN_TOKEN_TTL_SECONDS: 900
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     volumes:
       - ./api:/app
+    networks:
+      - app-network
 
   astro:
     build:
       context: ./astro
     ports:
-      - "3000:3000"
-    env_file:
-      - ./astro/.env
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      API_BASE_URL: http://api:3001
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     volumes:
       - ./astro:/app
+    networks:
+      - app-network
 
   db:
     image: postgres:17
     restart: always
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mega_directory
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - app-network
 
 volumes:
   pgdata:
+
+networks:
+  app-network:
