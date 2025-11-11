@@ -1,0 +1,73 @@
+🚀 Codex Runner @ Tue Nov 11 06:14:32 AM EST 2025
+Working Dir: /home/rick/Development/mega-directory
+Task Dir: codex/TASKS
+Log Dir: codex/LOGS
+Auto-Commit: true
+Config File: ./codex.toml
+Tasks: 15_admin_ui:_listing_review_table 16_admin_ui:_category_location_approval 17_admin_ui:_seo_field_editor 18_deploy_web_+_api_to_railway 19_setup_logging,_healthchecks_and_monitoring 20_verify_dev_environment_bootstraps_cleanly 21_dockerize_api_server 22_dockerize_astro_frontend
+===========================================
+🟡 Executing task: 15_admin_ui:_listing_review_table
+✅ Task 15_admin_ui:_listing_review_table completed successfully.
+📝 Committing files for 15_admin_ui:_listing_review_table...
+[main 606eff5] Codex Task: 15_admin_ui:_listing_review_table
+ 5 files changed, 385 insertions(+), 57 deletions(-)
+📝 Commit created: 606eff5c308e95843200992ee464a1e1f83ee657
+🧯 Rollback with: git reset --soft 606eff5c308e95843200992ee464a1e1f83ee657^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 16_admin_ui:_category_location_approval
+✅ Task 16_admin_ui:_category_location_approval completed successfully.
+📝 Committing files for 16_admin_ui:_category_location_approval...
+[main 003b491] Codex Task: 16_admin_ui:_category_location_approval
+ 3 files changed, 18 insertions(+)
+📝 Commit created: 003b491a0e51665abb8a4995229837ba87d6969a
+🧯 Rollback with: git reset --soft 003b491a0e51665abb8a4995229837ba87d6969a^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 17_admin_ui:_seo_field_editor
+✅ Task 17_admin_ui:_seo_field_editor completed successfully.
+📝 Committing files for 17_admin_ui:_seo_field_editor...
+[main 160e383] Codex Task: 17_admin_ui:_seo_field_editor
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+📝 Commit created: 160e3836c4f71046e93287ba7381310ada0f5659
+🧯 Rollback with: git reset --soft 160e3836c4f71046e93287ba7381310ada0f5659^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 18_deploy_web_+_api_to_railway
+✅ Task 18_deploy_web_+_api_to_railway completed successfully.
+📝 Committing files for 18_deploy_web_+_api_to_railway...
+[main 96cb238] Codex Task: 18_deploy_web_+_api_to_railway
+ 3 files changed, 28 insertions(+), 6 deletions(-)
+📝 Commit created: 96cb23830ef4b5435968dca856f7d37f7472d3a2
+🧯 Rollback with: git reset --soft 96cb23830ef4b5435968dca856f7d37f7472d3a2^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 19_setup_logging,_healthchecks_and_monitoring
+✅ Task 19_setup_logging,_healthchecks_and_monitoring completed successfully.
+📝 Committing files for 19_setup_logging,_healthchecks_and_monitoring...
+[main f39a29d] Codex Task: 19_setup_logging,_healthchecks_and_monitoring
+ 5 files changed, 219 insertions(+), 7 deletions(-)
+📝 Commit created: f39a29d2a6b77fb781589b9b3360c8c58f95ee2b
+🧯 Rollback with: git reset --soft f39a29d2a6b77fb781589b9b3360c8c58f95ee2b^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 20_verify_dev_environment_bootstraps_cleanly
+✅ Task 20_verify_dev_environment_bootstraps_cleanly completed successfully.
+📝 Committing files for 20_verify_dev_environment_bootstraps_cleanly...
+[main f455b58] Codex Task: 20_verify_dev_environment_bootstraps_cleanly
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+📝 Commit created: f455b583b3d7d5e5158743578f643b5cf1f3bc33
+🧯 Rollback with: git reset --soft f455b583b3d7d5e5158743578f643b5cf1f3bc33^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 21_dockerize_api_server
+✅ Task 21_dockerize_api_server completed successfully.
+📝 Committing files for 21_dockerize_api_server...
+[main 2da0c74] Codex Task: 21_dockerize_api_server
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+📝 Commit created: 2da0c748974627df88106e10d87e01bbc661e1b8
+🧯 Rollback with: git reset --soft 2da0c748974627df88106e10d87e01bbc661e1b8^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 22_dockerize_astro_frontend
+✅ Task 22_dockerize_astro_frontend completed successfully.
+📝 Committing files for 22_dockerize_astro_frontend...
+[main d5cd379] Codex Task: 22_dockerize_astro_frontend
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+📝 Commit created: d5cd3791e8241ee9a14b0d1ad0f93d5390dc964b
+🧯 Rollback with: git reset --soft d5cd3791e8241ee9a14b0d1ad0f93d5390dc964b^ && git restore --staged .
+-------------------------------------------
+🎉 All tasks completed successfully.

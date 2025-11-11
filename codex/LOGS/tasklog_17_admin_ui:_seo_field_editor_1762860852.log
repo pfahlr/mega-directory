@@ -1,0 +1,2306 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a72b1-e43d-7810-84bc-8cbb2ebb2bad
+--------
+user
+Implement the functionality described in codex/TASKS/17_admin_ui:_seo_field_editor.yaml, then verify with any available tests.
+
+thinking
+**Preparing to inspect tasks**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+
+thinking
+**Reading task file**
+exec
+bash -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Reading task 17 file**
+exec
+bash -lc 'cat codex/TASKS/17_admin_ui:_seo_field_editor.yaml' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 17
+title: 'Admin UI: SEO Field Editor'
+description: Allow meta title/description editing for category and category+location
+  combinations.
+dependencies:
+- 9
+- 14
+
+thinking
+**Checking admin directory structure**
+exec
+bash -lc 'ls admin' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+data
+index.js
+package.json
+public
+routes
+services
+test
+views
+
+thinking
+**Reviewing project structure and tasks**
+exec
+bash -lc 'cat codex/TASKS/09_add_category_meta_and_seo_controls.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 9
+title: Add Category Meta & SEO Controls
+description: Include meta title/description fields in DB and expose to frontend via
+  API. Default values fall back if not present.
+dependencies:
+- 3
+- 4
+- 6
+
+thinking
+**Requesting clarification on quantity**
+exec
+bash -lc 'cat codex/TASKS/14_scaffold_admin_ui_application.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 14
+title: Scaffold Admin UI Application
+description: Create a lightweight standalone app for reviewing and editing incoming
+  listings and category SEO fields.
+dependencies:
+- 2
+- 5
+
+thinking
+**Examining admin app setup**
+exec
+bash -lc "sed -n '1,200p' admin/index.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const path = require('path');
+const express = require('express');
+
+const listingsRouter = require('./routes/listings');
+const seoRouter = require('./routes/seo');
+const categoryLocationsRouter = require('./routes/categoryLocations');
+
+const app = express();
+const port = process.env.PORT || 4000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.locals.appName = 'Mega Directory Admin';
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.redirect('/listings');
+
+thinking
+**Investigating SEO route**
+exec
+bash -lc "sed -n '1,200p' admin/routes/seo.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const express = require('express');
+const { getSeoEntries, updateSeoEntries } = require('../services/seoService');
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  const entries = getSeoEntries();
+  const categories = entries.filter((entry) => entry.type === 'category');
+  const categoryLocations = entries.filter((entry) => entry.type === 'category_location');
+
+  res.render('seo/index', {
+    title: 'SEO Fields',
+    categories,
+    categoryLocations,
+    totalEntries: entries.length,
+    savedCount: parseCount(req.query.saved),
+  });
+});
+
+router.post('/', (req, res) => {
+
+thinking
+**Inspecting SEO service**
+exec
+bash -lc "sed -n '1,200p' admin/services/seoService.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const entries = require('../data/seoEntries');
+
+function getSeoEntries() {
+  return entries;
+}
+
+function updateSeoEntries(updates = []) {
+  let applied = 0;
+
+  updates.forEach((update) => {
+    if (!update || !update.id) {
+      return;
+    }
+
+    const entry = entries.find((item) => item.id === update.id);
+    if (!entry) {
+      return;
+    }
+
+    if (typeof update.metaTitle === 'string') {
+
+thinking
+**Checking data file location**
+exec
+bash -lc "sed -n '1,200p' admin/data/seoEntries.js" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+module.exports = [
+  {
+    id: 'seo_electricians',
+    type: 'category',
+    category: 'Electricians',
+    location: null,
+    slug: 'electricians',
+    metaTitle: 'Electricians Near You | Mega Directory',
+    metaDescription: 'Compare licensed electricians for emergency calls, panel upgrades, EV charger installs, and more.',
+    lastUpdated: '2024-05-18T12:00:00-04:00',
+  },
+  {
+    id: 'seo_plumbers',
+    type: 'category',
+    category: 'Plumbers',
+    location: null,
+    slug: 'plumbers',
+    metaTitle: 'Trusted Plumbers | Mega Directory',
+    metaDescription: 'Browse vetted plumbers for leaks, re-pipes, maintenance plans, and emergency dispatch in your city.',
+    lastUpdated: '2024-05-17T17:45:00-04:00',
+
+thinking
+**Checking view templates**
+exec
+bash -lc "sed -n '1,200p' admin/views/seo/index.ejs" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+<section class="panel stack gap-md">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">SEO Toolkit</p>
+      <h2>Category + location metadata</h2>
+      <p class="muted">Refresh page titles and meta descriptions before publishing new directory pages.</p>
+    </div>
+    <div class="badge">Records <strong><%= totalEntries %></strong></div>
+  </header>
+
+  <% if (typeof savedCount === 'number') { %>
+    <div class="alert success">Updated <strong><%= savedCount %></strong> SEO entr<%= savedCount === 1 ? 'y' : 'ies' %>.</div>
+  <% } %>
+
+  <% if (!categories.length && !categoryLocations.length) { %>
+    <p class="empty-state">No SEO fields available yet.</p>
+  <% } else { %>
+    <form method="POST" action="/seo" class="stack gap-lg">
+      <% if (categories.length) { %>
+
+thinking
+**Verifying existing SEO editor implementation**
+exec
+bash -lc 'ls admin/test' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+categoryLocationService.test.js
+listingsService.test.js
+
+thinking
+**Checking test setup and scripts**
+exec
+bash -lc 'cat admin/package.json' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+{
+  "name": "mega-directory-admin",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.19.2"
+  }
+}
+
+thinking
+**Checking test file for Node test runner**
+exec
+bash -lc "sed -n '1,200p' admin/test/categoryLocationService.test.js" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+const test = require('node:test');
+const assert = require('node:assert');
+
+const approvedStore = require('../data/categoryLocations');
+const pendingStore = require('../data/categoryLocationDiscoveries');
+const {
+  getPendingCategoryLocations,
+  getApprovedCategoryLocations,
+  approveCategoryLocations
+} = require('../services/categoryLocationService');
+
+const originalApproved = deepClone(approvedStore);
+const originalPending = deepClone(pendingStore);
+
+function resetStores() {
+  approvedStore.splice(0, approvedStore.length, ...deepClone(originalApproved));
+  pendingStore.splice(0, pendingStore.length, ...deepClone(originalPending));
+}
+
+test('getPendingCategoryLocations mirrors the pending store', () => {
+
+thinking
+**Analyzing SEO test coverage and implementation completeness**
+exec
+bash -lc 'rg -n "seoService" -n admin/test' in /var/home/rick/Development/mega-directory exited 1 in 41ms:
+
+
+thinking
+**Analyzing possible incomplete SEO feature**
+
+I'm considering that although view and service code exist for SEO field editing, the functionality might not be fully implemented or hooked up, especially regarding CSS or API integration. I want to run tests and search for related TODOs or documentation to clarify what parts remain undone and what the task specification really demands.
+exec
+bash -lc 'rg -n "TODO" -n admin' in /var/home/rick/Development/mega-directory exited 1 in 41ms:
+
+
+thinking
+**Assessing SEO functionality and test coverage**
+exec
+bash -lc 'rg -n "seoEntries" -n' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+admin/services/seoService.js:1:const entries = require('../data/seoEntries');
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:161:const entries = require('../data/seoEntries');
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:185:bash -lc "sed -n '1,200p' admin/data/seoEntries.js" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:301:bash -lc 'rg -n "seoEntries" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:173:seoEntries.js
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:379:const entries = require('../data/seoEntries');
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:633:zsh -lc "sed -n '1,200p' admin/data/seoEntries.js" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:771:admin/data/seoEntries.js:8:    metaTitle: 'Electricians Near You | Mega Directory',
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:772:admin/data/seoEntries.js:18:    metaTitle: 'Trusted Plumbers | Mega Directory',
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:773:admin/data/seoEntries.js:28:    metaTitle: 'Best Electricians in NYC | Mega Directory',
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:707:/bin/zsh -lc "cat <<'EOF' > admin/data/seoEntries.js
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:902:const entries = require('../data/seoEntries');
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:2354:     1	const entries = require('../data/seoEntries');
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:2491:**Locating seoEntries.js file**
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:2493:/bin/zsh -lc 'nl -ba admin/data/seoEntries.js' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:2962:- Seeded the UI with representative in-memory listings and SEO records plus lightweight services that accept update payloads, letting the forms behave realistically until the API is wired up (`admin/data/listings.js:1`, `admin/services/listingsService.js:1`, `admin/data/seoEntries.js:1`, `admin/services/seoService.js:1`).
+codex/LOGS/tasklog_14_scaffold_admin_ui_application_1762858867.log:3020:- Seeded the UI with representative in-memory listings and SEO records plus lightweight services that accept update payloads, letting the forms behave realistically until the API is wired up (`admin/data/listings.js:1`, `admin/services/listingsService.js:1`, `admin/data/seoEntries.js:1`, `admin/services/seoService.js:1`).
+codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log:254:const entries = require('../data/seoEntries');
+
+thinking
+**Investigating task completion logs**
+exec
+bash -lc 'cat codex/work_list' in /var/home/rick/Development/mega-directory exited 1 in 38ms:
+cat: codex/work_list: No such file or directory
+
+thinking
+**Listing codex directory contents**
+exec
+bash -lc 'ls codex' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+LOGS
+TASKS
+
+thinking
+**Checking task log for spec details**
+exec
+bash -lc "sed -n '1,160p' codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a72b1-e43d-7810-84bc-8cbb2ebb2bad
+--------
+user
+Implement the functionality described in codex/TASKS/17_admin_ui:_seo_field_editor.yaml, then verify with any available tests.
+
+thinking
+**Preparing to inspect tasks**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+
+thinking
+**Continuing to review logs**
+exec
+bash -lc "sed -n '160,320p' codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+bash -lc "sed -n '1,200p' admin/services/seoService.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+const entries = require('../data/seoEntries');
+
+function getSeoEntries() {
+  return entries;
+}
+
+function updateSeoEntries(updates = []) {
+  let applied = 0;
+
+  updates.forEach((update) => {
+    if (!update || !update.id) {
+      return;
+    }
+
+    const entry = entries.find((item) => item.id === update.id);
+    if (!entry) {
+      return;
+    }
+
+
+thinking
+**Reviewing agent's log for changes**
+exec
+bash -lc "sed -n '320,640p' codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+
+thinking
+**Investigating task completion logs**
+exec
+bash -lc 'cat codex/work_list' in /var/home/rick/Development/mega-directory exited 1 in 38ms:
+cat: codex/work_list: No such file or directory
+
+thinking
+**Listing codex directory contents**
+exec
+bash -lc 'ls codex' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+LOGS
+TASKS
+
+thinking
+**Checking task log for spec details**
+exec
+bash -lc "sed -n '1,160p' codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+OpenAI Codex v0.57.0 (research preview)
+--------
+
+thinking
+**Requesting more log lines**
+exec
+bash -lc "sed -n '640,960p' codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+
+
+thinking
+**Reviewing SEO functionality and tests**
+
+I'm trying to determine whether the current SEO service implementation fully matches the spec, including UI elements and API behavior. I want to verify if test coverage exists or if new tests are needed, and also explore if the API exposes routes for managing SEO fields as expected. I'll check the API routes next to clarify how the SEO data is handled.
+exec
+bash -lc 'rg -n "metaTitle" -n' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+admin/services/seoService.js:20:    if (typeof update.metaTitle === 'string') {
+admin/services/seoService.js:21:      entry.metaTitle = update.metaTitle.trim();
+admin/data/seoEntries.js:8:    metaTitle: 'Electricians Near You | Mega Directory',
+admin/data/seoEntries.js:18:    metaTitle: 'Trusted Plumbers | Mega Directory',
+admin/data/seoEntries.js:28:    metaTitle: 'Best Electricians in NYC | Mega Directory',
+admin/data/seoEntries.js:38:    metaTitle: 'Austin Plumbers | Same-Day Service',
+admin/views/seo/index.ejs:35:                <input class="field-control" type="text" name="entries[<%= entry.id %>][metaTitle]" value="<%= entry.metaTitle %>" />
+admin/views/seo/index.ejs:60:                <input class="field-control" type="text" name="entries[<%= entry.id %>][metaTitle]" value="<%= entry.metaTitle %>" />
+admin/routes/seo.js:36:    metaTitle: record.metaTitle?.trim() ?? '',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:180:    if (typeof update.metaTitle === 'string') {
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:193:    metaTitle: 'Electricians Near You | Mega Directory',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:203:    metaTitle: 'Trusted Plumbers | Mega Directory',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:309:codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:771:admin/data/seoEntries.js:8:    metaTitle: 'Electricians Near You | Mega Directory',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:310:codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:772:admin/data/seoEntries.js:18:    metaTitle: 'Trusted Plumbers | Mega Directory',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:311:codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:773:admin/data/seoEntries.js:28:    metaTitle: 'Best Electricians in NYC | Mega Directory',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:420:bash -lc 'rg -n "metaTitle" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:398:    if (typeof update.metaTitle === 'string') {
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:641:    metaTitle: 'Electricians Near You | Mega Directory',
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:651:    metaTitle: 'Trusted Plumbers | Mega Directory',
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:771:admin/data/seoEntries.js:8:    metaTitle: 'Electricians Near You | Mega Directory',
+
+thinking
+**Preparing to run admin tests**
+
+I'm planning to run the tests inside the admin directory to check for any failing cases or bugs related to the SEO feature updates, aiming to verify the current implementation and spot any missing pieces or inconsistencies before proceeding further.
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory/admin succeeded in 527ms:
+
+> mega-directory-admin@0.1.0 test
+> node --test
+
+TAP version 13
+# Subtest: test/categoryLocationService.test.js
+ok 1 - test/categoryLocationService.test.js
+  ---
+  duration_ms: 144.808823
+  type: 'test'
+  ...
+# Subtest: test/listingsService.test.js
+ok 2 - test/listingsService.test.js
+  ---
+  duration_ms: 141.256422
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+
+thinking
+**Reviewing test results and code status**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+## main...origin/main [ahead 2]
+?? admin/data/categoryLocationDiscoveries.js
+?? admin/data/categoryLocations.js
+?? admin/routes/categoryLocations.js
+?? admin/services/apiClient.js
+?? admin/services/categoryLocationService.js
+?? admin/test/
+?? admin/views/category-locations/
+?? codex/LOGS/codex_run_2025-11-11_06-14-32.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log.done
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log.done
+?? codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log
+?? codex/TASKS/work_list
+
+thinking
+**Examining untracked files and TDD context**
+exec
+bash -lc "sed -n '1,200p' admin/data/categoryLocations.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+module.exports = [
+  {
+    id: 'dir_electricians_nyc',
+    category: 'Electricians',
+    location: 'New York, NY',
+    slug: 'nyc/electricians',
+    listingsCount: 24,
+    source: 'Manual seed',
+    approvedAt: '2024-05-20T11:15:00-04:00',
+    status: 'active'
+  },
+  {
+    id: 'dir_plumbers_atlanta',
+    category: 'Plumbers',
+    location: 'Atlanta, GA',
+    slug: 'atlanta-ga/plumbers',
+    listingsCount: 17,
+    source: 'Crawler Run 412',
+    approvedAt: '2024-05-19T15:45:00-04:00',
+    status: 'active'
+
+thinking
+**Examining SEO integration and API endpoints**
+exec
+bash -lc "rg -n \"seo\" api -g'*.*'" in /var/home/rick/Development/mega-directory exited 1 in 41ms:
+
+
+thinking
+**Analyzing SEO feature gaps and repo status**
+
+I’m exploring how SEO editing ties into categories and category-location combos, noticing no direct API for SEO yet and some untracked files that might be related. I’m checking form data handling, potential missing update logic, and how SEO entries relate to datasets, while also verifying the repo’s current untracked test and task files. There’s a lot to piece together regarding what might need building or fixing!
+exec
+bash -lc 'ls -a codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+.
+..
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+
+thinking
+**Locating correct work_list file**
+exec
+bash -lc 'cat codex/TASKS/work_list' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+20_verify_dev_environment_bootstraps_cleanly.yaml
+21_dockerize_api_server.yaml
+22_dockerize_astro_frontend.yaml
+
+thinking
+**Verifying tasks 15-22 implementation**
+exec
+bash -lc "sed -n '1,200p' admin/routes/listings.js" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+const express = require('express');
+const { getListings, updateListings } = require('../services/listingsService');
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  const page = parsePage(req.query.page);
+  const result = getListings({ page });
+
+  res.render('listings/index', {
+    title: 'Listing Review',
+    listings: result.records,
+    savedCount: parseCount(req.query.saved),
+    pagination: buildPagination(result)
+  });
+});
+
+router.post('/', async (req, res, next) => {
+  try {
+    const updates = normalizePayload(req.body.listings);
+
+thinking
+**Analyzing SEO field editor implementation and gaps**
+
+I'm carefully reviewing the SEO field editor task to spot any missing functionality or tests, especially around persistent updates and UI hooks. There’s a lot to consider—existing code seems active but possibly incomplete regarding persisting edits or validating input, so I want to trace code, confirm specs, and look for gaps where I can add meaningful improvements or tests.
+exec
+bash -lc "sed -n '1,200p' admin/services/apiClient.js" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings/review';
+
+async function submitListingUpdates(updates = []) {
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return { delivered: 0 };
+  }
+
+  const baseUrl = process.env.ADMIN_API_BASE_URL || process.env.API_BASE_URL || null;
+  const token = process.env.ADMIN_API_TOKEN || null;
+
+  if (!baseUrl || !token) {
+    return {
+      delivered: 0,
+      skipped: updates.length,
+      reason: 'Admin API base URL or token is not configured'
+    };
+  }
+
+  if (typeof fetch !== 'function') {
+    return {
+
+thinking
+**Verifying test coverage for SEO service**
+exec
+bash -lc 'git ls-files admin/routes' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+admin/routes/listings.js
+admin/routes/seo.js
+
+thinking
+**Analyzing SEO functionality and test coverage**
+exec
+bash -lc "sed -n '1,200p' admin/views/partials/page-start.ejs" in /var/home/rick/Development/mega-directory succeeded in 95ms:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title ? `${title} | ${appName}` : appName %></title>
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <p class="eyebrow">Internal</p>
+        <h1><%= appName %></h1>
+      </div>
+      <nav class="site-nav">
+        <a href="/listings" class="nav-link <%= active === 'listings' ? 'is-active' : '' %>">Listings</a>
+        <a href="/category-locations" class="nav-link <%= active === 'category-locations' ? 'is-active' : '' %>">Category Locations</a>
+        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+      </nav>
+
+thinking
+**Evaluating SEO service completeness**
+exec
+bash -lc 'rg -n "SEO Field" -n' in /var/home/rick/Development/mega-directory succeeded in 104ms:
+admin/views/partials/page-start.ejs:19:        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+admin/views/seo/index.ejs:1:<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+admin/routes/seo.js:12:    title: 'SEO Fields',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:62:title: 'Admin UI: SEO Field Editor'
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:147:    title: 'SEO Fields',
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:211:<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:641:        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log:647:bash -lc 'rg -n "SEO Field" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:271:        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:365:    title: 'SEO Fields',
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:493:<%- include('../partials/page-start', { title: 'SEO Field Editor', active: 'seo' }) %>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:4160:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:4512:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:4864:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:5384:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:5819:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:6314:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:6780:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:7267:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log:7740:         <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+
+thinking
+**Evaluating existing functionality and git status**
+exec
+bash -lc 'git status --short admin/views/seo/index.ejs' in /var/home/rick/Development/mega-directory succeeded in 92ms:
+
+
+thinking
+**Evaluating existing functionality**
+exec
+bash -lc 'rg -n "SEO" docs -n' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+docs/AGENTS.md:33:Moderate new listings, approve categories, and edit SEO metadata for any page.
+docs/AGENTS.md:45:* Edit SEO metadata for category/location pages
+docs/AGENTS.md:55:Deliver ultra-fast directory pages optimized for SEO and accessibility.
+docs/AGENTS.md:89:* Manage admin APIs for listing approval and SEO editing
+
+thinking
+**Checking for admin UI docs**
+exec
+bash -lc 'ls docs' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+AGENTS.md
+
+thinking
+**Evaluating SEO service improvements**
+
+I'm weighing how to show progress by adding tests and possibly minor functional tweaks to the SEO service, like handling blank meta fields more intuitively to enable proper fallback behavior, while being careful not to overstep the original spec. To understand fallback better, I'll peek into the front-end Astro code to see how it treats empty or missing meta titles and descriptions.
+exec
+bash -lc 'rg -n "metaDescription" astro/src -n' in /var/home/rick/Development/mega-directory succeeded in 239ms:
+astro/src/data/directory-catalog.js:12:      metaDescription: 'Curated electricians, HVAC crews, and facilities partners.',
+astro/src/data/directory-catalog.js:129:      metaDescription: 'Curated electricians, HVAC crews, and facilities partners.',
+astro/src/data/directory-catalog.js:211:      metaDescription: 'High-signal recruiting partners and curated job boards.',
+astro/src/data/directory-catalog.js:298:      metaDescription: 'High-signal recruiting partners and curated job boards.',
+astro/src/lib/directory-helpers.js:215:  const explicitDescription = sanitizeText(category?.metaDescription);
+astro/src/lib/directory-helpers.js:222:    metaDescription: explicitDescription || fallbackDescription,
+astro/src/components/DirectoryPage.astro:20:  typeof directory?.category?.metaDescription === 'string' &&
+astro/src/components/DirectoryPage.astro:21:  directory.category.metaDescription.trim().length > 0;
+astro/src/components/DirectoryPage.astro:23:const fallbackDescription = heroSubtitle || categorySeo.metaDescription;
+astro/src/components/DirectoryPage.astro:24:const pageDescription = hasExplicitCategoryDescription ? categorySeo.metaDescription : fallbackDescription;
+
+
+thinking
+**Analyzing SEO editing improvements**
+thinking
+**Planning SEO service tests and updates**
+
+I'll draft a plan to add failing tests first that verify updates only apply on real changes, then modify the SEO service to pass these tests by updating lastUpdated only when meta fields actually change, and finally run the test suite to confirm correctness.
+Plan update
+  • Review current SEO editor implementation to understand data flow and identify missing behavior.
+  • Add node:test coverage for seoService to capture desired update semantics (only mutate when fields change).
+  • Update seoService (and related logic if needed) to satisfy the new tests, then rerun the admin test suite.
+
+thinking
+**Marking step 1 completed**
+Plan update
+  ✓ Review current SEO editor implementation to understand data flow and identify missing behavior.
+  • Add node:test coverage for seoService to capture desired update semantics (only mutate when fields change).
+  • Update seoService (and related logic if needed) to satisfy the new tests, then rerun the admin test suite.
+
+thinking
+**Preparing detailed tests for seoService update behavior**
+
+I'll write a new test file following existing patterns, focusing on verifying updateSeoEntries correctly skips unchanged entries, trims and partially updates data, and ignores invalid inputs. I'll include helpers to reset the data store between tests to isolate side effects, aiming for clear TDD feedback once tests run.
+file update
+A /var/home/rick/Development/mega-directory/admin/test/seoService.test.js
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+const seoStore = require('../data/seoEntries');
+const { updateSeoEntries } = require('../services/seoService');
+
+const originalStore = deepClone(seoStore);
+
+function resetStore() {
+  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
+}
+
+test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
+  resetStore();
+
+  const target = seoStore[0];
+  const originalTitle = target.metaTitle;
+  const originalDescription = target.metaDescription;
+  const originalTimestamp = target.lastUpdated;
+
+  const untouched = updateSeoEntries([
+    {
+      id: target.id,
+      metaTitle: originalTitle,
+      metaDescription: originalDescription,
+    },
+  ]);
+
+  assert.strictEqual(untouched, 0);
+  assert.strictEqual(target.metaTitle, originalTitle);
+  assert.strictEqual(target.metaDescription, originalDescription);
+  assert.strictEqual(target.lastUpdated, originalTimestamp);
+
+  const nextTitle = `${originalTitle} | Summer Campaign`;
+  const changed = updateSeoEntries([
+    {
+      id: target.id,
+      metaTitle: nextTitle,
+    },
+  ]);
+
+  assert.strictEqual(changed, 1);
+  assert.strictEqual(target.metaTitle, nextTitle);
+  assert.strictEqual(target.metaDescription, originalDescription);
+  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
+  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
+});
+
+test('updateSeoEntries trims payload values and supports partial updates', () => {
+  resetStore();
+
+  const target = seoStore[1];
+  const trimmedDescription = 'New local description';
+  const result = updateSeoEntries([
+    {
+      id: target.id,
+      metaDescription: `  ${trimmedDescription}   `,
+    },
+  ]);
+
+  assert.strictEqual(result, 1);
+  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
+  assert.strictEqual(target.metaDescription, trimmedDescription);
+});
+
+test('updateSeoEntries ignores unknown ids and empty payloads', () => {
+  resetStore();
+
+  const snapshot = deepClone(seoStore);
+  const result = updateSeoEntries([
+    { id: 'missing_entry', metaTitle: 'No-op' },
+    null,
+    {},
+  ]);
+
+  assert.strictEqual(result, 0);
+  assert.deepStrictEqual(seoStore, snapshot);
+});
+
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+apply_patch(auto_approved=true) exited 0 in 129ms:
+Success. Updated the following files:
+A admin/test/seoService.test.js
+file update:
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+file update:
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Examining test dependencies and plan updates**
+Plan update
+  ✓ Review current SEO editor implementation to understand data flow and identify missing behavior.
+  ✓ Add node:test coverage for seoService to capture desired update semantics (only mutate when fields change).
+  • Update seoService (and related logic if needed) to satisfy the new tests, then rerun the admin test suite.
+file update:
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Preparing SEO service update logic**
+file update
+M /var/home/rick/Development/mega-directory/admin/services/seoService.js
+@@ -19,8 +19,18 @@
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+@@ -34,2 +44,6 @@
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+apply_patch(auto_approved=true) exited 0 in 459ms:
+Success. Updated the following files:
+M admin/services/seoService.js
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Verifying normalizeString behavior and testing plan**
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory/admin succeeded in 853ms:
+
+> mega-directory-admin@0.1.0 test
+> node --test
+
+TAP version 13
+# Subtest: test/categoryLocationService.test.js
+ok 1 - test/categoryLocationService.test.js
+  ---
+  duration_ms: 148.76702
+  type: 'test'
+  ...
+# Subtest: test/listingsService.test.js
+ok 2 - test/listingsService.test.js
+  ---
+  duration_ms: 145.47817
+  type: 'test'
+  ...
+# Subtest: test/seoService.test.js
+ok 3 - test/seoService.test.js
+  ---
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Completing plan step 3**
+Plan update
+  ✓ Review current SEO editor implementation to understand data flow and identify missing behavior.
+  ✓ Add node:test coverage for seoService to capture desired update semantics (only mutate when fields change).
+  ✓ Update seoService (and related logic if needed) to satisfy the new tests, then rerun the admin test suite.
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Checking git status for modifications**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+## main...origin/main [ahead 2]
+ M admin/services/seoService.js
+?? admin/data/categoryLocationDiscoveries.js
+?? admin/data/categoryLocations.js
+?? admin/routes/categoryLocations.js
+?? admin/services/apiClient.js
+?? admin/services/categoryLocationService.js
+?? admin/test/
+?? admin/views/category-locations/
+?? codex/LOGS/codex_run_2025-11-11_06-14-32.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log.done
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log.done
+?? codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log
+?? codex/TASKS/work_list
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Summarizing file tracking and test additions**
+exec
+bash -lc 'nl -ba admin/services/seoService.js' in /var/home/rick/Development/mega-directory succeeded in 87ms:
+     1	const entries = require('../data/seoEntries');
+     2	
+     3	function getSeoEntries() {
+     4	  return entries;
+     5	}
+     6	
+     7	function updateSeoEntries(updates = []) {
+     8	  let applied = 0;
+     9	
+    10	  updates.forEach((update) => {
+    11	    if (!update || !update.id) {
+    12	      return;
+    13	    }
+    14	
+    15	    const entry = entries.find((item) => item.id === update.id);
+    16	    if (!entry) {
+    17	      return;
+    18	    }
+    19	
+    20	    const nextTitle = normalizeString(update.metaTitle);
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Adding line numbers to test file**
+exec
+bash -lc 'nl -ba admin/test/seoService.test.js' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	const test = require('node:test');
+     2	const assert = require('node:assert/strict');
+     3	
+     4	const seoStore = require('../data/seoEntries');
+     5	const { updateSeoEntries } = require('../services/seoService');
+     6	
+     7	const originalStore = deepClone(seoStore);
+     8	
+     9	function resetStore() {
+    10	  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
+    11	}
+    12	
+    13	test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
+    14	  resetStore();
+    15	
+    16	  const target = seoStore[0];
+    17	  const originalTitle = target.metaTitle;
+    18	  const originalDescription = target.metaDescription;
+    19	  const originalTimestamp = target.lastUpdated;
+    20	
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+
+thinking
+**Summarizing SEO updates and tests**
+
+I'll highlight the key changes made to `updateSeoEntries` in `admin/services/seoService.js`, note the new tests in `admin/test/seoService.test.js`, and mention running `npm test` to verify correctness. I'll also suggest a natural next step to connect the admin to an API for persisting updates, all organized clearly under a **SEO Editor** header with bullet points.
+codex
+- `admin/services/seoService.js:7-45` now skips no-op payloads and only mutates entries (including `lastUpdated`) when a meta title or description actually changes, while still trimming inbound strings so clearing a field results in the expected fallback behavior instead of falsely logging edits.
+- Added targeted node:test coverage in `admin/test/seoService.test.js:1-82` to lock in the desired semantics—unchanged submissions no longer count as updates, partial edits are trimmed correctly, and invalid/empty payloads leave the store untouched.
+
+- Tests: `npm test` (from `admin/`)
+file update:
+diff --git a/admin/services/seoService.js b/admin/services/seoService.js
+index 71c52ee493cb79c8ce2ea3a90a5acc7f28db7e7f..a47a20bbb244068558e19773361a8b235a773d5b
+--- a/admin/services/seoService.js
++++ b/admin/services/seoService.js
+@@ -17,12 +17,22 @@
+       return;
+     }
+ 
+-    if (typeof update.metaTitle === 'string') {
+-      entry.metaTitle = update.metaTitle.trim();
++    const nextTitle = normalizeString(update.metaTitle);
++    const nextDescription = normalizeString(update.metaDescription);
++    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
++    const hasDescriptionChange =
++      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
++
++    if (!hasTitleChange && !hasDescriptionChange) {
++      return;
++    }
++
++    if (typeof nextTitle === 'string') {
++      entry.metaTitle = nextTitle;
+     }
+ 
+-    if (typeof update.metaDescription === 'string') {
+-      entry.metaDescription = update.metaDescription.trim();
++    if (typeof nextDescription === 'string') {
++      entry.metaDescription = nextDescription;
+     }
+ 
+     entry.lastUpdated = new Date().toISOString();
+@@ -32,6 +42,10 @@
+   return applied;
+ }
+ 
++function normalizeString(value) {
++  return typeof value === 'string' ? value.trim() : undefined;
++}
++
+ module.exports = {
+   getSeoEntries,
+   updateSeoEntries,
+diff --git a/admin/test/seoService.test.js b/admin/test/seoService.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b21b4d81f1b0e29701be1fe100f9211e0a253065
+--- /dev/null
++++ b/admin/test/seoService.test.js
+@@ -0,0 +1,82 @@
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const seoStore = require('../data/seoEntries');
++const { updateSeoEntries } = require('../services/seoService');
++
++const originalStore = deepClone(seoStore);
++
++function resetStore() {
++  seoStore.splice(0, seoStore.length, ...deepClone(originalStore));
++}
++
++test('updateSeoEntries skips unchanged payloads but updates real edits', () => {
++  resetStore();
++
++  const target = seoStore[0];
++  const originalTitle = target.metaTitle;
++  const originalDescription = target.metaDescription;
++  const originalTimestamp = target.lastUpdated;
++
++  const untouched = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: originalTitle,
++      metaDescription: originalDescription,
++    },
++  ]);
++
++  assert.strictEqual(untouched, 0);
++  assert.strictEqual(target.metaTitle, originalTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.strictEqual(target.lastUpdated, originalTimestamp);
++
++  const nextTitle = `${originalTitle} | Summer Campaign`;
++  const changed = updateSeoEntries([
++    {
++      id: target.id,
++      metaTitle: nextTitle,
++    },
++  ]);
++
++  assert.strictEqual(changed, 1);
++  assert.strictEqual(target.metaTitle, nextTitle);
++  assert.strictEqual(target.metaDescription, originalDescription);
++  assert.notStrictEqual(target.lastUpdated, originalTimestamp);
++  assert.ok(Number.isFinite(Date.parse(target.lastUpdated)));
++});
++
++test('updateSeoEntries trims payload values and supports partial updates', () => {
++  resetStore();
++
++  const target = seoStore[1];
++  const trimmedDescription = 'New local description';
++  const result = updateSeoEntries([
++    {
++      id: target.id,
++      metaDescription: `  ${trimmedDescription}   `,
++    },
++  ]);
++
++  assert.strictEqual(result, 1);
++  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
++  assert.strictEqual(target.metaDescription, trimmedDescription);
++});
++
++test('updateSeoEntries ignores unknown ids and empty payloads', () => {
++  resetStore();
++
++  const snapshot = deepClone(seoStore);
++  const result = updateSeoEntries([
++    { id: 'missing_entry', metaTitle: 'No-op' },
++    null,
++    {},
++  ]);
++
++  assert.strictEqual(result, 0);
++  assert.deepStrictEqual(seoStore, snapshot);
++});
++
++function deepClone(value) {
++  return JSON.parse(JSON.stringify(value));
++}
+
+tokens used
+89,193
+- `admin/services/seoService.js:7-45` now skips no-op payloads and only mutates entries (including `lastUpdated`) when a meta title or description actually changes, while still trimming inbound strings so clearing a field results in the expected fallback behavior instead of falsely logging edits.
+- Added targeted node:test coverage in `admin/test/seoService.test.js:1-82` to lock in the desired semantics—unchanged submissions no longer count as updates, partial edits are trimmed correctly, and invalid/empty payloads leave the store untouched.
+
+- Tests: `npm test` (from `admin/`)
