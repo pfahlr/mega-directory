@@ -17,12 +17,22 @@ function updateSeoEntries(updates = []) {
       return;
     }
 
-    if (typeof update.metaTitle === 'string') {
-      entry.metaTitle = update.metaTitle.trim();
+    const nextTitle = normalizeString(update.metaTitle);
+    const nextDescription = normalizeString(update.metaDescription);
+    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
+    const hasDescriptionChange =
+      typeof nextDescription === 'string' && nextDescription !== entry.metaDescription;
+
+    if (!hasTitleChange && !hasDescriptionChange) {
+      return;
     }
 
-    if (typeof update.metaDescription === 'string') {
-      entry.metaDescription = update.metaDescription.trim();
+    if (typeof nextTitle === 'string') {
+      entry.metaTitle = nextTitle;
+    }
+
+    if (typeof nextDescription === 'string') {
+      entry.metaDescription = nextDescription;
     }
 
     entry.lastUpdated = new Date().toISOString();
@@ -30,6 +40,10 @@ function updateSeoEntries(updates = []) {
   });
 
   return applied;
+}
+
+function normalizeString(value) {
+  return typeof value === 'string' ? value.trim() : undefined;
 }
 
 module.exports = {
