@@ -1,0 +1,55 @@
+id: 00
+title: "Prepare Repository for Development"
+description: >
+  Normalize the structure and contents of the repository to match the master development plan,
+  enabling work on subsequent tasks in codex/TASKS.
+
+  The following changes must be made:
+
+  1. **Directory Structure Fixes**
+     - Move existing code under `apps/` into their proper top-level directories:
+       * Move `apps/astro` → `/astro`
+       * Move `apps/api` → `/api`
+       * Move `apps/admin` → `/admin`
+     - Ensure these folders have proper `package.json` and start scripts if they don't already.
+
+  2. **Documentation Structure**
+     - Move `AGENTS.md` from the repo root to `docs/AGENTS.md`
+     - If `docs/` folder does not exist, create it.
+     - Update any references in README or documentation that assume AGENTS.md is at the root.
+
+  3. **README Update**
+     - Fix the README’s **Project Structure** section:
+       * Remove `/apps`
+       * Use `/astro`, `/api`, `/admin`, `/agents/crawler`, `/codex/TASKS`, `/db`, and `/docs` as canonical paths.
+     - Ensure the description of the crawler and admin as external tools (not in Docker) is included.
+     - Clarify that `docker-compose.yml` only includes the `api`, `db`, and `astro` (if added) services.
+     - Reference how to run the crawler and admin tools manually.
+
+  4. **Docker Compose Consistency**
+     - If Astro frontend is missing from `docker-compose.yml`, add a service for `/astro`:
+       * Build from `./astro`
+       * Expose port 3000
+       * Ensure `.env` and volumes match structure of `api`
+     - Ensure the `api` and `db` services correctly reference environment files and local Docker volumes
+
+  5. **Git Hygiene**
+     - Ensure `.gitignore` covers:
+       * `node_modules/`
+       * `.env`
+       * `__pycache__/`
+       * `*.sqlite`, `*.sqlite3`
+       * `dist/`, `build/`, `.next/`, `.vercel/` (as needed)
+
+  6. **Codex Setup**
+     - Confirm that the codex CLI is usable:
+       * `codex.yaml` exists and references all task files in `/codex/TASKS`
+       * Task files are prefixed with two-digit numeric IDs (e.g., `01_initialize_astro_frontend.yaml`)
+     - Confirm each task has clear `id`, `title`, `description`, and `dependencies`.
+
+outcomes:
+  - Repository structure matches development plan.
+  - README is accurate and up-to-date.
+  - Docker environment is complete for api + db + astro.
+  - Crawler and Admin are acknowledged as external tools, not in Docker.
+  - Codex is ready to begin executing tasks in proper order.
