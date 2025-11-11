@@ -53,3 +53,4 @@ outcomes:
   - Docker environment is complete for api + db + astro.
   - Crawler and Admin are acknowledged as external tools, not in Docker.
   - Codex is ready to begin executing tasks in proper order.
+dependencies: []

@@ -23,28 +23,53 @@ Mega Directory is a server-rendered directory listing platform built with Astro,
 
 ## Setup
 
+Install dependencies for each JavaScript project individually:
+
 ```bash
-git clone https://your-repo-url mega-directory
-cd mega-directory
-npm install
-
-# Set up the database
-npx prisma migrate dev --name init
-npx prisma db seed
-
-# Run the development server
-npm run dev
+cd api && npm install
+cd astro && npm install
+cd admin && npm install
 ```
+
+Database schema and seed scripts live under `/db`. Run Prisma commands from the `api` workspace once the API server has been configured with a connection string (see future Codex tasks for details).
+
+## Running with Docker Compose
+
+`docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro frontend. Bring them up together with:
+
+```bash
+docker compose up --build
+```
+
+Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) before running Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
+
+## Admin & Crawler Tools
+
+The admin interface and crawler agent run outside Docker so that they can be operated from developer machines or private servers.
+
+- Admin interface:  
+  ```bash
+  cd admin
+  npm run dev
+  ```
+- Python crawler agent (configure `agents/crawler/config/targets.json` first):  
+  ```bash
+  cd agents/crawler
+  python main.py
+  ```
+
+Additional details about each agent live in `docs/AGENTS.md`.
 
 ## Project Structure
 
 ```
-/astro         - Astro frontend (SSR)
-/api           - Express API and middleware
-/agents        - AI agent scripts
-/db            - Prisma schema and seeding
-/codex/TASKS   - Codex YAML task definitions
-/docs          - Developer documentation
+/astro             - Astro frontend (SSR entry point and UI components)
+/api               - Express API placeholder (filled out in later tasks)
+/admin             - Standalone moderation UI
+/agents/crawler    - Python crawler agent source + configs
+/codex/TASKS       - Codex YAML task definitions
+/db                - Prisma schema and seeding scripts
+/docs              - Developer documentation (see docs/AGENTS.md)
 ```
 
 ## License
