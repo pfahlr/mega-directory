@@ -68,7 +68,8 @@ function parsePage(value) {
 function buildPagination(result) {
   const totalItems = result?.total ?? 0;
   const page = result?.page ?? 1;
-  const perPage = result?.perPage ?? (result?.records?.length ?? 0) || 1;
+  const resolvedPerPage = result?.perPage ?? (result?.records?.length ?? 0);
+  const perPage = resolvedPerPage || 1;
   const totalPages = result?.totalPages ?? 1;
   const hasRecords = Boolean(result?.records && result.records.length > 0 && totalItems > 0);
   const startIndex = hasRecords ? result.startIndex ?? 0 : 0;
