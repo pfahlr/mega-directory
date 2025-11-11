@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import logging
+import os
 import re
 from typing import Any, Callable, Dict, Iterable, List, Optional
 from urllib.parse import quote_plus, urljoin
@@ -258,6 +260,7 @@ class Crawler:
         expire_after: int = DEFAULT_CACHE_EXPIRE,
         request_timeout: int = DEFAULT_TIMEOUT,
         llm_client: Optional[LLMClient] = None,
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         self.session = session or requests_cache.CachedSession(
             cache_name=cache_name,
@@ -266,9 +269,12 @@ class Crawler:
         )
         self.request_timeout = request_timeout
         self.field_generator = FieldGenerator(llm_client=llm_client)
+        self.logger = logger or _build_default_logger()
 
     def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
         api_targets = self._resolve_api_targets(config)
+        target_count = len(config.get("targets") or [])
+        self.logger.info("Starting crawler run for %s targets", target_count)
         batches: List[CrawlerBatch] = []
         for target in config.get("targets", []):
             for location_batch in self._iter_location_batches(target):
@@ -297,6 +303,7 @@ class Crawler:
                     api_targets,
                     config,
                 )
+        self.logger.info("Crawler finished with %s batches", len(batches))
         return batches
 
     def fetch_listings(
@@ -477,6 +484,16 @@ class Crawler:
             return
         for api_target in api_targets:
             timeout = self._resolve_api_timeout(api_target, target_config, root_config)
+            self.logger.info(
+                "Posting %s listings to %s",
+                len(payloads),
+                api_target.name,
+                extra={
+                    "batch_category": batch.category,
+                    "batch_location": batch.location,
+                    "api_endpoint": api_target.endpoint,
+                },
+            )
             response = self.session.post(
                 api_target.endpoint,
                 json={"listings": payloads},
@@ -600,6 +617,29 @@ def run_crawler(
     config: Dict[str, Any],
     session: Optional[requests.Session] = None,
     llm_client: Optional[LLMClient] = None,
+    logger: Optional[logging.Logger] = None,
 ) -> List[CrawlerBatch]:
-    crawler = Crawler(session=session, llm_client=llm_client)
+    crawler = Crawler(session=session, llm_client=llm_client, logger=logger)
     return crawler.run(config)
+
+
+def _resolve_log_level() -> int:
+    configured = (
+        os.getenv("CRAWLER_LOG_LEVEL")
+        or os.getenv("LOG_LEVEL")
+        or ("INFO" if os.getenv("NODE_ENV") == "production" else "DEBUG")
+    ).upper()
+    return getattr(logging, configured, logging.INFO)
+
+
+def _build_default_logger() -> logging.Logger:
+    logger = logging.getLogger("mega_directory.crawler")
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+        )
+        logger.addHandler(handler)
+    logger.setLevel(_resolve_log_level())
+    logger.propagate = False
+    return logger
