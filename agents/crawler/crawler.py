@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional
 from urllib.parse import quote_plus, urljoin
 
 import requests
 from bs4 import BeautifulSoup
+from jinja2 import Environment, StrictUndefined, TemplateError
 
 try:
     import requests_cache
@@ -47,6 +48,7 @@ class Listing:
     url: str
     snippet: str
     extras: Dict[str, Any] = field(default_factory=dict)
+    fields: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -67,6 +69,176 @@ class CrawlerBatch:
         }
 
 
+@dataclass
+class LLMRequest:
+    provider: str
+    model: str
+    prompt: str
+    field_name: str
+    options: Dict[str, Any] = field(default_factory=dict)
+    target: Optional[Dict[str, Any]] = None
+    listing: Optional[Dict[str, Any]] = None
+
+
+LLMClient = Callable[[LLMRequest], str]
+
+
+class FieldGenerator:
+    def __init__(self, llm_client: Optional[LLMClient] = None) -> None:
+        self.llm_client = llm_client
+        self._env = Environment(
+            autoescape=False,
+            undefined=StrictUndefined,
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+
+    def generate(self, listing: Listing, target: Dict[str, Any], batch: Dict[str, Any]) -> Dict[str, Any]:
+        field_configs = target.get("fields") or {}
+        if not field_configs:
+            return {}
+
+        context = self._build_context(listing, target, batch)
+        generated: Dict[str, Any] = {}
+
+        for field_name, config in field_configs.items():
+            source = (config.get("source") or "scrape").lower()
+            if source == "scrape":
+                generated[field_name] = self._resolve_scrape_field(field_name, config, context)
+            elif source == "ai":
+                generated[field_name] = self._generate_ai_field(field_name, config, context, target)
+            else:
+                raise ValueError(f"Unsupported field source '{source}' for '{field_name}'")
+
+        return generated
+
+    def _build_context(
+        self,
+        listing: Listing,
+        target: Dict[str, Any],
+        batch: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        listing_context: Dict[str, Any] = {
+            "title": listing.title,
+            "url": listing.url,
+            "snippet": listing.snippet,
+            "extras": dict(listing.extras),
+        }
+        for key, value in listing.extras.items():
+            if key not in listing_context:
+                listing_context[key] = value
+
+        batch_context = dict(batch)
+        base_context: Dict[str, Any] = {
+            "listing": listing_context,
+            "category": target.get("category"),
+            "location": batch_context.get("location"),
+            "keyword": batch_context.get("keyword"),
+            "subdomain": target.get("subdomain"),
+            "target": target,
+            "batch": batch_context,
+        }
+        base_context["tokens"] = self._build_tokens(listing_context, base_context, batch_context)
+        return base_context
+
+    @staticmethod
+    def _build_tokens(
+        listing_context: Dict[str, Any],
+        base_context: Dict[str, Any],
+        batch_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        tokens: Dict[str, Any] = {
+            "listing_title": listing_context.get("title", ""),
+            "listing_url": listing_context.get("url", ""),
+            "listing_snippet": listing_context.get("snippet", ""),
+            "category": base_context.get("category") or "",
+            "location": batch_context.get("location") or "",
+            "keyword": batch_context.get("keyword") or "",
+            "subdomain": base_context.get("subdomain") or "",
+        }
+        for key, value in listing_context.items():
+            if isinstance(value, str):
+                tokens[key] = value
+        return tokens
+
+    def _resolve_scrape_field(
+        self,
+        field_name: str,
+        config: Dict[str, Any],
+        context: Dict[str, Any],
+    ) -> Any:
+        attribute = config.get("attribute") or field_name
+        listing_data = context["listing"]
+        value = self._lookup_value(listing_data, attribute)
+        if value is not None:
+            return value
+        return self._lookup_value(context, attribute)
+
+    def _generate_ai_field(
+        self,
+        field_name: str,
+        config: Dict[str, Any],
+        context: Dict[str, Any],
+        target: Dict[str, Any],
+    ) -> Any:
+        if not self.llm_client:
+            raise RuntimeError("LLM field generation requires an llm_client instance")
+
+        provider = config.get("provider")
+        model = config.get("model")
+        prompt_template = config.get("prompt_template")
+        if not provider or not model or not prompt_template:
+            raise ValueError(
+                f"AI field '{field_name}' requires provider, model, and prompt_template"
+            )
+
+        render_context = self._prepare_render_context(context, config)
+        prompt = self._render_template(field_name, prompt_template, render_context)
+        request = LLMRequest(
+            provider=provider,
+            model=model,
+            prompt=prompt,
+            field_name=field_name,
+            options=config.get("options", {}),
+            target=target,
+            listing=context.get("listing"),
+        )
+        return self.llm_client(request)
+
+    def _prepare_render_context(
+        self,
+        context: Dict[str, Any],
+        config: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        render_context = dict(context)
+        render_context["listing"] = context["listing"]
+        render_context["batch"] = context["batch"]
+        tokens = dict(context.get("tokens", {}))
+        extra_tokens = config.get("tokens") or {}
+        tokens.update(extra_tokens)
+        render_context["tokens"] = tokens
+        return render_context
+
+    def _render_template(self, field_name: str, template: str, context: Dict[str, Any]) -> str:
+        try:
+            compiled = self._env.from_string(template)
+            return compiled.render(**context)
+        except TemplateError as exc:  # pragma: no cover - defensive path
+            raise ValueError(f"Failed to render prompt for '{field_name}': {exc}") from exc
+
+    @staticmethod
+    def _lookup_value(source: Any, path: str) -> Any:
+        if not isinstance(source, dict) or not path:
+            return None
+        current: Any = source
+        for segment in path.split('.'):
+            if isinstance(current, dict) and segment in current:
+                current = current[segment]
+                continue
+            return None
+        return current
+
+
 class Crawler:
     def __init__(
         self,
@@ -74,6 +246,7 @@ class Crawler:
         cache_name: str = "crawler_cache",
         expire_after: int = DEFAULT_CACHE_EXPIRE,
         request_timeout: int = DEFAULT_TIMEOUT,
+        llm_client: Optional[LLMClient] = None,
     ) -> None:
         self.session = session or requests_cache.CachedSession(
             cache_name=cache_name,
@@ -81,6 +254,7 @@ class Crawler:
             expire_after=expire_after,
         )
         self.request_timeout = request_timeout
+        self.field_generator = FieldGenerator(llm_client=llm_client)
 
     def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
         batches: List[CrawlerBatch] = []
@@ -90,6 +264,8 @@ class Crawler:
                 limit = target.get("listings_per_location")
                 if isinstance(limit, int) and limit > 0:
                     listings = listings[:limit]
+                if target.get("fields"):
+                    self._populate_fields(listings, target, location_batch)
                 meta = {
                     "search_url": location_batch["search_url"],
                     "keyword": location_batch.get("keyword"),
@@ -142,6 +318,8 @@ class Crawler:
             title = title_node.get_text(strip=True) if title_node else ""
             url = link_node["href"].strip() if link_node and link_node.has_attr("href") else ""
             snippet = desc_node.get_text(strip=True) if desc_node else ""
+            link_text = link_node.get_text(strip=True) if link_node else ""
+            link_text = link_text or title
 
             if not title and not url:
                 continue
@@ -152,11 +330,26 @@ class Crawler:
                     title=title,
                     url=normalized_url,
                     snippet=snippet,
-                    extras={"location": location, "keyword": keyword},
+                    extras={
+                        "location": location,
+                        "keyword": keyword,
+                        "link_text": link_text,
+                    },
                 )
             )
 
         return listings
+
+    def _populate_fields(
+        self,
+        listings: List[Listing],
+        target: Dict[str, Any],
+        batch: Dict[str, Any],
+    ) -> None:
+        if not listings:
+            return
+        for listing in listings:
+            listing.fields = self.field_generator.generate(listing, target, batch)
 
     def _iter_location_batches(
         self,
@@ -212,6 +405,10 @@ class Crawler:
         return urljoin(base + "/", href.lstrip("/"))
 
 
-def run_crawler(config: Dict[str, Any], session: Optional[requests.Session] = None) -> List[CrawlerBatch]:
-    crawler = Crawler(session=session)
+def run_crawler(
+    config: Dict[str, Any],
+    session: Optional[requests.Session] = None,
+    llm_client: Optional[LLMClient] = None,
+) -> List[CrawlerBatch]:
+    crawler = Crawler(session=session, llm_client=llm_client)
     return crawler.run(config)
