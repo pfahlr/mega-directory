@@ -141,6 +141,19 @@ async function main() {
     }
   });
 
+  const facilitiesSubcategory = await prisma.subcategory.upsert({
+    where: {
+      categoryId_slug: { categoryId: servicesCategory.id, slug: 'facilities' }
+    },
+    update: {},
+    create: {
+      name: 'Facilities & Maintenance',
+      slug: 'facilities',
+      description: 'Union crews covering multi-trade repairs and hospitality programs.',
+      categoryId: servicesCategory.id
+    }
+  });
+
   const listing = await prisma.listing.upsert({
     where: { slug: 'bright-sparks-electric' },
     update: {},
@@ -205,6 +218,90 @@ async function main() {
     }
   });
 
+  const harborListing = await prisma.listing.upsert({
+    where: { slug: 'harbor-hvac-collective' },
+    update: {},
+    create: {
+      title: 'Harbor HVAC Collective',
+      slug: 'harbor-hvac-collective',
+      tagline: 'Electrification-focused HVAC retrofits.',
+      summary:
+        'Heat pump retrofits, VRF rebuilds, and IAQ instrumentation for mixed-use towers.',
+      websiteUrl: 'https://harborhvac.example.com',
+      contactEmail: 'contact@harborhvac.example.com',
+      contactPhone: '+1-929-555-0100',
+      status: 'APPROVED',
+      score: 90.1,
+      rating: 4.7,
+      reviewCount: 64,
+      sourceName: 'demo-seed',
+      sourceId: 'seed-harbor-hvac',
+      ingestedAt: new Date(),
+      approvedAt: new Date(),
+      publishedAt: new Date(),
+      approvedById: adminUser.id,
+      categoryId: servicesCategory.id,
+      locationId: nyc.id,
+      directoryId: nycDirectory.id
+    }
+  });
+
+  await prisma.listingSubcategory.upsert({
+    where: {
+      listingId_subcategoryId: {
+        listingId: harborListing.id,
+        subcategoryId: hvacSubcategory.id
+      }
+    },
+    update: {},
+    create: {
+      listingId: harborListing.id,
+      subcategoryId: hvacSubcategory.id
+    }
+  });
+
+  const steadfastListing = await prisma.listing.upsert({
+    where: { slug: 'uptown-steadfast-maintenance' },
+    update: {},
+    create: {
+      title: 'Uptown Steadfast Maintenance',
+      slug: 'uptown-steadfast-maintenance',
+      tagline: 'Union shop for concierge-level repairs.',
+      summary:
+        'Rotating crews for plumbing, millwork, and finish carpentry with a 3-hour onsite guarantee.',
+      websiteUrl: 'https://steadfast.example.com',
+      contactEmail: 'hello@steadfast.example.com',
+      contactPhone: '+1-917-555-0105',
+      status: 'APPROVED',
+      score: 82.4,
+      rating: 4.5,
+      reviewCount: 42,
+      sourceName: 'demo-seed',
+      sourceId: 'seed-uptown-steadfast',
+      ingestedAt: new Date(),
+      approvedAt: new Date(),
+      publishedAt: new Date(),
+      approvedById: adminUser.id,
+      categoryId: servicesCategory.id,
+      locationId: nyc.id,
+      directoryId: nycDirectory.id
+    }
+  });
+
+  await prisma.listingSubcategory.upsert({
+    where: {
+      listingId_subcategoryId: {
+        listingId: steadfastListing.id,
+        subcategoryId: facilitiesSubcategory.id
+      }
+    },
+    update: {},
+    create: {
+      listingId: steadfastListing.id,
+      subcategoryId: facilitiesSubcategory.id
+    }
+  });
+
   await prisma.featuredSlot.upsert({
     where: {
       directoryId_tier_position: {
@@ -222,6 +319,48 @@ async function main() {
       tier: 'HERO',
       position: 1,
       label: 'Editor pick'
+    }
+  });
+
+  await prisma.featuredSlot.upsert({
+    where: {
+      directoryId_tier_position: {
+        directoryId: nycDirectory.id,
+        tier: 'PREMIUM',
+        position: 1
+      }
+    },
+    update: {
+      listingId: harborListing.id,
+      label: 'Tier-two highlight'
+    },
+    create: {
+      directoryId: nycDirectory.id,
+      listingId: harborListing.id,
+      tier: 'PREMIUM',
+      position: 1,
+      label: 'Tier-two highlight'
+    }
+  });
+
+  await prisma.featuredSlot.upsert({
+    where: {
+      directoryId_tier_position: {
+        directoryId: nycDirectory.id,
+        tier: 'PREMIUM',
+        position: 2
+      }
+    },
+    update: {
+      listingId: steadfastListing.id,
+      label: 'Tier-two highlight'
+    },
+    create: {
+      directoryId: nycDirectory.id,
+      listingId: steadfastListing.id,
+      tier: 'PREMIUM',
+      position: 2,
+      label: 'Tier-two highlight'
     }
   });
 
