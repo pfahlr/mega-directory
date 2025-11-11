@@ -1,0 +1,956 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a72d8-9ae7-7ed2-9ebe-f6b5e2393611
+--------
+user
+Implement the functionality described in codex/TASKS/22_dockerize_astro_frontend.yaml, then verify with any available tests.
+
+thinking
+**Preparing to inspect repo for task**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+scripts
+
+thinking
+**Opening task instructions**
+exec
+bash -lc 'cat codex/TASKS/22_dockerize_astro_frontend.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 22
+title: "Dockerize Astro Web Frontend"
+description: >
+  Create a Dockerfile for the AstroJS frontend for production deployment.
+  - Use Node.js for build phase and a lightweight image (e.g., nginx or node:alpine) for serving.
+  - Build Astro site during image creation.
+  - Serve using `node` or `vite preview`.
+  - Include `.dockerignore` and build cache optimizations.
+dependencies: []
+
+thinking
+**Preparing to Dockerize Astro app**
+
+I’m considering how to approach Dockerizing the astro project, noting the instructions emphasize TDD but that might not fully apply here. I’ll check the astro folder structure and package setup to understand how to proceed and whether any tests can be run or need to be written for verification. Let’s get a clearer picture by listing files in the astro directory.
+exec
+bash -lc 'ls astro' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+astro.config.mjs
+dist
+Dockerfile
+node_modules
+package.json
+package-lock.json
+postcss.config.cjs
+public
+README.md
+src
+tailwind.config.mjs
+test
+tsconfig.json
+
+thinking
+**Inspecting existing Dockerfile**
+exec
+bash -lc 'cat astro/Dockerfile' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+
+thinking
+**Reviewing existing Dockerfile and Astro config**
+exec
+bash -lc 'cat astro/astro.config.mjs' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+// @ts-check
+import { defineConfig } from 'astro/config';
+
+// https://astro.build/config
+export default defineConfig({});
+
+thinking
+**Examining Docker build strategy**
+exec
+bash -lc 'ls -a astro' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+.
+..
+.astro
+astro.config.mjs
+dist
+Dockerfile
+.dockerignore
+.gitignore
+node_modules
+package.json
+package-lock.json
+postcss.config.cjs
+public
+README.md
+src
+tailwind.config.mjs
+test
+tsconfig.json
+.vscode
+
+thinking
+**Checking .dockerignore file**
+exec
+bash -lc 'cat astro/.dockerignore' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+node_modules
+dist
+npm-debug.log
+.npmrc
+.env
+.env.*
+test
+coverage
+.DS_Store
+
+thinking
+**Analyzing Dockerfile improvements and testing**
+
+I’m piecing together how to enhance the Dockerfile for the AstroJS frontend using multi-stage builds with appropriate Node images and serving via `node` or `vite preview` as specified. I’m also thinking about how to verify changes with existing tests, running build commands, and considering network restrictions that might affect Docker builds. Checking `astro/package.json` next to find relevant test and build scripts seems like the right move.
+exec
+bash -lc 'cat astro/package.json' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+{
+  "name": "mega-directory-astro",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.15.5"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^5.1.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14"
+
+thinking
+**Analyzing Dockerfile optimization and build verification**
+
+I'm exploring how to verify the build without tests (since none exist) by running `npm run build` and considering how to optimize the Dockerfile for build caching and production readiness. I see that using multi-stage builds with `npm ci`, `npm run build`, and pruning dev dependencies fits the goals, plus setting the container to serve with `npm run preview` on a configurable port. I want to confirm `.dockerignore` covers unnecessary files and ensure the runner stage has all needed files, including `node_modules` and `dist`. Next, I’ll plan stepwise updates to the Dockerfile and verification approach.
+Plan update
+  → Review current Astro frontend project setup and existing Docker-related files to understand baseline behavior and gaps vs task requirements
+  • Update Dockerfile and related assets (.dockerignore) to implement best-practice multi-stage build that builds Astro site and serves via node/vite preview
+  • Run available frontend build/tests to verify Docker changes don't break project
+
+thinking
+**Updating step statuses and plan**
+Plan update
+  ✓ Review current Astro frontend project setup and existing Docker-related files to understand baseline behavior and gaps vs task requirements
+  → Update Dockerfile and related assets (.dockerignore) to implement best-practice multi-stage build that builds Astro site and serves via node/vite preview
+  • Run available frontend build/tests to verify Docker changes don't break project
+
+thinking
+**Revising Dockerfile and .dockerignore for build optimization**
+
+I’m carefully restructuring the Dockerfile into multi-stage builds to optimize caching and separate build and runtime concerns, ensuring dev dependencies are available during build but omitted in the final image. I’ll also update `.dockerignore` to include `.astro` and other cache-related entries without excluding essential files like the Dockerfile itself. This setup should make building and preview serving more efficient and reliable.
+file update
+M /var/home/rick/Development/mega-directory/astro/Dockerfile
+@@ -1,7 +1,7 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+@@ -9,8 +9,7 @@
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+@@ -18,10 +17,12 @@
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+apply_patch(auto_approved=true) exited 0 in 4ms:
+Success. Updated the following files:
+M astro/Dockerfile
+file update:
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+file update:
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Updating Dockerfile and .dockerignore**
+
+I'm verifying that the preview command finds the necessary Astro binary and that environment variables like NODE_ENV and PORT are set correctly for the Docker build and run stages. I'm also ensuring `npm prune --omit=dev` compatibility with Node 20 and planning to add useful entries like `.astro`, `.vscode`, `.idea`, and `*.log` to `.dockerignore` to optimize Docker caching without blocking needed files.
+file update
+M /var/home/rick/Development/mega-directory/astro/.dockerignore
+@@ -3,2 +3,6 @@
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M astro/.dockerignore
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Reviewing build and dependency steps**
+exec
+bash -lc 'npm run build' in /var/home/rick/Development/mega-directory/astro succeeded in 7.46s:
+
+> mega-directory-astro@0.0.1 build
+> astro build
+
+07:19:03 [content] Syncing content
+07:19:03 [content] Synced content
+07:19:03 [types] Generated 1.15s
+07:19:03 [build] output: "static"
+07:19:03 [build] mode: "static"
+07:19:03 [build] directory: /var/home/rick/Development/mega-directory/astro/dist/
+07:19:03 [build] Collecting build info...
+07:19:03 [build] ✓ Completed in 1.17s.
+07:19:03 [build] Building static entrypoints...
+07:19:04 [WARN] [vite] "isRemoteAllowed", "matchHostname", "matchPathname", "matchPort" and "matchProtocol" are imported from external module "@astrojs/internal-helpers/remote" but never used in "node_modules/astro/dist/assets/utils/remotePattern.js".
+07:19:04 [vite] ✓ built in 1.35s
+07:19:04 [build] ✓ Completed in 1.47s.
+
+ generating static routes 
+07:19:04 ▶ src/pages/listings/[category]/[location]/[subcategory].astro
+07:19:04   ├─ /listings/professional-services/new-york-city/hvac/index.html (+14ms) 
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Updating plan statuses after build**
+Plan update
+  ✓ Review current Astro frontend project setup and existing Docker-related files to understand baseline behavior and gaps vs task requirements
+  ✓ Update Dockerfile and related assets (.dockerignore) to implement best-practice multi-stage build that builds Astro site and serves via node/vite preview
+  ✓ Run available frontend build/tests to verify Docker changes don't break project
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Checking git status**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+## main...origin/main [ahead 7]
+ M astro/Dockerfile
+?? admin/data/categoryLocationDiscoveries.js
+?? admin/data/categoryLocations.js
+?? admin/routes/categoryLocations.js
+?? admin/services/apiClient.js
+?? admin/services/categoryLocationService.js
+?? admin/test/
+?? admin/views/category-locations/
+?? agents/crawler/dev_runner.py
+?? api/.dockerignore
+?? api/logger.js
+?? astro/.dockerignore
+?? codex/LOGS/codex_run_2025-11-11_06-14-32.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log
+?? codex/LOGS/tasklog_15_admin_ui:_listing_review_table_1762859672.log.done
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log
+?? codex/LOGS/tasklog_16_admin_ui:_category_location_approval_1762860436.log.done
+?? codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log
+?? codex/LOGS/tasklog_17_admin_ui:_seo_field_editor_1762860852.log.done
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Planning git diff summary with line references**
+exec
+bash -lc 'nl -ba astro/Dockerfile' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+     1	# syntax=docker/dockerfile:1
+     2	
+     3	FROM node:20 AS base
+     4	WORKDIR /app
+     5	
+     6	FROM base AS deps
+     7	COPY package*.json ./
+     8	RUN npm ci
+     9	
+    10	FROM deps AS build
+    11	COPY . .
+    12	RUN npm run build && npm prune --omit=dev
+    13	
+    14	FROM node:20-alpine AS runner
+    15	WORKDIR /app
+    16	
+    17	ENV NODE_ENV=production
+    18	ENV HOST=0.0.0.0
+    19	ENV PORT=4321
+    20	
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Adding line numbers to .dockerignore**
+exec
+bash -lc 'nl -ba astro/.dockerignore' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+     1	node_modules
+     2	dist
+     3	npm-debug.log
+     4	.astro
+     5	.vscode
+     6	.idea
+     7	*.log
+     8	.npmrc
+     9	.env
+    10	.env.*
+    11	test
+    12	coverage
+    13	.DS_Store
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+
+thinking
+**Summarizing Docker and Build Updates**
+codex
+**Dockerized Frontend**
+- Added a multi-stage workflow so dependencies install once, the Astro site builds, dev deps are pruned, and only the optimized bits land in the runtime image `astro/Dockerfile:3-24`.
+- Builder stage copies just `package*.json` before installing to maximize Docker layer caching; source only copies afterwards to avoid invalidating that cache unnecessarily `astro/Dockerfile:6-12`.
+- Runtime now uses node:20-alpine, sets configurable `HOST/PORT`, exposes 4321, and serves via `npm run preview` (Vite preview) so the container runs a Node-based server as requested `astro/Dockerfile:14-28`.
+- `.dockerignore` ignores Astro’s cache and local IDE/log artifacts to keep the build context lean for faster builds `astro/.dockerignore:1-13`.
+
+**Tests**
+- `npm run build` (astro) – passes
+
+**Next Steps**
+1. Run `docker build -f astro/Dockerfile -t mega-directory-astro ./astro` locally to confirm the new image assembles cleanly in your environment.
+file update:
+diff --git a/astro/.dockerignore b/astro/.dockerignore
+index 28f3958241a0da7e2aebbb1c6306ecb5adf961e7..22756391c71e620eabb24ef91467129d08722020
+--- a/astro/.dockerignore
++++ b/astro/.dockerignore
+@@ -1,6 +1,10 @@
+ node_modules
+ dist
+ npm-debug.log
++.astro
++.vscode
++.idea
++*.log
+ .npmrc
+ .env
+ .env.*
+diff --git a/astro/Dockerfile b/astro/Dockerfile
+index fdc733ed8374bbfc8d8bd4d668c37013bec12b5b..dc360d6749e0cb1b9bdaf299809fd1b1c941fe96
+--- a/astro/Dockerfile
++++ b/astro/Dockerfile
+@@ -1,27 +1,28 @@
+-FROM node:20-alpine AS build
++# syntax=docker/dockerfile:1
+ 
++FROM node:20 AS base
+ WORKDIR /app
+ 
+-ENV NODE_ENV=production
+-
++FROM base AS deps
+ COPY package*.json ./
+ RUN npm ci
+ 
++FROM deps AS build
+ COPY . .
+-
+-RUN npm run build
++RUN npm run build && npm prune --omit=dev
+ 
+ FROM node:20-alpine AS runner
+-
+ WORKDIR /app
+ 
+ ENV NODE_ENV=production
+-ENV PORT=3000
++ENV HOST=0.0.0.0
++ENV PORT=4321
+ 
+-RUN npm install -g serve@14
+-
++COPY --from=build /app/package*.json ./
++COPY --from=build /app/node_modules ./node_modules
++COPY --from=build /app/astro.config.mjs ./astro.config.mjs
+ COPY --from=build /app/dist ./dist
+ 
+-EXPOSE 3000
++EXPOSE 4321
+ 
+-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
++CMD ["sh", "-c", "npm run preview -- --host ${HOST:-0.0.0.0} --port ${PORT:-4321}"]
+
+tokens used
+23,319
+**Dockerized Frontend**
+- Added a multi-stage workflow so dependencies install once, the Astro site builds, dev deps are pruned, and only the optimized bits land in the runtime image `astro/Dockerfile:3-24`.
+- Builder stage copies just `package*.json` before installing to maximize Docker layer caching; source only copies afterwards to avoid invalidating that cache unnecessarily `astro/Dockerfile:6-12`.
+- Runtime now uses node:20-alpine, sets configurable `HOST/PORT`, exposes 4321, and serves via `npm run preview` (Vite preview) so the container runs a Node-based server as requested `astro/Dockerfile:14-28`.
+- `.dockerignore` ignores Astro’s cache and local IDE/log artifacts to keep the build context lean for faster builds `astro/.dockerignore:1-13`.
+
+**Tests**
+- `npm run build` (astro) – passes
+
+**Next Steps**
+1. Run `docker build -f astro/Dockerfile -t mega-directory-astro ./astro` locally to confirm the new image assembles cleanly in your environment.
