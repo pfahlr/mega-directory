@@ -4,21 +4,48 @@ const jwt = require('jsonwebtoken');
 const DEFAULT_PORT = 3001;
 const DEFAULT_LISTING_STATUS = 'INACTIVE';
 const MAX_SLUG_LENGTH = 80;
+const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
 
 function resolveConfig(overrides = {}) {
   const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
   const envPort = Number.isNaN(parsedPort) ? undefined : parsedPort;
+  const parsedAdminTokenTtl =
+    overrides.adminTokenTtlSeconds ??
+    (process.env.ADMIN_TOKEN_TTL_SECONDS
+      ? parseInt(process.env.ADMIN_TOKEN_TTL_SECONDS, 10)
+      : undefined);
+
   const baseConfig = {
     port: overrides.port ?? envPort ?? DEFAULT_PORT,
     adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
     adminJwtIssuer: overrides.adminJwtIssuer ?? process.env.ADMIN_JWT_ISSUER ?? 'mega-directory',
     adminJwtAudience: overrides.adminJwtAudience ?? process.env.ADMIN_JWT_AUDIENCE ?? 'admin',
-    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN
+    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN,
+    adminLoginEmail:
+      overrides.adminLoginEmail ??
+      process.env.ADMIN_LOGIN_EMAIL ??
+      process.env.ADMIN_EMAIL ??
+      null,
+    adminLoginPasscode:
+      overrides.adminLoginPasscode ??
+      process.env.ADMIN_LOGIN_PASSCODE ??
+      process.env.ADMIN_PASSCODE ??
+      null,
+    adminTokenTtlSeconds:
+      Number.isFinite(parsedAdminTokenTtl) && parsedAdminTokenTtl > 0
+        ? parsedAdminTokenTtl
+        : DEFAULT_ADMIN_TOKEN_TTL_SECONDS
   };
 
   const missing = [];
   if (!baseConfig.adminJwtSecret) {
     missing.push('ADMIN_JWT_SECRET');
+  }
+  if (!baseConfig.adminLoginEmail) {
+    missing.push('ADMIN_LOGIN_EMAIL');
+  }
+  if (!baseConfig.adminLoginPasscode) {
+    missing.push('ADMIN_LOGIN_PASSCODE');
   }
   if (!baseConfig.crawlerBearerToken) {
     missing.push('CRAWLER_BEARER_TOKEN');
@@ -43,6 +70,8 @@ function createServer(overrides = {}) {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.post('/v1/admin/auth', createAdminAuthHandler(config));
 
   app.get('/v1/admin/ping', requireAdminAuth(config), (_req, res) => {
     res.json({ status: 'admin-ok' });
@@ -108,6 +137,58 @@ function requireCrawlerToken(config) {
     }
 
     return next();
+  };
+}
+
+function createAdminAuthHandler(config) {
+  return (req, res) => {
+    const body = isPlainObject(req.body) ? req.body : {};
+    const email = sanitizeNullableString(body.email);
+    const passcode = typeof body.passcode === 'string' ? body.passcode : null;
+    const errors = [];
+
+    if (!email) {
+      errors.push('email is required');
+    }
+    if (!passcode) {
+      errors.push('passcode is required');
+    }
+    if (errors.length > 0) {
+      return res.status(400).json({ error: 'Invalid admin credentials', details: errors });
+    }
+
+    const expectedEmail = (sanitizeNullableString(config.adminLoginEmail) || '').toLowerCase();
+    const normalizedEmail = email.toLowerCase();
+    const expectedPasscode = config.adminLoginPasscode;
+
+    if (!expectedEmail || !expectedPasscode) {
+      return res.status(500).json({ error: 'Admin authentication is not configured' });
+    }
+
+    if (normalizedEmail !== expectedEmail || passcode !== expectedPasscode) {
+      return res.status(401).json({ error: 'Invalid admin credentials' });
+    }
+
+    const expiresIn =
+      Number.isFinite(config.adminTokenTtlSeconds) && config.adminTokenTtlSeconds > 0
+        ? config.adminTokenTtlSeconds
+        : DEFAULT_ADMIN_TOKEN_TTL_SECONDS;
+
+    const token = jwt.sign(
+      { sub: normalizedEmail, role: 'admin', type: 'access' },
+      config.adminJwtSecret,
+      {
+        issuer: config.adminJwtIssuer,
+        audience: config.adminJwtAudience,
+        expiresIn
+      }
+    );
+
+    return res.json({
+      token,
+      tokenType: 'Bearer',
+      expiresIn
+    });
   };
 }
 
