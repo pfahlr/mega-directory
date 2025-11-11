@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import re
 from typing import Any, Callable, Dict, Iterable, List, Optional
 from urllib.parse import quote_plus, urljoin
 
@@ -40,6 +41,8 @@ DEFAULT_SELECTORS = {
     "link": "a",
     "description": ".listing-description, p",
 }
+MAX_SLUG_LENGTH = 80
+_SLUG_INVALID_CHARS = re.compile(r"[^a-z0-9]+")
 
 
 @dataclass
@@ -67,6 +70,14 @@ class CrawlerBatch:
             "listings": [listing.__dict__ for listing in self.listings],
             "metadata": self.metadata,
         }
+
+
+@dataclass
+class APITarget:
+    name: str
+    endpoint: str
+    token: str
+    timeout: Optional[int] = None
 
 
 @dataclass
@@ -257,6 +268,7 @@ class Crawler:
         self.field_generator = FieldGenerator(llm_client=llm_client)
 
     def run(self, config: Dict[str, Any]) -> List[CrawlerBatch]:
+        api_targets = self._resolve_api_targets(config)
         batches: List[CrawlerBatch] = []
         for target in config.get("targets", []):
             for location_batch in self._iter_location_batches(target):
@@ -278,6 +290,12 @@ class Crawler:
                         listings=listings,
                         metadata=meta,
                     )
+                )
+                self._post_batch_to_api(
+                    batches[-1],
+                    target,
+                    api_targets,
+                    config,
                 )
         return batches
 
@@ -403,6 +421,179 @@ class Crawler:
             return href
         base = Crawler._normalize_subdomain(subdomain) or "https://"
         return urljoin(base + "/", href.lstrip("/"))
+
+    def _resolve_api_targets(self, config: Dict[str, Any]) -> List[APITarget]:
+        targets_config = config.get("api_targets")
+        resolved: List[APITarget] = []
+
+        if isinstance(targets_config, list) and targets_config:
+            for entry in targets_config:
+                if not isinstance(entry, dict):
+                    raise ValueError("Each api_targets entry must be an object with endpoint and token")
+                endpoint = entry.get("endpoint")
+                token = entry.get("token") or entry.get("api_token") or entry.get("bearer_token")
+                if not endpoint or not token:
+                    raise ValueError("Each api_targets entry must include 'endpoint' and 'token'")
+                timeout = self._coerce_positive_timeout(entry.get("timeout"))
+                resolved.append(
+                    APITarget(
+                        name=str(entry.get("name") or endpoint),
+                        endpoint=endpoint,
+                        token=token,
+                        timeout=timeout,
+                    )
+                )
+        else:
+            endpoint = config.get("api_endpoint")
+            token = config.get("api_token")
+            timeout = self._coerce_positive_timeout(config.get("api_request_timeout"))
+            if endpoint and token:
+                resolved.append(
+                    APITarget(
+                        name="default",
+                        endpoint=endpoint,
+                        token=token,
+                        timeout=timeout,
+                    )
+                )
+
+        if not resolved:
+            raise ValueError(
+                "Crawler config must define api_endpoint/api_token or an api_targets list to POST listings"
+            )
+        return resolved
+
+    def _post_batch_to_api(
+        self,
+        batch: CrawlerBatch,
+        target_config: Dict[str, Any],
+        api_targets: List[APITarget],
+        root_config: Dict[str, Any],
+    ) -> None:
+        if not batch.listings or not api_targets:
+            return
+        payloads = self._build_ingestion_payloads(batch, target_config)
+        if not payloads:
+            return
+        for api_target in api_targets:
+            timeout = self._resolve_api_timeout(api_target, target_config, root_config)
+            response = self.session.post(
+                api_target.endpoint,
+                json={"listings": payloads},
+                headers={
+                    "Authorization": f"Bearer {api_target.token}",
+                    "Content-Type": "application/json",
+                },
+                timeout=timeout,
+            )
+            response.raise_for_status()
+
+    def _build_ingestion_payloads(
+        self,
+        batch: CrawlerBatch,
+        target_config: Dict[str, Any],
+    ) -> List[Dict[str, Any]]:
+        category_slug = self._resolve_category_slug(target_config)
+        payloads: List[Dict[str, Any]] = []
+        for listing in batch.listings:
+            payload = self._build_listing_payload(listing, target_config, category_slug)
+            if payload:
+                payloads.append(payload)
+        return payloads
+
+    def _build_listing_payload(
+        self,
+        listing: Listing,
+        target_config: Dict[str, Any],
+        default_category_slug: str,
+    ) -> Optional[Dict[str, Any]]:
+        payload: Dict[str, Any] = dict(listing.fields or {})
+        title = self._normalize_string(payload.get("title")) or self._normalize_string(listing.title)
+        if not title:
+            return None
+        payload["title"] = title
+
+        summary = self._normalize_string(payload.get("summary"))
+        snippet = self._normalize_string(listing.snippet)
+        if not summary and snippet:
+            payload["summary"] = snippet
+
+        source_url = self._normalize_string(payload.get("sourceUrl")) or self._normalize_string(listing.url)
+        if source_url:
+            payload["sourceUrl"] = source_url
+
+        category_slug = payload.get("categorySlug") or default_category_slug
+        normalized_category = self._slugify(category_slug)
+        if not normalized_category:
+            raise ValueError("Unable to determine category slug for API payload")
+        payload["categorySlug"] = normalized_category
+
+        source_name = self._normalize_string(payload.get("sourceName")) or self._resolve_source_name(target_config)
+        if source_name:
+            payload["sourceName"] = source_name
+
+        return {key: value for key, value in payload.items() if value is not None}
+
+    def _resolve_category_slug(self, target_config: Dict[str, Any]) -> str:
+        slug_source = (
+            target_config.get("category_slug")
+            or target_config.get("categorySlug")
+            or target_config.get("category")
+            or ""
+        )
+        slug = self._slugify(slug_source)
+        if not slug:
+            raise ValueError("Crawler target must define a category to derive categorySlug")
+        return slug
+
+    def _resolve_source_name(self, target_config: Dict[str, Any]) -> Optional[str]:
+        for key in ("source_name", "sourceName", "subdomain", "category"):
+            value = self._normalize_string(target_config.get(key))
+            if value:
+                return value
+        return None
+
+    def _resolve_api_timeout(
+        self,
+        api_target: APITarget,
+        target_config: Dict[str, Any],
+        root_config: Dict[str, Any],
+    ) -> float:
+        candidates = (
+            api_target.timeout,
+            target_config.get("api_request_timeout"),
+            root_config.get("api_request_timeout"),
+            target_config.get("request_timeout"),
+            root_config.get("request_timeout"),
+        )
+        for candidate in candidates:
+            coerced = self._coerce_positive_timeout(candidate)
+            if coerced is not None:
+                return coerced
+        return self.request_timeout
+
+    @staticmethod
+    def _coerce_positive_timeout(value: Any) -> Optional[float]:
+        if isinstance(value, (int, float)) and value > 0:
+            return float(value)
+        return None
+
+    @staticmethod
+    def _normalize_string(value: Any) -> Optional[str]:
+        if isinstance(value, str):
+            stripped = value.strip()
+            return stripped or None
+        return None
+
+    @staticmethod
+    def _slugify(value: Any, max_length: int = MAX_SLUG_LENGTH) -> str:
+        if not isinstance(value, str):
+            return ""
+        normalized = _SLUG_INVALID_CHARS.sub("-", value.lower())
+        normalized = normalized.strip("-")
+        if max_length and len(normalized) > max_length:
+            normalized = normalized[:max_length].rstrip("-")
+        return normalized
 
 
 def run_crawler(

@@ -1,6 +1,16 @@
 {
-  "api_endpoint": "http://localhost:3000/api/new-listings",
-  "api_token": "YOUR_API_TOKEN_HERE",
+  "api_targets": [
+    {
+      "name": "dev",
+      "endpoint": "http://localhost:3001/v1/crawler/listings",
+      "token": "YOUR_DEV_API_TOKEN"
+    },
+    {
+      "name": "prod",
+      "endpoint": "https://api.example.com/v1/crawler/listings",
+      "token": "YOUR_PROD_API_TOKEN"
+    }
+  ],
   "targets": [
     {
       "category": "Electricians",
