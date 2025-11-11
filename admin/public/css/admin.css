@@ -23,6 +23,19 @@ body {
   line-height: 1.4;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
 h1,
 h2,
 h3,
@@ -208,9 +221,78 @@ a:focus {
   color: var(--text-muted);
 }
 
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.listing-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.listing-table th,
+.listing-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem 0.75rem;
+  vertical-align: top;
+}
+
+.listing-table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.listing-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-action {
+  width: 90px;
+  text-align: center;
+}
+
+.table-checkbox {
+  text-align: center;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.table-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+}
+
+.listing-table__fields {
+  margin-bottom: 0.75rem;
+}
+
+.listing-table__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.45rem 1.25rem;
+  margin: 0.75rem 0;
+}
+
+.listing-table__notes textarea {
+  min-height: 140px;
+}
+
 .muted {
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+.status-label {
+  text-transform: capitalize;
 }
 
 .btn {
@@ -236,10 +318,40 @@ a:focus {
   background: var(--accent-dark);
 }
 
+.btn.secondary {
+  background: #e5e7eb;
+}
+
+.btn.is-disabled,
+.btn.disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .form-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+}
+
+.pagination-bar__controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .section-heading {
@@ -262,5 +374,14 @@ a:focus {
 
   .site-nav {
     flex-wrap: wrap;
+  }
+
+  .listing-table {
+    min-width: 100%;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
