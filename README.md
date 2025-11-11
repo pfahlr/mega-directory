@@ -43,6 +43,10 @@ docker compose up --build
 
 Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) before running Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
 
+## Railway Deployment
+
+The repository is ready to deploy on [Railway](https://railway.app) using the Dockerfiles under `api/` and `astro/`. Follow the step-by-step guide in `docs/deployment/railway.md` to provision the Postgres plugin, deploy the two services, and wire their environment variables together.
+
 ## Admin & Crawler Tools
 
 The admin interface and crawler agent run outside Docker so that they can be operated from developer machines or private servers.
