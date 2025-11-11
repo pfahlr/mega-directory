@@ -1,4 +1,5 @@
 {
+  "$schema": "./targets.schema.json",
   "api_targets": [
     {
       "name": "dev",
