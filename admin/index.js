@@ -3,6 +3,7 @@ const express = require('express');
 
 const listingsRouter = require('./routes/listings');
 const seoRouter = require('./routes/seo');
+const categoryLocationsRouter = require('./routes/categoryLocations');
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.use('/listings', listingsRouter);
 app.use('/seo', seoRouter);
+app.use('/category-locations', categoryLocationsRouter);
 
 app.use((req, res) => {
   res.status(404).render('errors/not-found', {

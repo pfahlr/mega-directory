@@ -286,9 +286,24 @@ a:focus {
   min-height: 140px;
 }
 
+.category-location-table__title {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+.category-location-table__signals {
+  max-width: 280px;
+}
+
 .muted {
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+.evidence-list {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
 }
 
 .status-label {
