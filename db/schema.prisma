@@ -7,30 +7,247 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  INACTIVE
+}
+
+enum DirectoryStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  MODERATOR
+  CRAWLER
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+enum FeaturedSlotTier {
+  HERO
+  PREMIUM
+  STANDARD
+}
+
+enum LlmTargetType {
+  LISTING
+  CATEGORY
+  DIRECTORY
+  SUBCATEGORY
+}
+
 model Category {
-  id        Int       @id @default(autoincrement())
-  name      String
-  slug      String    @unique
-  listings  Listing[]
+  id              Int            @id @default(autoincrement())
+  name            String
+  slug            String         @unique
+  description     String?
+  metaTitle       String?
+  metaDescription String?
+  heroImageUrl    String?
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  listings      Listing[]
+  directories   Directory[]
+  subcategories Subcategory[]
 }
 
 model Location {
-  id        Int       @id @default(autoincrement())
-  name      String
-  slug      String    @unique
-  listings  Listing[]
+  id              Int        @id @default(autoincrement())
+  name            String
+  slug            String     @unique
+  state           String?
+  country         String?    @default("US")
+  timezone        String?
+  latitude        Float?
+  longitude       Float?
+  metaTitle       String?
+  metaDescription String?
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  listings    Listing[]
+  directories Directory[]
+}
+
+model Directory {
+  id              Int             @id @default(autoincrement())
+  name            String
+  slug            String          @unique
+  subdomain       String          @unique
+  hostname        String?
+  pathPrefix      String?         @default("/")
+  heroTitle       String?
+  heroSubtitle    String?
+  introMarkdown   String?
+  status          DirectoryStatus @default(DRAFT)
+  featuredLimit   Int             @default(3)
+  metaTitle       String?
+  metaDescription String?
+  isActive        Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  categoryId      Int
+  locationId      Int?
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  location   Location? @relation(fields: [locationId], references: [id])
+  listings   Listing[]
+  featuredSlots FeaturedSlot[]
+
+  @@unique([categoryId, locationId])
+}
+
+model Subcategory {
+  id            Int           @id @default(autoincrement())
+  name          String
+  slug          String
+  description   String?
+  displayOrder  Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  categoryId    Int
+  parentId      Int?
+
+  category   Category    @relation(fields: [categoryId], references: [id])
+  parent     Subcategory? @relation("SubcategoryChildren", fields: [parentId], references: [id])
+  children   Subcategory[] @relation("SubcategoryChildren")
+  listings   ListingSubcategory[]
+
+  @@unique([categoryId, slug])
 }
 
 model Listing {
-  id           Int       @id @default(autoincrement())
-  title        String
-  description  String?
-  price        String?
-  url          String
-  category     Category  @relation(fields: [categoryId], references: [id])
-  categoryId   Int
-  location     Location? @relation(fields: [locationId], references: [id])
-  locationId   Int?
-  isActive     Boolean   @default(false)
-  isNew        Boolean   @default(true)
+  id               Int              @id @default(autoincrement())
+  title            String
+  slug             String           @unique
+  tagline          String?
+  summary          String?
+  description      String?
+  websiteUrl       String?
+  contactEmail     String?
+  contactPhone     String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  region           String?
+  postalCode       String?
+  country          String?          @default("US")
+  latitude         Float?
+  longitude        Float?
+  priceRange       String?
+  rating           Float?           @default(0)
+  reviewCount      Int?             @default(0)
+  score            Float?           @default(0)
+  status           ListingStatus    @default(PENDING)
+  isClaimed        Boolean          @default(false)
+  isSponsored      Boolean          @default(false)
+  sourceName       String?
+  sourceUrl        String?
+  sourceId         String?          @unique
+  crawlerRunId     String?
+  rawPayload       Json?
+  generatedPayload Json?
+  notes            String?
+  ingestedAt       DateTime?        @default(now())
+  approvedAt       DateTime?
+  publishedAt      DateTime?
+  archivedAt       DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  categoryId       Int
+  locationId       Int?
+  directoryId      Int?
+  approvedById     Int?
+
+  category      Category             @relation(fields: [categoryId], references: [id])
+  location      Location?            @relation(fields: [locationId], references: [id])
+  directory     Directory?           @relation(fields: [directoryId], references: [id])
+  approvedBy    User?                @relation("ListingApprovedBy", fields: [approvedById], references: [id])
+  subcategories ListingSubcategory[]
+  featuredSlots FeaturedSlot[]
+
+  @@index([directoryId])
+  @@index([status])
+  @@index([categoryId, locationId])
+}
+
+model ListingSubcategory {
+  listing       Listing     @relation(fields: [listingId], references: [id])
+  listingId     Int
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
+  subcategoryId Int
+  assignedAt    DateTime    @default(now())
+
+  @@id([listingId, subcategoryId])
+}
+
+model FeaturedSlot {
+  id          Int              @id @default(autoincrement())
+  tier        FeaturedSlotTier
+  position    Int              @default(1)
+  label       String?
+  startsAt    DateTime         @default(now())
+  endsAt      DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  directoryId Int
+  listingId   Int?
+
+  directory Directory @relation(fields: [directoryId], references: [id])
+  listing   Listing?  @relation(fields: [listingId], references: [id])
+
+  @@unique([directoryId, tier, position])
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  email          String     @unique
+  passwordHash   String
+  displayName    String?
+  role           UserRole   @default(ADMIN)
+  status         UserStatus @default(INVITED)
+  apiTokenHash   String?
+  lastLoginAt    DateTime?
+  lastPasswordAt DateTime?
+  metadata       Json?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  approvedListings Listing[] @relation("ListingApprovedBy")
+}
+
+model LlmFieldConfig {
+  id                Int            @id @default(autoincrement())
+  targetType        LlmTargetType
+  fieldName         String
+  provider          String         @default("openrouter")
+  model             String?
+  promptTemplate    String
+  stopSequences     String[]       @default([])
+  maxTokens         Int?           @default(400)
+  temperature       Float?         @default(0.7)
+  topP              Float?         @default(1)
+  isEnabled         Boolean        @default(true)
+  version           Int            @default(1)
+  outputSchema      Json?
+  postProcessScript String?
+  metadata          Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([targetType, fieldName, version])
 }
