@@ -1,0 +1,93 @@
+---
+interface NavItem {
+  label: string;
+  href: string;
+  ariaLabel?: string;
+}
+
+const defaultNav: NavItem[] = [
+  { label: 'Listings', href: '#listings' },
+  { label: 'Categories', href: '#categories' },
+  { label: 'Insights', href: '#insights' },
+];
+
+const { navItems = defaultNav } = Astro.props;
+---
+
+<header class="relative border-b border-white/10 bg-slate-950/80 text-white shadow-lg shadow-black/20 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+    <a
+      href="/"
+      class="flex items-center gap-3 text-lg font-semibold tracking-tight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+    >
+      <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/50 bg-emerald-500/15 text-base text-emerald-200 shadow-inner shadow-emerald-400/40">
+        MD
+      </span>
+      <span aria-hidden="true">Mega Directory</span>
+      <span class="sr-only">Mega Directory home</span>
+    </a>
+    <nav aria-label="Primary navigation" class="hidden md:flex">
+      <ul class="flex items-center gap-6 text-sm font-semibold text-slate-200">
+        {navItems.map((item) => (
+          <li>
+            <a
+              class="group relative inline-flex items-center pb-1 text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+              href={item.href}
+              aria-label={item.ariaLabel ?? item.label}
+            >
+              {item.label}
+              <span class="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-emerald-400 transition will-change-transform group-hover:scale-x-100"></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a
+        class="hidden rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400 md:inline-flex"
+        href="/admin"
+      >
+        Submit listing
+      </a>
+      <details class="group relative md:hidden">
+        <summary class="flex cursor-pointer items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400">
+          Menu
+          <svg
+            class="h-4 w-4 transition group-open:rotate-180"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="M5 8l5 5 5-5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+          </svg>
+        </summary>
+        <nav
+          aria-label="Mobile navigation"
+          class="glass-panel absolute right-0 z-20 mt-3 w-48 border border-white/20 p-3 text-sm shadow-2xl"
+        >
+          <ul class="space-y-1">
+            {navItems.map((item) => (
+              <li>
+                <a
+                  class="block rounded-md px-3 py-2 text-slate-200 transition hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+                  href={item.href}
+                  aria-label={item.ariaLabel ?? item.label}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                class="mt-2 block rounded-md bg-emerald-400 px-3 py-2 text-center font-semibold text-slate-950"
+                href="/admin"
+              >
+                Submit listing
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
