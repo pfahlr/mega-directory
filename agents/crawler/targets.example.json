@@ -1,6 +1,16 @@
 {
-  "api_endpoint": "http://localhost:3001/api/new-listings",
-  "api_token": "changeme",
+  "api_targets": [
+    {
+      "name": "dev",
+      "endpoint": "http://localhost:3001/v1/crawler/listings",
+      "token": "dev-token"
+    },
+    {
+      "name": "prod",
+      "endpoint": "https://api.yourdomain.com/v1/crawler/listings",
+      "token": "prod-token"
+    }
+  ],
   "targets": [
     {
       "category": "Real Estate",
