@@ -1,0 +1,11 @@
+id: 21
+title: "Dockerize API Server"
+description: >
+  Create a Dockerfile for the Express.js API server.
+  - Use an official Node.js base image (e.g., node:18-slim).
+  - Copy source code and install production dependencies.
+  - Define proper CMD to start the server.
+  - Expose the correct port (e.g., 3001).
+  - Include a `.dockerignore` to minimize context.
+  - Ensure compatibility with Railway deployment.
+dependencies: []

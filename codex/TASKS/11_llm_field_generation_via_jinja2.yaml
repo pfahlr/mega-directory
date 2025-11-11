@@ -1,0 +1,6 @@
+id: 11
+title: LLM Field Generation via Jinja2
+description: Add dynamic field generation with provider/model config, jinja2 templates,
+  and token substitution.
+dependencies:
+- 10

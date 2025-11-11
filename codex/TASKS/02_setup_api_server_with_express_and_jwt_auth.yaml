@@ -1,0 +1,5 @@
+id: 2
+title: Setup API Server with Express and JWT Auth
+description: Create a Node.js Express API server with JWT-based authentication for
+  admin access and a bearer token for crawler communication.
+dependencies: []

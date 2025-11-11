@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review Listings</title>
+</head>
+<body>
+  <h1>Pending Listings</h1>
+  <form method="POST" action="/review">
+    <% listings.forEach((listing, index) => { %>
+      <div>
+        <input type="text" name="listings[<%= index %>][link_text]" value="<%= listing.link_text %>" />
+        <label>Save <input type="checkbox" name="listings[<%= index %>][save]" checked /></label>
+        <label>Deactivate <input type="checkbox" name="listings[<%= index %>][deactivate]" /></label>
+      </div>
+    <% }) %>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>

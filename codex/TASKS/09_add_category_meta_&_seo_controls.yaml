@@ -1,0 +1,8 @@
+id: 9
+title: Add Category Meta & SEO Controls
+description: Include meta title/description fields in DB and expose to frontend via
+  API. Default values fall back if not present.
+dependencies:
+- 3
+- 4
+- 6

@@ -1,0 +1,6 @@
+id: 7
+title: Frontend Subcategory UI & Layout
+description: Allow navigation/filtering of listings by subcategory, maintaining SSR
+  speed and SEO.
+dependencies:
+- 6

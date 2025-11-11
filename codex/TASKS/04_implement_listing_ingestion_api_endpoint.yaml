@@ -1,0 +1,7 @@
+id: 4
+title: Implement Listing Ingestion API Endpoint
+description: Create an endpoint to receive scraped/AI-enriched listings. Validate
+  payloads, store inactive by default.
+dependencies:
+- 2
+- 3

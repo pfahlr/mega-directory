@@ -1,0 +1,7 @@
+id: 8
+title: Setup Featured Listings Logic
+description: Add database support and frontend rendering for featured and tier-2 listings
+  on directory pages.
+dependencies:
+- 3
+- 6

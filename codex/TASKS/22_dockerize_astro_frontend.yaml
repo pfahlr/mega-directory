@@ -1,0 +1,9 @@
+id: 22
+title: "Dockerize Astro Web Frontend"
+description: >
+  Create a Dockerfile for the AstroJS frontend for production deployment.
+  - Use Node.js for build phase and a lightweight image (e.g., nginx or node:alpine) for serving.
+  - Build Astro site during image creation.
+  - Serve using `node` or `vite preview`.
+  - Include `.dockerignore` and build cache optimizations.
+dependencies: []

@@ -1,0 +1,6 @@
+id: 5
+title: Admin Auth Route & Middleware
+description: Protect admin endpoints using JWT. Setup route to authenticate and issue
+  admin tokens.
+dependencies:
+- 2

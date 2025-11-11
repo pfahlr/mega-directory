@@ -1,0 +1,10 @@
+id: 20
+title: Verify Dev Environment Bootstraps Cleanly
+description: Ensure full system (crawler + admin + api + frontend) runs via Docker
+  Compose or parallel scripts in dev mode.
+dependencies:
+- 1
+- 2
+- 3
+- 10
+- 14

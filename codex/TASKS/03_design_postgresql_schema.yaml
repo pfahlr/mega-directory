@@ -1,0 +1,5 @@
+id: 3
+title: Design PostgreSQL Schema
+description: Define tables for directories, listings, subcategories, featured slots,
+  users, and LLM field configuration. Use SQL migrations.
+dependencies: []

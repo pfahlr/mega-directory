@@ -1,0 +1,15 @@
+---
+const { listing } = Astro.props;
+---
+
+<li class="border-b py-4">
+  <div class="flex justify-between items-center">
+    <a href={listing.uri} title={listing.description_short} class="text-blue-600 hover:underline">
+      {listing.link_text}
+    </a>
+    <span class="text-sm text-gray-500">{listing.score}</span>
+  </div>
+  <div class="mt-2 text-sm text-gray-700">
+    {listing.description_long}
+  </div>
+</li>

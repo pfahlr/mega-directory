@@ -1,0 +1,30 @@
+{
+  "api_endpoint": "http://localhost:3000/api/new-listings",
+  "api_token": "YOUR_API_TOKEN_HERE",
+  "targets": [
+    {
+      "category": "Electricians",
+      "locations": [
+        "Holland MI"
+      ],
+      "subdomain": "electricians.example.com",
+      "keywords": [
+        "licensed",
+        "residential",
+        "commercial"
+      ],
+      "listings_per_location": 50,
+      "fields": {
+        "title": {
+          "source": "scrape"
+        },
+        "description": {
+          "source": "ai",
+          "provider": "openai",
+          "model": "gpt-4",
+          "prompt_template": "Describe {{ listing.link_text }} located in {{ location }}."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+id: 17
+title: 'Admin UI: SEO Field Editor'
+description: Allow meta title/description editing for category and category+location
+  combinations.
+dependencies:
+- 9
+- 14

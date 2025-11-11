@@ -1,0 +1,7 @@
+id: 16
+title: 'Admin UI: Category/Location Approval'
+description: Show new discovered category+location pairs for approval. On accept,
+  add to DB.
+dependencies:
+- 3
+- 14

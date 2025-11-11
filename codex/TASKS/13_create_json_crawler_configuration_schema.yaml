@@ -1,0 +1,6 @@
+id: 13
+title: Create JSON Crawler Configuration Schema
+description: Define JSON schema for specifying category, location, keywords, and per-field
+  LLM config.
+dependencies:
+- 10

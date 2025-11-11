@@ -1,0 +1,7 @@
+id: 15
+title: 'Admin UI: Listing Review Table'
+description: Paginate and edit new listings with Save and Deactivate checkboxes. Submit
+  changes to API.
+dependencies:
+- 4
+- 14

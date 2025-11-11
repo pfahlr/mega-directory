@@ -1,0 +1,5 @@
+id: 1
+title: Initialize Astro Frontend
+description: Scaffold the AstroJS project with Tailwind CSS and accessibility-focused
+  base components. Use minimal template and install base dependencies.
+dependencies: []

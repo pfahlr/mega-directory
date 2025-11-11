@@ -1,0 +1,10 @@
+id: 18
+title: Deploy Web + API to Railway
+description: Deploy Astro frontend, API server, and PostgreSQL DB to Railway using
+  Dockerfile.
+dependencies:
+- 1
+- 2
+- 3
+- 4
+- 6

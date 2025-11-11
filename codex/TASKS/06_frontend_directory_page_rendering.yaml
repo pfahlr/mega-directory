@@ -1,0 +1,7 @@
+id: 6
+title: Frontend Directory Page Rendering
+description: Generate directory pages using SSR in Astro, grouped by category/location.
+  Listings sorted by score with tooltip and expandable content.
+dependencies:
+- 1
+- 3

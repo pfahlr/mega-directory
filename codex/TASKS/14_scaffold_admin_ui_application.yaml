@@ -1,0 +1,7 @@
+id: 14
+title: Scaffold Admin UI Application
+description: Create a lightweight standalone app for reviewing and editing incoming
+  listings and category SEO fields.
+dependencies:
+- 2
+- 5

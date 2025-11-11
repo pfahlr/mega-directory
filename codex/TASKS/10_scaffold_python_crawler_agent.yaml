@@ -1,0 +1,5 @@
+id: 10
+title: Scaffold Python Crawler Agent
+description: Build Python module using requests, BeautifulSoup4, and requests-cache.
+  Read from config and support category-location batches.
+dependencies: []

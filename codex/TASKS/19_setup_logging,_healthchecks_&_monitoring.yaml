@@ -1,0 +1,7 @@
+id: 19
+title: Setup Logging, Healthchecks & Monitoring
+description: Add logging for API + crawler, with endpoint healthcheck. Suggest UptimeRobot
+  or Railway logging hooks.
+dependencies:
+- 2
+- 10
