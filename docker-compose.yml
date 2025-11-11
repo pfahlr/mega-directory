@@ -1,12 +1,29 @@
 version: '3.8'
+
 services:
   api:
-    build: .
+    build:
+      context: ./api
     ports:
       - "3001:3001"
-    env_file: .env
+    env_file:
+      - ./api/.env
     depends_on:
       - db
+    volumes:
+      - ./api:/app
+
+  astro:
+    build:
+      context: ./astro
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./astro/.env
+    depends_on:
+      - api
+    volumes:
+      - ./astro:/app
 
   db:
     image: postgres:17

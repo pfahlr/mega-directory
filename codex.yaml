@@ -1,0 +1,50 @@
+version: 1
+tasks:
+  - id: '00'
+    path: codex/TASKS/00_prepare_repository.yaml
+  - id: '01'
+    path: codex/TASKS/01_initialize_astro_frontend.yaml
+  - id: '02'
+    path: codex/TASKS/02_setup_api_server_with_express_and_jwt_auth.yaml
+  - id: '03'
+    path: codex/TASKS/03_design_postgresql_schema.yaml
+  - id: '04'
+    path: codex/TASKS/04_implement_listing_ingestion_api_endpoint.yaml
+  - id: '05'
+    path: codex/TASKS/05_admin_auth_route_&_middleware.yaml
+  - id: '06'
+    path: codex/TASKS/06_frontend_directory_page_rendering.yaml
+  - id: '07'
+    path: codex/TASKS/07_frontend_subcategory_ui_&_layout.yaml
+  - id: '08'
+    path: codex/TASKS/08_setup_featured_listings_logic.yaml
+  - id: '09'
+    path: codex/TASKS/09_add_category_meta_&_seo_controls.yaml
+  - id: '10'
+    path: codex/TASKS/10_scaffold_python_crawler_agent.yaml
+  - id: '11'
+    path: codex/TASKS/11_llm_field_generation_via_jinja2.yaml
+  - id: '12'
+    path: codex/TASKS/12_post_listings_from_crawler_to_api_server.yaml
+  - id: '13'
+    path: codex/TASKS/13_create_json_crawler_configuration_schema.yaml
+  - id: '14'
+    path: codex/TASKS/14_scaffold_admin_ui_application.yaml
+  - id: '15'
+    path: codex/TASKS/15_admin_ui:_listing_review_table.yaml
+  - id: '16'
+    path: codex/TASKS/16_admin_ui:_category_location_approval.yaml
+  - id: '17'
+    path: codex/TASKS/17_admin_ui:_seo_field_editor.yaml
+  - id: '18'
+    path: codex/TASKS/18_deploy_web_+_api_to_railway.yaml
+  - id: '19'
+    path: codex/TASKS/19_setup_logging,_healthchecks_&_monitoring.yaml
+  - id: '20'
+    path: codex/TASKS/20_verify_dev_environment_bootstraps_cleanly.yaml
+  - id: '21'
+    path: codex/TASKS/21_dockerize_api_server.yaml
+  - id: '22'
+    path: codex/TASKS/22_dockerize_astro_frontend.yaml
+  - id: '23'
+    path: codex/TASKS/23_docker_compose_local_dev.yaml
