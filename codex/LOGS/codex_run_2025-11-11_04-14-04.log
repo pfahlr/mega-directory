@@ -1,0 +1,9 @@
+🚀 Codex Runner @ Tue Nov 11 04:14:04 AM EST 2025
+Working Dir: /home/rick/Development/mega-directory
+Task Dir: codex/TASKS
+Log Dir: codex/LOGS
+Auto-Commit: true
+Config File: ./codex.toml
+Tasks: 03_design_postgresql_schema 04_implement_listing_ingestion_api_endpoint 05_admin_auth_route_and_middleware 23_docker_compose_local_dev 06_frontend_directory_page_rendering 07_frontend_subcategory_ui_and_layout 08_setup_featured_listings_logic 09_add_category_meta_and_seo_controls 10_scaffold_python_crawler_agent 11_llm_field_generation_via_jinja2 12_post_listings_from_crawler_to_api_server 13_create_json_crawler_configuration_schema 14_scaffold_admin_ui_application
+===========================================
+🟡 Executing task: 03_design_postgresql_schema
