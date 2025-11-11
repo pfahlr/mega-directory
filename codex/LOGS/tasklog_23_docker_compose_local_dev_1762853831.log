@@ -1,0 +1,1323 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7246-c585-7703-ba21-b0455f2fd3d8
+--------
+user
+Implement the functionality described in codex/TASKS/23_docker_compose_local_dev.yaml, then verify with any available tests.
+
+thinking
+**Clarifying environment and constraints**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 38ms:
+admin
+agents
+AGENTS.md
+api
+astro
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+README.md
+
+thinking
+**Locating specific YAML file**
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/23_docker_compose_local_dev.yaml" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 23
+title: "Define Multi-Service Docker Compose for Local Dev"
+description: >
+  Create a docker-compose.yaml to orchestrate API server, Astro frontend, and Postgres.
+  - Define services for: API (Express), frontend (Astro), Postgres.
+  - Map ports (e.g., 3000 for frontend, 3001 for API).
+  - Use volumes for Postgres persistence.
+  - Include basic healthchecks for services.
+  - Make services interoperable for local testing.
+dependencies: [21, 22]
+
+thinking
+**Reviewing docker-compose setup**
+exec
+bash -lc "sed -n '1,200p' docker-compose.yml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./api/.env
+    depends_on:
+      - db
+    volumes:
+      - ./api:/app
+
+  astro:
+    build:
+      context: ./astro
+    ports:
+      - "3000:3000"
+
+thinking
+**Reviewing docker-compose requirements and existing setup**
+exec
+bash -lc 'ls api' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+Dockerfile
+index.js
+node_modules
+package.json
+package-lock.json
+test
+
+thinking
+**Checking presence of api/.env file**
+exec
+bash -lc 'ls astro' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+astro.config.mjs
+dist
+Dockerfile
+node_modules
+package.json
+package-lock.json
+postcss.config.cjs
+public
+README.md
+src
+tailwind.config.mjs
+tsconfig.json
+
+thinking
+**Checking environment configuration**
+exec
+bash -lc "sed -n '1,200p' api/index.js" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+const express = require('express');
+const jwt = require('jsonwebtoken');
+
+const DEFAULT_PORT = 3001;
+const DEFAULT_LISTING_STATUS = 'INACTIVE';
+const MAX_SLUG_LENGTH = 80;
+const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
+
+function resolveConfig(overrides = {}) {
+  const parsedPort = process.env.PORT ? parseInt(process.env.PORT, 10) : undefined;
+  const envPort = Number.isNaN(parsedPort) ? undefined : parsedPort;
+  const parsedAdminTokenTtl =
+    overrides.adminTokenTtlSeconds ??
+    (process.env.ADMIN_TOKEN_TTL_SECONDS
+      ? parseInt(process.env.ADMIN_TOKEN_TTL_SECONDS, 10)
+      : undefined);
+
+  const baseConfig = {
+    port: overrides.port ?? envPort ?? DEFAULT_PORT,
+    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+
+thinking
+**Pausing action**
+exec
+bash -lc "sed -n '200,400p' api/index.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+    console.log(`API server running at http://localhost:${port}`);
+  });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = {
+  createServer
+};
+
+function createListingIngestionHandler(app) {
+  return (req, res) => {
+    const payloads = normalizeListingBatch(req.body);
+    if (!payloads) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
+    }
+
+thinking
+**Reviewing Docker Compose and environment setup**
+exec
+bash -lc "sed -n '1,200p' api/Dockerfile" in /var/home/rick/Development/mega-directory succeeded in 37ms:
+FROM node:18
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3001
+
+CMD ["npm", "start"]
+
+thinking
+**Checking start script in package**
+exec
+bash -lc 'cat api/package.json' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+{
+  "name": "mega-directory-api",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
+
+thinking
+**Checking Dockerfile for Astro**
+exec
+bash -lc "sed -n '1,200p' astro/Dockerfile" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+FROM node:18
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+
+thinking
+**Planning healthcheck strategies**
+exec
+bash -lc 'ls db' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+migrations
+schema.prisma
+seed.ts
+
+thinking
+**Evaluating Docker Compose dependencies and environment setup**
+exec
+bash -lc 'ls -a api' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+.
+..
+Dockerfile
+index.js
+node_modules
+package.json
+package-lock.json
+test
+
+thinking
+**Checking Docker Compose .env file references**
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/21_*.yaml" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 21
+title: "Dockerize API Server"
+description: >
+  Create a Dockerfile for the Express.js API server.
+  - Use an official Node.js base image (e.g., node:18-slim).
+  - Copy source code and install production dependencies.
+  - Define proper CMD to start the server.
+  - Expose the correct port (e.g., 3001).
+  - Include a `.dockerignore` to minimize context.
+  - Ensure compatibility with Railway deployment.
+dependencies: []
+
+thinking
+**Requesting specific file**
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/22_*.yaml" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+id: 22
+title: "Dockerize Astro Web Frontend"
+description: >
+  Create a Dockerfile for the AstroJS frontend for production deployment.
+  - Use Node.js for build phase and a lightweight image (e.g., nginx or node:alpine) for serving.
+  - Build Astro site during image creation.
+  - Serve using `node` or `vite preview`.
+  - Include `.dockerignore` and build cache optimizations.
+dependencies: []
+
+thinking
+**Planning Docker Compose updates and tests**
+
+I’m thinking about how to enhance the existing Docker Compose setup by adding healthchecks, environment configs, volumes, and possibly networking. Since tests exist, especially in the API, I want to run those after the changes to ensure nothing breaks. The work is moderate complexity, so I’ll create a three-step plan: analyze current Compose and requirements, update Compose accordingly, then run tests to verify everything.
+Plan update
+Need to enhance docker-compose so all three services work together with health checks and shared config, then run tests to confirm nothing breaks.
+  → Review existing docker-compose/service configs and identify missing requirements.
+  • Update docker-compose.yml to add networking, env wiring, and health checks for API, Astro, and Postgres.
+  • Run available automated tests to verify changes.
+
+thinking
+**Marking step 1 completion**
+Plan update
+  ✓ Review existing docker-compose/service configs and identify missing requirements.
+  → Update docker-compose.yml to add networking, env wiring, and health checks for API, Astro, and Postgres.
+  • Run available automated tests to verify changes.
+
+thinking
+**Analyzing Docker Compose health checks**
+
+I'm figuring out how to add health checks and `depends_on` conditions in the Docker Compose setup to ensure service readiness, considering the varying support for these features across Compose versions and images. I'll also check the Astro app for a health endpoint to use in its health check.
+exec
+bash -lc 'ls astro/src' in /var/home/rick/Development/mega-directory succeeded in 53ms:
+components
+layouts
+pages
+styles
+
+thinking
+**Listing pages**
+exec
+bash -lc 'ls astro/src/pages' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+index.astro
+
+thinking
+**Adding health checks for services**
+
+I'm setting up a health check for the root HTTP path since there's no /health endpoint, and adding one for Postgres using `pg_isready`. I want to confirm `pg_isready` is in the Postgres image, and consider whether the API environment needs database connection info or an API base URL for Astro, so I'll check the Astro code for `API_BASE_URL` usage.
+exec
+bash -lc 'rg -n "API" -n astro -g"*.ts"' in /var/home/rick/Development/mega-directory exited 1 in 41ms:
+
+
+thinking
+**Searching for fetch usage**
+exec
+bash -lc 'rg -n "fetch" -n astro/src' in /var/home/rick/Development/mega-directory exited 1 in 42ms:
+
+
+thinking
+**Verifying API call expectations**
+exec
+bash -lc "sed -n '1,200p' astro/src/pages/index.astro" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import HeroSection from '../components/HeroSection.astro';
+import ListingItem from '../components/ListingItem.astro';
+
+const featuredListings = [
+  {
+    link_text: 'Northwind Coffee Roasters',
+    uri: 'https://example.com/northwind',
+    description_short: 'Solar-powered roastery shipping to 38 states with zero-waste packaging.',
+    description_long:
+      'Certified organic beans, flexible wholesale programs, and an ADA-compliant tasting room that doubles as a community studio.',
+    score: 97,
+    badges: ['Carbon neutral', 'Wholesale ready', 'Local pickup'],
+    category: 'Food & Beverage',
+    location: 'Portland, OR',
+    slug: 'northwind-coffee',
+  },
+  {
+
+thinking
+**Evaluating docker-compose and environment setup**
+exec
+bash -lc "rg --files -g '*.env'" in /var/home/rick/Development/mega-directory exited 1 in 92ms:
+
+
+thinking
+**Investigating missing .env references**
+exec
+bash -lc 'rg -n "ADMIN_JWT_SECRET" -n' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+api/index.js:20:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+api/index.js:42:    missing.push('ADMIN_JWT_SECRET');
+codex/LOGS/tasklog_23_docker_compose_local_dev_1762853831.log:123:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_23_docker_compose_local_dev_1762853831.log:337:bash -lc 'rg -n "ADMIN_JWT_SECRET" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:124:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:275:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:287:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:290:api/index.js:21:    missing.push('ADMIN_JWT_SECRET');
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:291:codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:124:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:294:codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:275:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:299:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:69:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:302:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:77:    missing.push('ADMIN_JWT_SECRET');
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:303:codex/LOGS/tasklog_04_implement_listing_ingestion_api_endpoint_1762853214.log:2857:    13	    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:306:codex/LOGS/tasklog_03_design_postgresql_schema_1762852701.log:269:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:323:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:326:api/index.js:21:    missing.push('ADMIN_JWT_SECRET');
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:330:codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:124:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:335:codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:275:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:436:api/index.js:13:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET,
+codex/LOGS/tasklog_05_admin_auth_route_and_middleware_1762853548.log:439:api/index.js:21:    missing.push('ADMIN_JWT_SECRET');
+
+thinking
+**Examining environment variable needs**
+exec
+bash -lc 'rg --files api/test' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+api/test/server.test.js
+exec
+bash -lc "sed -n '1,200p' api/test/server.test.js" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+const test = require('node:test');
+const assert = require('node:assert');
+const jwt = require('jsonwebtoken');
+const { createServer } = require('..');
+
+const baseConfig = Object.freeze({
+  adminJwtSecret: 'test-admin-secret',
+  adminJwtIssuer: 'mega-directory',
+  adminJwtAudience: 'admin',
+  adminLoginEmail: 'admin@example.com',
+  adminLoginPasscode: 'letmein',
+  crawlerBearerToken: 'crawler-token'
+});
+
+function findRoute(app, method, path) {
+  const stack = (app._router && app._router.stack) || (app.router && app.router.stack) || [];
+  const methodName = method.toLowerCase();
+  return stack.find(
+    (layer) => layer.route && layer.route.path === path && layer.route.methods[methodName]
+  );
+
+thinking
+**Awaiting further instructions**
+exec
+bash -lc "sed -n '200,400p' api/test/server.test.js" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+  const res = runRoute(
+    route,
+    createRequest({ method: 'POST', headers: { Authorization: 'Bearer wrong-token' } }),
+    createResponse()
+  );
+
+  assert.strictEqual(res.statusCode, 401);
+  assert.strictEqual(res.body.error, 'Crawler token missing or invalid');
+});
+
+test('crawler ping accepts matching bearer token', () => {
+  const app = createServer(baseConfig);
+  const route = findRoute(app, 'post', '/v1/crawler/ping');
+  const req = createRequest({
+    method: 'POST',
+    headers: { Authorization: `Bearer ${baseConfig.crawlerBearerToken}` }
+  });
+  const res = runRoute(route, req, createResponse());
+
+  assert.strictEqual(res.statusCode, 200);
+
+thinking
+**Planning multi-service Docker Compose update**
+
+I'm laying out a detailed plan to revise the docker-compose.yml for a multi-service setup including api, astro, and db, focusing on healthy service dependencies, environment variables for local development, healthchecks, volumes for hot reloading, and networks—making sure the API runs with the correct env and dependencies for smooth startup.
+file update
+M /var/home/rick/Development/mega-directory/docker-compose.yml
+@@ -7,9 +7,24 @@
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+@@ -19,9 +34,19 @@
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+@@ -31,3 +56,3 @@
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+@@ -38,2 +63,10 @@
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+@@ -41 +74,4 @@
+   pgdata:
++
++networks:
++  app-network:
+apply_patch(auto_approved=true) exited 0 in 5ms:
+Success. Updated the following files:
+M docker-compose.yml
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Validating Compose setup and dependencies**
+
+I'm double-checking the Compose file to ensure all services coordinate properly with health checks, environment setups, and dependency ordering. I'm particularly focused on confirming that the `curl` command is available in the `node:18` image for health checks, verifying the usage of string quoting, and making sure the `depends_on` with health condition is supported for our Compose version. I want to avoid any assumptions about installed tools by either trusting the base image or customizing it if needed. All these checks aim to finalize step 2 of the plan confidently.
+Plan update
+  ✓ Review existing docker-compose/service configs and identify missing requirements.
+  ✓ Update docker-compose.yml to add networking, env wiring, and health checks for API, Astro, and Postgres.
+  → Run available automated tests to verify changes.
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Preparing to run tests**
+exec
+bash -lc 'cat astro/package.json' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+{
+  "name": "mega-directory-astro",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.15.5"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^5.1.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14"
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Running tests in API directory**
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory/api succeeded in 911ms:
+
+> mega-directory-api@0.1.0 test
+> node --test
+
+TAP version 13
+# Subtest: test/server.test.js
+ok 1 - test/server.test.js
+  ---
+  duration_ms: 522.267675
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 543.260689
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Updating plan progress**
+Plan update
+  ✓ Review existing docker-compose/service configs and identify missing requirements.
+  ✓ Update docker-compose.yml to add networking, env wiring, and health checks for API, Astro, and Postgres.
+  ✓ Run available automated tests to verify changes.
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Preparing final summary message**
+exec
+bash -lc 'nl -ba docker-compose.yml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+     1	version: '3.8'
+     2	
+     3	services:
+     4	  api:
+     5	    build:
+     6	      context: ./api
+     7	    ports:
+     8	      - '3001:3001'
+     9	    environment:
+    10	      PORT: 3001
+    11	      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
+    12	      ADMIN_JWT_SECRET: local-dev-secret
+    13	      ADMIN_LOGIN_EMAIL: admin@example.com
+    14	      ADMIN_LOGIN_PASSCODE: localpass
+    15	      CRAWLER_BEARER_TOKEN: crawler-dev-token
+    16	      ADMIN_TOKEN_TTL_SECONDS: 900
+    17	    depends_on:
+    18	      db:
+    19	        condition: service_healthy
+    20	    healthcheck:
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+
+thinking
+**Finalizing response structure**
+
+I'm preparing a clear final message that highlights the Docker Compose update wiring together API, Astro, and Postgres with health checks and environment settings, referencing specific lines in `docker-compose.yml`. I’ll also include a concise bullet list for the test command results and suggest logical next steps like running `docker compose up --build` to verify integration. This should follow the format rules with optional headers and no blank lines before bullets.
+codex
+**Compose Update**
+- Expanded `docker-compose.yml:4-77` to wire API, Astro, and Postgres together with explicit env vars for local credentials, shared `app-network`, and `pgdata` volume so services can talk to each other while persisting DB state.
+- Added health checks for every service (`curl` probes on API `/health` and Astro root, `pg_isready` for Postgres) plus `depends_on` conditions so the frontend waits for a healthy API and the API waits for a healthy database.
+- Provided sensible defaults such as `DATABASE_URL`, `API_BASE_URL`, and admin/crawler secrets so `docker compose up` works out of the box without missing `.env` files.
+
+**Tests**
+- `api`: `npm test` (pass)
+
+Next steps: 1) Run `docker compose up --build` to confirm the three containers start cleanly using the new health checks and networking.
+file update:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 1aa318b7b0872a25e660c4fa96ab9b150b76445b..2d2c19cb540a09821fae0578f0e2e03766eb2c2c
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -5,37 +5,73 @@
+     build:
+       context: ./api
+     ports:
+-      - "3001:3001"
+-    env_file:
+-      - ./api/.env
++      - '3001:3001'
++    environment:
++      PORT: 3001
++      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
++      ADMIN_JWT_SECRET: local-dev-secret
++      ADMIN_LOGIN_EMAIL: admin@example.com
++      ADMIN_LOGIN_PASSCODE: localpass
++      CRAWLER_BEARER_TOKEN: crawler-dev-token
++      ADMIN_TOKEN_TTL_SECONDS: 900
+     depends_on:
+-      - db
++      db:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3001/health || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 5s
+     volumes:
+       - ./api:/app
++    networks:
++      - app-network
+ 
+   astro:
+     build:
+       context: ./astro
+     ports:
+-      - "3000:3000"
+-    env_file:
+-      - ./astro/.env
++      - '3000:3000'
++    environment:
++      PORT: 3000
++      API_BASE_URL: http://api:3001
+     depends_on:
+-      - api
++      api:
++        condition: service_healthy
++    healthcheck:
++      test: ['CMD-SHELL', 'curl -fsS http://localhost:3000 || exit 1']
++      interval: 10s
++      timeout: 3s
++      retries: 5
++      start_period: 10s
+     volumes:
+       - ./astro:/app
++    networks:
++      - app-network
+ 
+   db:
+     image: postgres:17
+     restart: always
+     ports:
+-      - "5432:5432"
++      - '5432:5432'
+     environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
+       POSTGRES_DB: mega_directory
+     volumes:
+       - pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ['CMD-SHELL', 'pg_isready -U postgres -d mega_directory']
++      interval: 10s
++      timeout: 5s
++      retries: 5
++      start_period: 5s
++    networks:
++      - app-network
+ 
+ volumes:
+   pgdata:
++
++networks:
++  app-network:
+
+tokens used
+57,300
+**Compose Update**
+- Expanded `docker-compose.yml:4-77` to wire API, Astro, and Postgres together with explicit env vars for local credentials, shared `app-network`, and `pgdata` volume so services can talk to each other while persisting DB state.
+- Added health checks for every service (`curl` probes on API `/health` and Astro root, `pg_isready` for Postgres) plus `depends_on` conditions so the frontend waits for a healthy API and the API waits for a healthy database.
+- Provided sensible defaults such as `DATABASE_URL`, `API_BASE_URL`, and admin/crawler secrets so `docker compose up` works out of the box without missing `.env` files.
+
+**Tests**
+- `api`: `npm test` (pass)
+
+Next steps: 1) Run `docker compose up --build` to confirm the three containers start cleanly using the new health checks and networking.
