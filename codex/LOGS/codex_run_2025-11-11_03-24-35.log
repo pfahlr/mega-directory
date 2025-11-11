@@ -1,0 +1,17 @@
+🚀 Codex Runner @ Tue Nov 11 03:24:35 AM EST 2025
+Working Dir: /home/rick/Development/mega-directory
+Task Dir: codex/TASKS
+Log Dir: codex/LOGS
+Auto-Commit: true
+Config File: ./codex.toml
+Tasks: 01_initialize_astro_frontend 02_initialize_api_server 03_initialize_database_schema 04_initialize_admin_app 05_initialize_python_crawler 23_docker_compose_local_dev 06_api_endpoints_listings 07_api_endpoints_categories 08_api_token_auth
+===========================================
+🟡 Executing task: 01_initialize_astro_frontend
+✅ Task 01_initialize_astro_frontend completed successfully.
+📝 Committing files for 01_initialize_astro_frontend...
+[main 0d6c4ea] Codex Task: 01_initialize_astro_frontend
+ 5 files changed, 330 insertions(+), 49 deletions(-)
+📝 Commit created: 0d6c4ea3a684fb92fc084e2b2f6a4a5606aaea45
+🧯 Rollback with: git reset --soft 0d6c4ea3a684fb92fc084e2b2f6a4a5606aaea45^ && git restore --staged .
+-------------------------------------------
+❌ Spec not found: codex/TASKS/02_initialize_api_server.yaml
