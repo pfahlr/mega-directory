@@ -92,6 +92,8 @@ It launches:
 
 Override any port or secret via environment variables (e.g., `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT`, `CRAWLER_INTERVAL`, `ADMIN_JWT_SECRET`, `CRAWLER_API_TOKEN`). Set `SKIP_CRAWLER=1` if you want to keep the crawler offline. The script requires `npm` and `python3` to be available on your PATH.
 
+The bootstrapper now installs missing dependencies for you: it runs `npm install` for the API, Astro, and admin workspaces when their `node_modules/` folders are absent and installs the crawler's Python requirements from `agents/crawler/requirements-dev.txt` (using `pip --user` unless you're already inside a virtual environment). Set `DEV_BOOTSTRAP_FORCE_INSTALL=1` to force a reinstall if you need to pick up dependency changes.
+
 ## Project Structure
 
 ```
