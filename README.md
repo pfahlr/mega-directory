@@ -68,8 +68,29 @@ The admin interface and crawler agent run outside Docker so that they can be ope
   cd agents/crawler
   python main.py
   ```
+  To replay the built-in demo data against your local API without touching real websites, run:
+  ```bash
+  python agents/crawler/dev_runner.py --run-once
+  ```
 
 Additional details about each agent live in `docs/AGENTS.md`.
+
+### Dev Bootstrap Script
+
+When you need the entire stack (API + Astro + Admin + crawler) running locally, use the helper script:
+
+```bash
+./scripts/dev-bootstrap.sh
+```
+
+It launches:
+
+- the Express API on `http://localhost:3001` with sensible JWT/crawler secrets,
+- the Astro frontend on `http://localhost:3000`,
+- the Admin UI on `http://localhost:4000`, and
+- a demo crawler loop that replays sample listings into the API every 45 seconds so you always have fresh data to review.
+
+Override any port or secret via environment variables (e.g., `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT`, `CRAWLER_INTERVAL`, `ADMIN_JWT_SECRET`, `CRAWLER_API_TOKEN`). Set `SKIP_CRAWLER=1` if you want to keep the crawler offline. The script requires `npm` and `python3` to be available on your PATH.
 
 ## Project Structure
 
