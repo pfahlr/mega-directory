@@ -7,6 +7,8 @@ const baseConfig = Object.freeze({
   adminJwtSecret: 'test-admin-secret',
   adminJwtIssuer: 'mega-directory',
   adminJwtAudience: 'admin',
+  adminLoginEmail: 'admin@example.com',
+  adminLoginPasscode: 'letmein',
   crawlerBearerToken: 'crawler-token'
 });
 
@@ -123,6 +125,73 @@ test('admin ping accepts valid JWT', () => {
   assert.strictEqual(res.statusCode, 200);
   assert.deepStrictEqual(res.body, { status: 'admin-ok' });
   assert.strictEqual(req.admin.role, 'admin');
+});
+
+test('admin auth route rejects missing credentials', () => {
+  const app = createServer(baseConfig);
+  const route = findRoute(app, 'post', '/v1/admin/auth');
+  const res = runRoute(
+    route,
+    createRequest({ method: 'POST', body: {} }),
+    createResponse()
+  );
+
+  assert.strictEqual(res.statusCode, 400);
+  assert.strictEqual(res.body.error, 'Invalid admin credentials');
+  assert.ok(Array.isArray(res.body.details));
+  assert.ok(res.body.details.some((msg) => msg.includes('email')));
+  assert.ok(res.body.details.some((msg) => msg.includes('passcode')));
+});
+
+test('admin auth route rejects invalid credentials', () => {
+  const app = createServer(baseConfig);
+  const route = findRoute(app, 'post', '/v1/admin/auth');
+  const res = runRoute(
+    route,
+    createRequest({
+      method: 'POST',
+      body: { email: 'admin@example.com', passcode: 'wrong-pass' }
+    }),
+    createResponse()
+  );
+
+  assert.strictEqual(res.statusCode, 401);
+  assert.strictEqual(res.body.error, 'Invalid admin credentials');
+});
+
+test('admin auth issues JWTs that unlock protected routes', () => {
+  const app = createServer(baseConfig);
+  const authRoute = findRoute(app, 'post', '/v1/admin/auth');
+  const loginRes = runRoute(
+    authRoute,
+    createRequest({
+      method: 'POST',
+      body: { email: baseConfig.adminLoginEmail, passcode: baseConfig.adminLoginPasscode }
+    }),
+    createResponse()
+  );
+
+  assert.strictEqual(loginRes.statusCode, 200);
+  assert.strictEqual(typeof loginRes.body.token, 'string');
+  assert.strictEqual(loginRes.body.tokenType, 'Bearer');
+  assert.strictEqual(loginRes.body.expiresIn, 900);
+
+  const decoded = jwt.verify(loginRes.body.token, baseConfig.adminJwtSecret, {
+    issuer: baseConfig.adminJwtIssuer,
+    audience: baseConfig.adminJwtAudience
+  });
+  assert.strictEqual(decoded.role, 'admin');
+  assert.strictEqual(decoded.sub, baseConfig.adminLoginEmail.toLowerCase());
+
+  const pingRoute = findRoute(app, 'get', '/v1/admin/ping');
+  const pingRes = runRoute(
+    pingRoute,
+    createRequest({ headers: { Authorization: `Bearer ${loginRes.body.token}` } }),
+    createResponse()
+  );
+
+  assert.strictEqual(pingRes.statusCode, 200);
+  assert.deepStrictEqual(pingRes.body, { status: 'admin-ok' });
 });
 
 test('crawler ping rejects invalid bearer token', () => {
