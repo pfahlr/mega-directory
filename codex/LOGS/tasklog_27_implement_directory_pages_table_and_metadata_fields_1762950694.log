@@ -1,0 +1,2617 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a780c-c669-7e50-ab6d-fd3b69ad17a4
+--------
+user
+Implement the functionality described in codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml, then verify with any available tests.
+ERROR: MCP client for `mcp` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.mcp]
+startup_timeout_sec = XX
+ERROR: MCP client for `exa` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.exa]
+startup_timeout_sec = XX
+ERROR: MCP client for `vibe-check-mcp-server` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.vibe-check-mcp-server]
+startup_timeout_sec = XX
+
+thinking
+**Preparing to list files for planning**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 44ms:
+AGENTS.md
+apps
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+docs.tar
+env.json
+Makefile
+package.json
+packages
+README.md
+scripts
+tests
+tsconfig.json
+
+thinking
+**Reading task file contents**
+exec
+bash -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Opening file number 27**
+exec
+bash -lc 'cat codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory succeeded in 46ms:
+id: 27
+filename: 27_implement_directory_pages_table_and_metadata_fields.yaml
+title: Implement Directory Pages Table and Metadata Fields
+description: >
+- Create the directory_pages table to support manually managed directories with custom SEO metadata.
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+Include fields: title, meta_keywords, meta_description, og_image_url, subdomain, subdirectory, location_agnostic (bool).
+dependencies: []
+
+thinking
+**Preparing to explore repo structure**
+exec
+bash -lc 'rg -n "directory_pages" -n' in /var/home/rick/Development/mega-directory succeeded in 49ms:
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:13:Implement the functionality described in codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml, then verify with any available tests.
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:74:bash -lc 'cat codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory succeeded in 46ms:
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:76:filename: 27_implement_directory_pages_table_and_metadata_fields.yaml
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:79:- Create the directory_pages table to support manually managed directories with custom SEO metadata.
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:87:bash -lc 'rg -n "directory_pages" -n' in /var/home/rick/Development/mega-directory
+db/schema.prisma:242:  @@map("directory_pages")
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:81:          - directory_pages: [GET, POST, PUT, DELETE]
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:489:db/migrations/001_core_schema.sql:77:  CONSTRAINT "directory_pages_categoryId_locationId_key" UNIQUE ("categoryId", "locationId"),
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:490:db/migrations/001_core_schema.sql:79:  CONSTRAINT "directory_pages_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:1037:  @@map(\"directory_pages\")
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:1512:      175  11-12-2025 05:40   25_implement_directory_pages_schema.yaml
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:421:          - directory_pages: [GET, POST, PUT, DELETE]
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:724:codex/TASKS/31_build_map_widget_for_directory_pages_with_location-aware_listings.yaml:6:- Implement directory rendering logic for listings + metadata display.
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:726:codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml:2:filename: 27_implement_directory_pages_table_and_metadata_fields.yaml
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:727:codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml:5:- Create the directory_pages table to support manually managed directories with custom SEO metadata.
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:732:bash -lc 'cat codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory succeeded in 46ms:
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:734:filename: 27_implement_directory_pages_table_and_metadata_fields.yaml
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:737:- Create the directory_pages table to support manually managed directories with custom SEO metadata.
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:756:      175  11-12-2025 05:40   25_implement_directory_pages_schema.yaml
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:766:bash -lc 'unzip -p docs/codex_tasks_bundle.zip 25_implement_directory_pages_schema.yaml' in /var/home/rick/Development/mega-directory succeeded in 53ms:
+
+thinking
+**Inspecting schema.prisma mapping**
+exec
+bash -lc "sed -n '1,320p' db/schema.prisma" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  INACTIVE
+}
+
+enum DirectoryStatus {
+  DRAFT
+
+thinking
+**Verifying directory_pages schema and migrations**
+exec
+bash -lc 'ls db/migrations' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+001_core_schema.sql
+002_location_hierarchy.sql
+
+thinking
+**Checking directory structure**
+exec
+bash -lc 'rg -n "directory_pages" db/migrations -n' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+db/migrations/001_core_schema.sql:55:CREATE TABLE "directory_pages" (
+db/migrations/001_core_schema.sql:77:  CONSTRAINT "directory_pages_categoryId_locationId_key" UNIQUE ("categoryId", "locationId"),
+db/migrations/001_core_schema.sql:78:  CONSTRAINT "directory_pages_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+db/migrations/001_core_schema.sql:79:  CONSTRAINT "directory_pages_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE
+db/migrations/001_core_schema.sql:142:  CONSTRAINT "Listing_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "directory_pages"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+db/migrations/001_core_schema.sql:171:  CONSTRAINT "FeaturedSlot_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "directory_pages"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+
+thinking
+**Checking table definition lines**
+exec
+bash -lc "sed -n '1,140p' db/migrations/001_core_schema.sql" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+-- Core relational schema for Mega Directory
+-- Includes directories, listings, categorization, featured slots, users, and LLM configs
+
+CREATE TYPE "ListingStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'INACTIVE');
+CREATE TYPE "DirectoryStatus" AS ENUM ('DRAFT', 'ACTIVE', 'ARCHIVED');
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'EDITOR', 'MODERATOR', 'CRAWLER');
+CREATE TYPE "UserStatus" AS ENUM ('INVITED', 'ACTIVE', 'SUSPENDED');
+CREATE TYPE "FeaturedSlotTier" AS ENUM ('HERO', 'PREMIUM', 'STANDARD');
+CREATE TYPE "LlmTargetType" AS ENUM ('LISTING', 'CATEGORY', 'DIRECTORY', 'SUBCATEGORY');
+
+CREATE TABLE "User" (
+  "id" SERIAL PRIMARY KEY,
+  "email" TEXT NOT NULL UNIQUE,
+  "passwordHash" TEXT NOT NULL,
+  "displayName" TEXT,
+  "role" "UserRole" NOT NULL DEFAULT 'ADMIN',
+  "status" "UserStatus" NOT NULL DEFAULT 'INVITED',
+  "apiTokenHash" TEXT,
+  "lastLoginAt" TIMESTAMPTZ,
+  "lastPasswordAt" TIMESTAMPTZ,
+
+thinking
+**Analyzing Directory model and requirements**
+exec
+bash -lc 'rg -n "locationAgnostic" -n' in /var/home/rick/Development/mega-directory succeeded in 51ms:
+db/schema.prisma:229:  locationAgnostic Boolean        @default(false)
+db/migrations/001_core_schema.sql:71:  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+db/seed.ts:338:    locationAgnostic: false,
+db/seed.ts:363:    locationAgnostic: false,
+db/seed.ts:388:    locationAgnostic: false,
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:180:bash -lc 'rg -n "locationAgnostic" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:1024:  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:955:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:989:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1027:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1064:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1106:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1145:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1186:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1225:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1276:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1315:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1374:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1431:+  locationAgnostic Boolean        @default(false)
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1472:+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+
+thinking
+**Verifying seed file contents**
+exec
+bash -lc "sed -n '250,420p' db/seed.ts" in /var/home/rick/Development/mega-directory succeeded in 44ms:
+      description: 'Verified professionals for home and commercial needs.',
+      metaTitle: 'Professional Services Directory',
+      metaDescription: 'Browse vetted professional services by location and specialty.'
+    }
+  });
+
+  const jobsCategory = await prisma.category.upsert({
+    where: { slug: 'jobs' },
+    update: {},
+    create: {
+      name: 'Jobs',
+      slug: 'jobs',
+      description: 'Hiring and recruiting partners in major metros.',
+      metaTitle: 'Job Boards & Recruiters',
+      metaDescription: 'Top job boards and recruiting agencies curated for your city.'
+    }
+  });
+
+  const nyc = await prisma.location.upsert({
+    where: { slug: 'new-york-city' },
+
+thinking
+**Checking repository status**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+## main...origin/main [ahead 4]
+ M .env.example
+?? .editorconfig
+?? .vscode/
+?? apps/
+?? codex/LOGS/codex_run_2025-11-12_06-13-21.log
+?? codex/LOGS/tasklog_24_setup_project_scaffolding_and_configuration_1762946001.log
+?? codex/LOGS/tasklog_24_setup_project_scaffolding_and_configuration_1762946001.log.done
+?? codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log
+?? codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log.done
+?? codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log
+?? codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log.done
+?? codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log
+?? codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log.done
+?? codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log
+?? codex/TASKS/work_list
+?? db/geography/
+?? db/migrations/002_location_hierarchy.sql
+?? db/scripts/
+?? docs.tar
+
+thinking
+**Analyzing directory_pages table requirements**
+exec
+bash -lc 'ls apps' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+admin
+api
+crawler
+web
+
+thinking
+**Reviewing project scope and directories**
+exec
+bash -lc 'ls apps/api' in /var/home/rick/Development/mega-directory succeeded in 46ms:
+dist
+Dockerfile
+node_modules
+package.json
+package-lock.json
+src
+test
+tsconfig.json
+types
+
+thinking
+**Checking apps/api/src directory**
+exec
+bash -lc 'ls apps/api/src' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+logger.ts
+server.ts
+
+thinking
+**Checking server status**
+exec
+bash -lc "sed -n '1,200p' apps/api/src/server.ts" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+import express, { type Express, type Request, type RequestHandler } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
+import { DEFAULT_PORTS, PROJECT_NAME } from '@mega-directory/config';
+import { createLogger, createRequestLogger, type Logger } from './logger';
+
+const DEFAULT_PORT = DEFAULT_PORTS.api;
+const DEFAULT_LISTING_STATUS: ListingStatus = 'INACTIVE';
+const MAX_SLUG_LENGTH = 80;
+const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
+
+type ListingStatus = 'INACTIVE' | 'ACTIVE';
+
+type NullableString = string | null;
+
+type ListingLocation =
+  | {
+      addressLine1?: string;
+      addressLine2?: string;
+      city?: string;
+      region?: string;
+
+thinking
+**Checking for test directories**
+exec
+bash -lc 'ls tests' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+dev_bootstrap_test.sh
+
+thinking
+**Considering test strategy and schema validation**
+exec
+bash -lc 'ls packages' in /var/home/rick/Development/mega-directory succeeded in 47ms:
+shared-config
+
+thinking
+**Reviewing database models and tests**
+exec
+bash -lc 'ls apps/api/test' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+server.test.js
+
+thinking
+**Checking if inspection is needed**
+exec
+bash -lc "sed -n '1,200p' apps/api/test/server.test.js" in /var/home/rick/Development/mega-directory succeeded in 42ms:
+const test = require('node:test');
+const assert = require('node:assert');
+const jwt = require('jsonwebtoken');
+const { createServer } = require('..');
+
+const baseConfig = Object.freeze({
+  adminJwtSecret: 'test-admin-secret',
+  adminJwtIssuer: 'mega-directory',
+  adminJwtAudience: 'admin',
+  adminLoginEmail: 'admin@example.com',
+  adminLoginPasscode: 'letmein',
+  crawlerBearerToken: 'crawler-token'
+});
+
+function findRoute(app, method, path) {
+  const stack = (app._router && app._router.stack) || (app.router && app.router.stack) || [];
+  const methodName = method.toLowerCase();
+  return stack.find(
+    (layer) => layer.route && layer.route.path === path && layer.route.methods[methodName]
+  );
+
+thinking
+**Verifying database setup**
+exec
+bash -lc 'ls db/scripts' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+seedGeography.ts
+
+thinking
+**Evaluating schema and naming alignment**
+exec
+bash -lc 'rg -n "metaKeywords"' in /var/home/rick/Development/mega-directory succeeded in 50ms:
+db/migrations/001_core_schema.sql:69:  "metaKeywords" TEXT,
+db/schema.prisma:227:  metaKeywords    String?
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:359:bash -lc 'rg -n "metaKeywords"' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log:1022:  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:953:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:987:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1025:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1062:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1104:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1143:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1184:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1223:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1274:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1313:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1372:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1429:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1470:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1527:+  metaKeywords    String?
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1579:+  "metaKeywords" TEXT,
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:1636:+  metaKeywords    String?
+
+thinking
+**Verifying database migration and schema compliance**
+exec
+bash -lc 'rg -n "meta_description" -i' in /var/home/rick/Development/mega-directory succeeded in 53ms:
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:81:Include fields: title, meta_keywords, meta_description, og_image_url, subdomain, subdirectory, location_agnostic (bool).
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:384:bash -lc 'rg -n "meta_description" -i' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log:739:Include fields: title, meta_keywords, meta_description, og_image_url, subdomain, subdirectory, location_agnostic (bool).
+codex/TASKS/codex_phase_1b_2.yaml:31:              - fields: title, meta_title, meta_description, subdomain, subdirectory, og_image, location_agnostic
+codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml:7:Include fields: title, meta_keywords, meta_description, og_image_url, subdomain, subdirectory, location_agnostic (bool).
+codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log:563:codex/TASKS/codex_phase_1b_2.yaml:31:              - fields: title, meta_title, meta_description, subdomain, subdirectory, og_image, location_agnostic
+codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log:572:codex/TASKS/27_implement_directory_pages_table_and_metadata_fields.yaml:7:Include fields: title, meta_keywords, meta_description, og_image_url, subdomain, subdirectory, location_agnostic (bool).
+
+thinking
+**Evaluating schema and testing strategies**
+
+I'm reviewing the codex_phase fields against the spec and considering if changes are needed, especially around restructuring the aggregator or verifying the schema with tests. Since the code seems mostly done, I'm thinking about how to implement meaningful tests to ensure the Directory type matches expectations, possibly checking seeding scripts or existing tests. Also, I'll check package.json scripts to see how testing and prisma commands are handled before deciding the next steps.
+exec
+bash -lc 'cat package.json' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+{
+  "name": "mega-directory",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present"
+  }
+}
+
+thinking
+**Verifying database schema and testing needs**
+
+I'm checking if the database schema already includes the Directory model and its metadata fields as instructed, and considering whether to create a migration or tests to follow TDD. I want to be sure about what functionality to test and where, so I'll look into spec docs and existing code to clarify what’s needed.
+exec
+bash -lc "sed -n '1,200p' codex/TASKS/codex_phase_1b_2.yaml" in /var/home/rick/Development/mega-directory succeeded in 52ms:
+project: mega-directory
+version: 1.0
+phases:
+  - phase: 1
+    description: Core system buildout — listings pipeline, directory structure, admin tools, crawler, API, and frontend delivery
+
+    components:
+      api_server:
+        language: TypeScript
+        framework: Node/Express
+        deployment: Railway
+        endpoints:
+          - listings: [GET, POST, PUT, DELETE]
+          - addresses: [GET, POST, PUT, DELETE]
+          - categories: [GET, POST, PUT, DELETE]
+          - directory_pages: [GET, POST, PUT, DELETE]
+          - directory_metadata: [GET, PUT]
+        notes:
+          - Postal, city, state/province, and country tables are loaded from external datasets.
+          - Listings reference postal_code_id or city_id depending on geography.
+
+thinking
+**Evaluating directory_pages relations**
+exec
+bash -lc 'cat codex/TASKS/25_define_directory_page_model_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 25
+filename: 25_initialize_astro_frontend_with_base_layouts.yaml
+title: Initialize Astro Frontend with Base Layouts
+description: >
+Set up the main Astro-powered frontend application:
+    - Install and configure Astro with TypeScript, Tailwind CSS, and necessary integrations
+    - Create base layout for pages, with head tags and site-wide styling
+    - Implement global header and footer components
+    - Create routing system for directory pages (by slug/subdomain)
+    - Support both subdomain and subdirectory routing for directory URLs
+    - Prepare slots for SEO meta tag injection (meta title, description, og image, etc)
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: [24]
+
+thinking
+**Verifying task file discrepancies**
+exec
+bash -lc 'ls codex/TASKS | grep 25' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+25a_initialize_astro_frontend_with_base_layouts.yaml
+25_define_directory_page_model_and_metadata_fields.yaml
+
+thinking
+**Locating '25' definition**
+exec
+bash -lc 'cat codex/TASKS/25_define_directory_page_model_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory succeeded in 47ms:
+id: 25
+filename: 25_initialize_astro_frontend_with_base_layouts.yaml
+title: Initialize Astro Frontend with Base Layouts
+description: >
+Set up the main Astro-powered frontend application:
+    - Install and configure Astro with TypeScript, Tailwind CSS, and necessary integrations
+    - Create base layout for pages, with head tags and site-wide styling
+    - Implement global header and footer components
+    - Create routing system for directory pages (by slug/subdomain)
+    - Support both subdomain and subdirectory routing for directory URLs
+    - Prepare slots for SEO meta tag injection (meta title, description, og image, etc)
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: [24]
+
+thinking
+**Analyzing zipped task specs**
+
+I want to check the zipped docs for task 27, especially since there’s a zipped file named related to task 25. It seems the real spec might be inside these zipped files, so I’ll try viewing the contents without decompressing, using commands like `unzip -p` to extract the specific YAML for task 27 and understand the needed functionality.
+exec
+bash -lc 'unzip -p docs/codex_tasks_bundle.zip 27_implement_directory_pages_table_and_metadata_fields.yaml' in /var/home/rick/Development/mega-directory exited 11 in 41ms:
+caution: filename not matched:  27_implement_directory_pages_table_and_metadata_fields.yaml
+
+thinking
+**Checking zipped file contents**
+exec
+bash -lc 'unzip -l docs/codex_tasks_bundle.zip | head' in /var/home/rick/Development/mega-directory succeeded in 47ms:
+Archive:  docs/codex_tasks_bundle.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+      764  11-12-2025 06:03   24_setup_project_scaffolding_and_configuration.yaml
+      175  11-12-2025 05:40   25_implement_directory_pages_schema.yaml
+      197  11-12-2025 05:40   201_user_account_stub_system.yaml
+      172  11-12-2025 05:42   26_placeholder_task.yaml
+      172  11-12-2025 05:42   27_placeholder_task.yaml
+      172  11-12-2025 05:42   28_placeholder_task.yaml
+      172  11-12-2025 05:42   29_placeholder_task.yaml
+
+thinking
+**Examining zipped task files**
+exec
+bash -lc 'unzip -p docs/codex_tasks_bundle.zip 27_placeholder_task.yaml' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 27
+title: "Placeholder Task 27"
+description: >
+  This is a placeholder for task 27. Actual content to be filled in based on the project specification.
+dependencies: []
+
+thinking
+**Assessing directory_pages implementation and testing**
+
+I'm investigating if the `directory_pages` table and related functionality are already implemented in the DB schema and migrations, since evidence suggests they exist. To fulfill the user's request to implement the feature, I'll focus on adding tests—likely using `pg-mem` to verify the table and its columns—so I can follow TDD principles by writing tests that confirm the schema matches the spec, even if the code is already complete. I'll also consider if additional API or seed updates are needed but primarily concentrate on producing meaningful test coverage to demonstrate the feature is verified.
+exec
+bash -lc 'cat apps/api/package.json' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+{
+  "name": "mega-directory-api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "scripts": {
+    "dev": "npm run build && node dist/server.js",
+    "dev:watch": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "npm run build && node --test test/**/*.test.js"
+  },
+  "dependencies": {
+    "@mega-directory/config": "file:../../packages/shared-config",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+
+thinking
+**Considering test strategy for DB schema**
+exec
+bash -lc "sed -n '1,200p' tests/dev_bootstrap_test.sh" in /var/home/rick/Development/mega-directory succeeded in 42ms:
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_PATH="${PROJECT_ROOT}/scripts/dev_bootstrap.sh"
+
+if [[ ! -x "${SCRIPT_PATH}" ]]; then
+  echo "Expected ${SCRIPT_PATH} to exist and be executable." >&2
+  exit 1
+fi
+
+TEST_ARGS=(--fake-flag foo)
+if ! output=$(DEV_BOOTSTRAP_TEST_MODE=1 "${SCRIPT_PATH}" "${TEST_ARGS[@]}" 2>&1); then
+  echo "scripts/dev_bootstrap.sh failed in test mode" >&2
+  exit 1
+fi
+
+if [[ "${output}" != *"dev_bootstrap"* ]]; then
+  echo "Expected test-mode output to mention dev_bootstrap: ${output}" >&2
+
+thinking
+**Checking for autostart script**
+exec
+bash -lc "sed -n '1,200p' scripts/dev_bootstrap.sh" in /var/home/rick/Development/mega-directory succeeded in 44ms:
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LEGACY_SCRIPT="${SCRIPT_DIR}/dev-bootstrap.sh"
+
+if [[ ! -f "${LEGACY_SCRIPT}" ]]; then
+  echo "[dev_bootstrap] Cannot find ${LEGACY_SCRIPT}" >&2
+  exit 1
+fi
+
+if [[ "${DEV_BOOTSTRAP_TEST_MODE:-0}" == "1" ]]; then
+  if [[ "$#" -gt 0 ]]; then
+    printf -v FORWARDED_ARGS "%q " "$@"
+  else
+    FORWARDED_ARGS=""
+  fi
+  echo "[dev_bootstrap] test-mode: would exec ${LEGACY_SCRIPT} ${FORWARDED_ARGS}"
+  exit 0
+
+thinking
+**Reviewing database migration and testing strategy**
+exec
+bash -lc 'cat packages/shared-config/package.json' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+{
+  "name": "@mega-directory/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT"
+}
+
+thinking
+**Preparing schema alignment and tests**
+
+I see the schema mostly matches the spec but uses camelCase column names instead of the spec’s snake_case style. To properly implement and verify the spec, I’m planning to write tests that expect the snake_case columns, which will initially fail. Then I’ll update the SQL migrations and Prisma schema to map the camelCase fields to snake_case columns with `@map`. I’m also considering adding a new root-level test file using Node’s built-in test runner with `pg-mem` to verify the schema, adjusting the root `package.json` scripts to run these tests alongside workspace tests. This approach will align naming strictly to the spec and demonstrate real code changes as well as verification via tests.
+exec
+bash -lc 'ls | grep package-lock' in /var/home/rick/Development/mega-directory exited 1 in 45ms:
+
+
+thinking
+**Evaluating test workspace options and package constraints**
+
+I'm weighing where to place new database schema tests—either as a new workspace under `apps` or `packages`, or inside the existing `apps/api` tests. Using `pg-mem` to run Postgres SQL in-memory seems ideal, but network restrictions prevent installing new packages, so I need to check if `pg-mem` is already available before proceeding.
+exec
+bash -lc 'rg -n "pg-mem" -r "" -n' in /var/home/rick/Development/mega-directory succeeded in 48ms:
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:518:I'm investigating if the `directory_pages` table and related functionality are already implemented in the DB schema and migrations, since evidence suggests they exist. To fulfill the user's request to implement the feature, I'll focus on adding tests—likely using `` to verify the table and its columns—so I can follow TDD principles by writing tests that confirm the schema matches the spec, even if the code is already complete. I'll also consider if additional API or seed updates are needed but primarily concentrate on producing meaningful test coverage to demonstrate the feature is verified.
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:608:I see the schema mostly matches the spec but uses camelCase column names instead of the spec’s snake_case style. To properly implement and verify the spec, I’m planning to write tests that expect the snake_case columns, which will initially fail. Then I’ll update the SQL migrations and Prisma schema to map the camelCase fields to snake_case columns with `@map`. I’m also considering adding a new root-level test file using Node’s built-in test runner with `` to verify the schema, adjusting the root `package.json` scripts to run these tests alongside workspace tests. This approach will align naming strictly to the spec and demonstrate real code changes as well as verification via tests.
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:616:I'm weighing where to place new database schema tests—either as a new workspace under `apps` or `packages`, or inside the existing `apps/api` tests. Using `` to run Postgres SQL in-memory seems ideal, but network restrictions prevent installing new packages, so I need to check if `` is already available before proceeding.
+codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log:618:bash -lc 'rg -n "" -r "" -n' in /var/home/rick/Development/mega-directory
+
+thinking
+**Verifying pg-mem presence in node_modules**
+exec
+bash -lc "test -d apps/api/node_modules/pg-mem && echo 'exists' || echo 'missing'" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+missing
+
+thinking
+**Designing dependency-free schema tests**
+
+I'll create a simple Node test using regex to verify the SQL schema file's column names without adding dependencies like pg-mem. To integrate this root-level test, I plan to update the root package.json scripts thoughtfully to avoid recursive test runs, ensuring smooth execution across workspaces. The test will initially fail due to camelCase columns, supporting a TDD flow where I later update the schema and mappings to snake_case while preserving TypeScript field names with Prisma `@map` attributes.
+exec
+bash -lc 'rg -n "metaTitle"' in /var/home/rick/Development/mega-directory succeeded in 51ms:
+apps/admin/test/seoService.test.js:17:  const originalTitle = target.metaTitle;
+apps/admin/test/seoService.test.js:24:      metaTitle: originalTitle,
+apps/admin/test/seoService.test.js:30:  assert.strictEqual(target.metaTitle, originalTitle);
+apps/admin/test/seoService.test.js:38:      metaTitle: nextTitle,
+apps/admin/test/seoService.test.js:43:  assert.strictEqual(target.metaTitle, nextTitle);
+apps/admin/test/seoService.test.js:62:  assert.strictEqual(target.metaTitle, originalStore[1].metaTitle);
+apps/admin/test/seoService.test.js:71:    { id: 'missing_entry', metaTitle: 'No-op' },
+apps/admin/services/seoService.js:20:    const nextTitle = normalizeString(update.metaTitle);
+apps/admin/services/seoService.js:22:    const hasTitleChange = typeof nextTitle === 'string' && nextTitle !== entry.metaTitle;
+apps/admin/services/seoService.js:31:      entry.metaTitle = nextTitle;
+apps/admin/routes/seo.js:36:    metaTitle: record.metaTitle?.trim() ?? '',
+apps/admin/data/seoEntries.js:8:    metaTitle: 'Electricians Near You | Mega Directory',
+apps/admin/data/seoEntries.js:18:    metaTitle: 'Trusted Plumbers | Mega Directory',
+apps/admin/data/seoEntries.js:28:    metaTitle: 'Best Electricians in NYC | Mega Directory',
+apps/admin/data/seoEntries.js:38:    metaTitle: 'Austin Plumbers | Same-Day Service',
+apps/admin/views/seo/index.ejs:35:                <input class="field-control" type="text" name="entries[<%= entry.id %>][metaTitle]" value="<%= entry.metaTitle %>" />
+apps/admin/views/seo/index.ejs:60:                <input class="field-control" type="text" name="entries[<%= entry.id %>][metaTitle]" value="<%= entry.metaTitle %>" />
+db/migrations/001_core_schema.sql:31:  "metaTitle" TEXT,
+db/migrations/001_core_schema.sql:48:  "metaTitle" TEXT,
+db/migrations/001_core_schema.sql:67:  "metaTitle" TEXT,
+
+thinking
+**Outlining schema renaming and testing plan**
+
+I'm mapping out how to rename camelCase columns to snake_case in the directory_pages table, add tests to verify the new schema, update Prisma mappings, and update SQL migrations—all while ensuring that TypeScript code remains unaffected and tests will initially fail before the schema is fixed. I’ll use regex and file parsing in Node tests to verify exact column names, then craft a multi-step plan following TDD principles.
+Plan update
+  → Add database schema test coverage for directory_pages metadata columns and wire it into the root test runner so the required fields are enforced.
+  • Update Prisma schema and SQL migration to align column names with the spec (snake_case metadata + location_agnostic).
+  • Run the full test suite to verify the schema test and existing tests all pass.
+
+thinking
+**Preparing new test and updating package scripts**
+file update
+M /var/home/rick/Development/mega-directory/package.json
+@@ -9,3 +9,5 @@
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+apply_patch(auto_approved=true) exited 0 in 7ms:
+Success. Updated the following files:
+M package.json
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+
+
+thinking
+**Adding test for directory_pages schema**
+file update
+A /var/home/rick/Development/mega-directory/tests/directory_pages_schema.test.js
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
+
+function loadCoreSchema() {
+  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
+  return fs.readFileSync(schemaPath, 'utf8');
+}
+
+function extractTableBlock(sql, tableName) {
+  const tableRegex = new RegExp(
+    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
+    'i'
+  );
+  const match = sql.match(tableRegex);
+  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
+  return match[1];
+}
+
+function expectColumn(block, columnName, typePattern) {
+  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
+  assert.match(
+    block,
+    columnRegex,
+    `Expected column "${columnName}" definition to match /${typePattern}/i`
+  );
+}
+
+test('directory_pages table exposes required metadata columns in snake_case', () => {
+  const schema = loadCoreSchema();
+  const tableBlock = extractTableBlock(schema, 'directory_pages');
+  const requiredColumns = [
+    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
+    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
+    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
+    { name: 'meta_keywords', pattern: 'TEXT' },
+    { name: 'meta_description', pattern: 'TEXT' },
+    { name: 'og_image_url', pattern: 'TEXT' },
+    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
+  ];
+
+  for (const column of requiredColumns) {
+    expectColumn(tableBlock, column.name, column.pattern);
+  }
+});
+apply_patch(auto_approved=true) exited 0 in 9ms:
+Success. Updated the following files:
+A tests/directory_pages_schema.test.js
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Preparing to run tests**
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory exited 1 in 791ms:
+
+> mega-directory@0.1.0 test
+> npm run test:root && npm run test:workspaces
+
+
+> mega-directory@0.1.0 test:root
+> node --test tests/**/*.test.js
+
+TAP version 13
+# Subtest: tests/directory_pages_schema.test.js
+not ok 1 - tests/directory_pages_schema.test.js
+  ---
+  duration_ms: 155.660627
+  type: 'test'
+  location: '/var/home/rick/Development/mega-directory/tests/directory_pages_schema.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Updating plan statuses**
+Plan update
+  ✓ Add database schema test coverage for directory_pages metadata columns and wire it into the root test runner so the required fields are enforced.
+  → Update Prisma schema and SQL migration to align column names with the spec (snake_case metadata + location_agnostic).
+  • Run the full test suite to verify the schema test and existing tests all pass.
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Preparing database schema updates**
+exec
+bash -lc "sed -n '55,95p' db/migrations/001_core_schema.sql" in /var/home/rick/Development/mega-directory succeeded in 45ms:
+CREATE TABLE "directory_pages" (
+  "id" SERIAL PRIMARY KEY,
+  "title" TEXT NOT NULL,
+  "slug" TEXT NOT NULL UNIQUE,
+  "subdomain" TEXT NOT NULL UNIQUE,
+  "subdirectory" TEXT NOT NULL UNIQUE,
+  "hostname" TEXT,
+  "heroTitle" TEXT,
+  "heroSubtitle" TEXT,
+  "introMarkdown" TEXT,
+  "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+  "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+  "metaTitle" TEXT,
+  "metaDescription" TEXT,
+  "metaKeywords" TEXT,
+  "ogImageUrl" TEXT,
+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+  "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Renaming database columns to snake_case**
+exec
+bash -lc "sed -n '200,260p' db/schema.prisma" in /var/home/rick/Development/mega-directory succeeded in 42ms:
+  stateRecord      StateProvince? @relation("StateLocations", fields: [stateId], references: [id])
+  cityRecord       City?          @relation("CityLocations", fields: [cityId], references: [id])
+  postalCodeRecord PostalCode?    @relation("PostalCodeLocations", fields: [postalCodeId], references: [id])
+
+  listings    Listing[]
+  directories Directory[]
+
+  @@index([countryId])
+  @@index([stateId])
+  @@index([cityId])
+  @@index([postalCodeId])
+}
+
+model Directory {
+  id              Int             @id @default(autoincrement())
+  title           String
+  slug            String          @unique
+  subdomain       String          @unique
+  subdirectory    String          @unique
+  hostname        String?
+file update:
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Adding @map decorators and updating migrations**
+file update
+M /var/home/rick/Development/mega-directory/db/migrations/001_core_schema.sql
+@@ -66,7 +66,7 @@
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+apply_patch(auto_approved=true) exited 0 in 8ms:
+Success. Updated the following files:
+M db/migrations/001_core_schema.sql
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Updating schema fields with @map**
+file update
+M /var/home/rick/Development/mega-directory/db/schema.prisma
+@@ -224,7 +224,7 @@
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+apply_patch(auto_approved=true) exited 0 in 9ms:
+Success. Updated the following files:
+M db/schema.prisma
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Verifying database changes with tests**
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory succeeded in 3.78s:
+
+> mega-directory@0.1.0 test
+> npm run test:root && npm run test:workspaces
+
+
+> mega-directory@0.1.0 test:root
+> node --test tests/**/*.test.js
+
+TAP version 13
+# Subtest: tests/directory_pages_schema.test.js
+ok 1 - tests/directory_pages_schema.test.js
+  ---
+  duration_ms: 151.584782
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Updating plan after Step 3**
+Plan update
+  ✓ Add database schema test coverage for directory_pages metadata columns and wire it into the root test runner so the required fields are enforced.
+  ✓ Update Prisma schema and SQL migration to align column names with the spec (snake_case metadata + location_agnostic).
+  ✓ Run the full test suite to verify the schema test and existing tests all pass.
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Checking git status**
+exec
+bash -lc 'git status -sb' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+## main...origin/main [ahead 4]
+ M .env.example
+ M db/migrations/001_core_schema.sql
+ M db/schema.prisma
+?? .editorconfig
+?? .vscode/
+?? apps/
+?? codex/LOGS/codex_run_2025-11-12_06-13-21.log
+?? codex/LOGS/tasklog_24_setup_project_scaffolding_and_configuration_1762946001.log
+?? codex/LOGS/tasklog_24_setup_project_scaffolding_and_configuration_1762946001.log.done
+?? codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log
+?? codex/LOGS/tasklog_25_define_directory_page_model_and_metadata_fields_1762949245.log.done
+?? codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log
+?? codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log.done
+?? codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log
+?? codex/LOGS/tasklog_26_initialize_geographic_location_tables_and_seed_data_1762949750.log.done
+?? codex/LOGS/tasklog_27_implement_directory_pages_table_and_metadata_fields_1762950694.log
+?? codex/TASKS/work_list
+?? db/geography/
+?? db/migrations/002_location_hierarchy.sql
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Analyzing git status and preparing line number references**
+exec
+bash -lc "nl -ba db/schema.prisma | sed -n '210,240p'" in /var/home/rick/Development/mega-directory succeeded in 47ms:
+   210	  @@index([postalCodeId])
+   211	}
+   212	
+   213	model Directory {
+   214	  id              Int             @id @default(autoincrement())
+   215	  title           String
+   216	  slug            String          @unique
+   217	  subdomain       String          @unique
+   218	  subdirectory    String          @unique
+   219	  hostname        String?
+   220	  heroTitle       String?
+   221	  heroSubtitle    String?
+   222	  introMarkdown   String?
+   223	  status          DirectoryStatus @default(DRAFT)
+   224	  featuredLimit   Int             @default(3)
+   225	  metaTitle        String?        @map("meta_title")
+   226	  metaDescription  String?        @map("meta_description")
+   227	  metaKeywords     String?        @map("meta_keywords")
+   228	  ogImageUrl       String?        @map("og_image_url")
+   229	  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Preparing file references for explanation**
+exec
+bash -lc "nl -ba db/migrations/001_core_schema.sql | sed -n '55,85p'" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+    55	CREATE TABLE "directory_pages" (
+    56	  "id" SERIAL PRIMARY KEY,
+    57	  "title" TEXT NOT NULL,
+    58	  "slug" TEXT NOT NULL UNIQUE,
+    59	  "subdomain" TEXT NOT NULL UNIQUE,
+    60	  "subdirectory" TEXT NOT NULL UNIQUE,
+    61	  "hostname" TEXT,
+    62	  "heroTitle" TEXT,
+    63	  "heroSubtitle" TEXT,
+    64	  "introMarkdown" TEXT,
+    65	  "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+    66	  "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+    67	  "meta_title" TEXT,
+    68	  "meta_description" TEXT,
+    69	  "meta_keywords" TEXT,
+    70	  "og_image_url" TEXT,
+    71	  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+    72	  "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+    73	  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    74	  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Considering package.json line references**
+exec
+bash -lc 'nl -ba package.json' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+     1	{
+     2	  "name": "mega-directory",
+     3	  "private": true,
+     4	  "version": "0.1.0",
+     5	  "workspaces": [
+     6	    "apps/*",
+     7	    "packages/*"
+     8	  ],
+     9	  "scripts": {
+    10	    "test": "npm run test:root && npm run test:workspaces",
+    11	    "test:root": "node --test tests/**/*.test.js",
+    12	    "test:workspaces": "npm run test --workspaces --if-present"
+    13	  }
+    14	}
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+
+thinking
+**Summarizing test additions and next steps**
+codex
+**Changes**
+- Added a root-level Node test to assert the `directory_pages` DDL exposes the mandated metadata columns in snake_case and hooked it into the workspace test runner so regressions are caught automatically (`tests/directory_pages_schema.test.js:1`, `package.json:10`).
+- Updated the canonical SQL migration so the table now creates `meta_title`, `meta_description`, `meta_keywords`, `og_image_url`, and `location_agnostic` columns exactly as required while preserving the existing constraints (`db/migrations/001_core_schema.sql:55`).
+- Kept the Prisma model ergonomics intact by mapping each directory metadata field to its new snake_case column, ensuring the ORM, seeds, and application code continue to work without adjustments (`db/schema.prisma:213`).
+
+**Tests**
+- `npm test`
+
+**Next Steps**
+- If a Postgres instance has already been provisioned from earlier migrations, apply a follow-up migration (e.g., `ALTER TABLE ... RENAME COLUMN ...`) so those databases pick up the new snake_case column names.
+file update:
+diff --git a/db/migrations/001_core_schema.sql b/db/migrations/001_core_schema.sql
+index d0c2699cc35846b8442a4e579280bd40cd0ddc1c..36cc83f28886206e1ec6e4989ce848d58baf6144
+--- a/db/migrations/001_core_schema.sql
++++ b/db/migrations/001_core_schema.sql
+@@ -64,11 +64,11 @@
+   "introMarkdown" TEXT,
+   "status" "DirectoryStatus" NOT NULL DEFAULT 'DRAFT',
+   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
+-  "metaTitle" TEXT,
+-  "metaDescription" TEXT,
+-  "metaKeywords" TEXT,
+-  "ogImageUrl" TEXT,
+-  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
++  "meta_title" TEXT,
++  "meta_description" TEXT,
++  "meta_keywords" TEXT,
++  "og_image_url" TEXT,
++  "location_agnostic" BOOLEAN NOT NULL DEFAULT FALSE,
+   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
+   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+diff --git a/db/schema.prisma b/db/schema.prisma
+index bc4a239413fd3bcc704aa5d4ab21beb2e3e1012b..bb8037bb6f352061309566ec926005ad34ffcf0a
+--- a/db/schema.prisma
++++ b/db/schema.prisma
+@@ -222,11 +222,11 @@
+   introMarkdown   String?
+   status          DirectoryStatus @default(DRAFT)
+   featuredLimit   Int             @default(3)
+-  metaTitle       String?
+-  metaDescription String?
+-  metaKeywords    String?
+-  ogImageUrl      String?
+-  locationAgnostic Boolean        @default(false)
++  metaTitle        String?        @map("meta_title")
++  metaDescription  String?        @map("meta_description")
++  metaKeywords     String?        @map("meta_keywords")
++  ogImageUrl       String?        @map("og_image_url")
++  locationAgnostic Boolean        @map("location_agnostic") @default(false)
+   isActive        Boolean         @default(false)
+   createdAt       DateTime        @default(now())
+   updatedAt       DateTime        @updatedAt
+diff --git a/package.json b/package.json
+index 78006a6b93f9bb11df3f0c40d943679290c29bf2..6cea752f72e3339037272f4287ef8896886a4327
+--- a/package.json
++++ b/package.json
+@@ -7,6 +7,8 @@
+     "packages/*"
+   ],
+   "scripts": {
+-    "test": "npm run test --workspaces --if-present"
++    "test": "npm run test:root && npm run test:workspaces",
++    "test:root": "node --test tests/**/*.test.js",
++    "test:workspaces": "npm run test --workspaces --if-present"
+   }
+ }
+diff --git a/tests/directory_pages_schema.test.js b/tests/directory_pages_schema.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a93cc3aea50d17d29d33758f2d113a2f9a2e19a
+--- /dev/null
++++ b/tests/directory_pages_schema.test.js
+@@ -0,0 +1,46 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const test = require('node:test');
++
++function loadCoreSchema() {
++  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
++  return fs.readFileSync(schemaPath, 'utf8');
++}
++
++function extractTableBlock(sql, tableName) {
++  const tableRegex = new RegExp(
++    `CREATE TABLE\\s+"${tableName}"\\s*\\(([\\s\\S]*?)\\);`,
++    'i'
++  );
++  const match = sql.match(tableRegex);
++  assert.ok(match, `Expected to find CREATE TABLE for ${tableName}`);
++  return match[1];
++}
++
++function expectColumn(block, columnName, typePattern) {
++  const columnRegex = new RegExp(`"${columnName}"\\s+${typePattern}`, 'i');
++  assert.match(
++    block,
++    columnRegex,
++    `Expected column "${columnName}" definition to match /${typePattern}/i`
++  );
++}
++
++test('directory_pages table exposes required metadata columns in snake_case', () => {
++  const schema = loadCoreSchema();
++  const tableBlock = extractTableBlock(schema, 'directory_pages');
++  const requiredColumns = [
++    { name: 'title', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdomain', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'subdirectory', pattern: 'TEXT\\s+NOT\\s+NULL' },
++    { name: 'meta_keywords', pattern: 'TEXT' },
++    { name: 'meta_description', pattern: 'TEXT' },
++    { name: 'og_image_url', pattern: 'TEXT' },
++    { name: 'location_agnostic', pattern: 'BOOLEAN\\s+NOT\\s+NULL' }
++  ];
++
++  for (const column of requiredColumns) {
++    expectColumn(tableBlock, column.name, column.pattern);
++  }
++});
+
+tokens used
+104,134
+**Changes**
+- Added a root-level Node test to assert the `directory_pages` DDL exposes the mandated metadata columns in snake_case and hooked it into the workspace test runner so regressions are caught automatically (`tests/directory_pages_schema.test.js:1`, `package.json:10`).
+- Updated the canonical SQL migration so the table now creates `meta_title`, `meta_description`, `meta_keywords`, `og_image_url`, and `location_agnostic` columns exactly as required while preserving the existing constraints (`db/migrations/001_core_schema.sql:55`).
+- Kept the Prisma model ergonomics intact by mapping each directory metadata field to its new snake_case column, ensuring the ORM, seeds, and application code continue to work without adjustments (`db/schema.prisma:213`).
+
+**Tests**
+- `npm test`
+
+**Next Steps**
+- If a Postgres instance has already been provisioned from earlier migrations, apply a follow-up migration (e.g., `ALTER TABLE ... RENAME COLUMN ...`) so those databases pick up the new snake_case column names.
