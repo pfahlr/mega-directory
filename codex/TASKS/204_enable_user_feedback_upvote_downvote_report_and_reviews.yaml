@@ -1,13 +1,13 @@
-  - id: 204
-    filename: 204_enable_user_feedback_upvote_downvote_report_and_reviews.yaml
-    title: Enable User Feedback: Upvote/Downvote, Report, and Reviews
-    description: >
-      Enable feedback mechanics across listings
-      - Upvote/downvote with single user vote limit
-      - Reports reason + user reference + timestamp
-      - Optional user reviews with basic text + image uploads (MVP optional)
-      - Admin review interface for reported items
-      - Database votes, reports, (optional) reviews
-      - Secure API POST /vote, /report; GET /admin/reports
-      - Write tests for vote integrity, report submission, admin queue review
-    dependencies: [201]
+id: 204
+filename: 204_enable_user_feedback_upvote_downvote_report_and_reviews.yaml
+title: Enable User Feedback: Upvote/Downvote, Report, and Reviews
+description: >
+    Enable feedback mechanics across listings
+    - Upvote/downvote with single user vote limit
+    - Reports reason + user reference + timestamp
+    - Optional user reviews with basic text + image uploads (MVP optional)
+    - Admin review interface for reported items
+    - Database votes, reports, (optional) reviews
+    - Secure API POST /vote, /report; GET /admin/reports
+    - Write tests for vote integrity, report submission, admin queue review
+dependencies: [201]
