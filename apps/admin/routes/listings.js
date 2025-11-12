@@ -11,6 +11,7 @@ router.get('/', (req, res) => {
     title: 'Listing Review',
     listings: result.records,
     savedCount: parseCount(req.query.saved),
+    removedCount: parseCount(req.query.removed),
     pagination: buildPagination(result)
   });
 });
@@ -21,7 +22,13 @@ router.post('/', async (req, res, next) => {
     const updated = await updateListings(updates);
     const page = parsePage(req.body?.page);
 
-    res.redirect(`/listings${buildRedirectQuery({ page, saved: updated })}`);
+    res.redirect(
+      `/listings${buildRedirectQuery({
+        page,
+        saved: updated?.saved ?? 0,
+        removed: updated?.removed ?? 0
+      })}`
+    );
   } catch (error) {
     next(error);
   }
@@ -36,14 +43,24 @@ function normalizePayload(payload) {
 
   return records.map((record) => {
     const normalized = record ?? {};
-    const shouldSave = parseCheckbox(normalized.save);
-    const shouldDeactivate = parseCheckbox(normalized.deactivate);
+    const shouldPersistField =
+      normalized.saved !== undefined ? normalized.saved : normalized.save;
+    const shouldPersist =
+      shouldPersistField === undefined ? true : parseCheckbox(shouldPersistField);
+    const isActive =
+      normalized.active !== undefined
+        ? parseCheckbox(normalized.active)
+        : normalized.deactivate !== undefined
+          ? !parseCheckbox(normalized.deactivate)
+          : undefined;
+
     return {
       id: normalized.id,
       businessName: normalized.businessName?.trim() ?? '',
       website: normalized.website?.trim() ?? '',
       notes: normalized.notes?.trim() ?? '',
-      status: deriveStatus(normalized.status, shouldSave, shouldDeactivate)
+      shouldPersist,
+      isActive: typeof isActive === 'boolean' ? isActive : undefined
     };
   });
 }
@@ -89,31 +106,21 @@ function buildPagination(result) {
   };
 }
 
-function buildRedirectQuery({ page, saved }) {
+function buildRedirectQuery({ page, saved, removed }) {
   const params = new URLSearchParams();
   if (Number.isFinite(page) && page > 1) {
     params.set('page', page);
   }
 
-  params.set('saved', saved);
+  if (Number.isFinite(saved) && saved > 0) {
+    params.set('saved', saved);
+  }
+  if (Number.isFinite(removed) && removed > 0) {
+    params.set('removed', removed);
+  }
 
   const query = params.toString();
   return query ? `?${query}` : '';
-}
-
-function deriveStatus(currentStatus, shouldSave, shouldDeactivate) {
-  if (shouldDeactivate) {
-    return 'deactivated';
-  }
-  if (shouldSave) {
-    return 'approved';
-  }
-
-  if (typeof currentStatus === 'string' && currentStatus.trim()) {
-    return currentStatus.trim();
-  }
-
-  return 'pending';
 }
 
 function parseCheckbox(value) {

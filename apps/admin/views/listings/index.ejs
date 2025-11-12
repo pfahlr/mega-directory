@@ -22,8 +22,20 @@
     <div class="badge">Pending <strong><%= pageData.totalItems %></strong></div>
   </header>
 
-  <% if (typeof savedCount === 'number') { %>
-    <div class="alert success">Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %> just now.</div>
+  <% const hasSaved = Number.isFinite(savedCount); %>
+  <% const hasRemoved = Number.isFinite(removedCount); %>
+  <% if (hasSaved || hasRemoved) { %>
+    <div class="alert success">
+      <% if (hasSaved) { %>
+        Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %>
+      <% } %>
+      <% if (hasSaved && hasRemoved) { %>
+        <span aria-hidden="true"> • </span>
+      <% } %>
+      <% if (hasRemoved) { %>
+        Removed <strong><%= removedCount %></strong> listing<%= removedCount === 1 ? '' : 's' %> from the import queue
+      <% } %>
+    </div>
   <% } %>
 
   <% if (!pageData.totalItems) { %>
@@ -33,6 +45,15 @@
       <input type="hidden" name="page" value="<%= pageData.page %>" />
 
       <div class="stack gap-md">
+        <div class="form-actions form-actions--end">
+          <button type="submit" class="btn primary">Save changes</button>
+        </div>
+
+        <p class="muted">
+          These rows come directly from imported JSON payloads. Keep both checkboxes checked to store an entry,
+          uncheck <strong>Saved</strong> to discard it entirely, or uncheck <strong>Active</strong> to save it as inactive.
+        </p>
+
         <div class="pagination-bar">
           <p>
             Showing <strong><%= pageData.start %>–<%= pageData.end %></strong> of
@@ -56,8 +77,8 @@
           <table class="listing-table">
             <thead>
               <tr>
-                <th scope="col" class="col-action">Save</th>
-                <th scope="col" class="col-action">Deactivate</th>
+                <th scope="col" class="col-action">Saved</th>
+                <th scope="col" class="col-action">Active</th>
                 <th scope="col">Listing details</th>
                 <th scope="col">Moderator notes</th>
               </tr>
@@ -66,17 +87,19 @@
               <% listings.forEach((listing, index) => { %>
                 <% const submittedLabel = listing.submittedAt ? new Date(listing.submittedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'; %>
                 <% const updatedLabel = listing.lastUpdated ? new Date(listing.lastUpdated).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'; %>
+                <% const normalizedStatus = (listing.status || 'pending').toLowerCase(); %>
+                <% const isListingActive = !['inactive', 'deactivated', 'rejected'].includes(normalizedStatus); %>
                 <tr>
                   <td class="table-checkbox">
                     <label class="checkbox-label">
-                      <input type="checkbox" name="listings[<%= index %>][save]" value="1" <%= listing.status === 'approved' ? 'checked' : '' %> />
-                      <span class="sr-only">Mark <%= listing.businessName %> for approval</span>
+                      <input type="checkbox" name="listings[<%= index %>][saved]" value="1" checked />
+                      <span class="sr-only">Keep <%= listing.businessName %> when saving changes</span>
                     </label>
                   </td>
                   <td class="table-checkbox">
                     <label class="checkbox-label">
-                      <input type="checkbox" name="listings[<%= index %>][deactivate]" value="1" <%= listing.status === 'deactivated' ? 'checked' : '' %> />
-                      <span class="sr-only">Deactivate <%= listing.businessName %></span>
+                      <input type="checkbox" name="listings[<%= index %>][active]" value="1" <%= isListingActive ? 'checked' : '' %> />
+                      <span class="sr-only">Set <%= listing.businessName %> as active when stored</span>
                     </label>
                   </td>
                   <td class="listing-table__details">
@@ -135,7 +158,7 @@
 
       <div class="form-actions">
         <button type="submit" class="btn primary">Save changes</button>
-        <p class="muted">Changes persist in memory for this demo app.</p>
+        <p class="muted">Uncheck <strong>Saved</strong> to discard an import or <strong>Active</strong> to keep it inactive. Changes persist in memory for this demo app.</p>
       </div>
     </form>
   <% } %>

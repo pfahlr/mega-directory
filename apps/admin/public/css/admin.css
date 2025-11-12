@@ -407,6 +407,10 @@ a:focus {
   gap: 1rem;
 }
 
+.form-actions--end {
+  justify-content: flex-end;
+}
+
 .pagination-bar {
   display: flex;
   align-items: center;
