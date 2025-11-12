@@ -227,6 +227,68 @@ async function ensureDemoGeography() {
   };
 }
 
+type CategoryLinkInput = {
+  categoryId: number;
+  isPrimary?: boolean;
+};
+
+type ListingAddressInput = {
+  label?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  region?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  isPrimary?: boolean;
+  countryId?: number | null;
+  stateId?: number | null;
+  cityId?: number | null;
+  postalCodeId?: number | null;
+};
+
+async function setListingCategories(listingId: number, categories: CategoryLinkInput[]) {
+  await prisma.listingCategory.deleteMany({ where: { listingId } });
+  if (categories.length === 0) {
+    return;
+  }
+  await prisma.listingCategory.createMany({
+    data: categories.map((entry, index) => ({
+      listingId,
+      categoryId: entry.categoryId,
+      isPrimary: entry.isPrimary ?? index === 0
+    }))
+  });
+}
+
+async function setListingAddresses(listingId: number, addresses: ListingAddressInput[]) {
+  await prisma.listingAddress.deleteMany({ where: { listingId } });
+  if (addresses.length === 0) {
+    return;
+  }
+  await prisma.listingAddress.createMany({
+    data: addresses.map((address, index) => ({
+      listingId,
+      label: address.label ?? (index === 0 ? 'Primary' : null),
+      addressLine1: address.addressLine1 ?? null,
+      addressLine2: address.addressLine2 ?? null,
+      city: address.city ?? null,
+      region: address.region ?? null,
+      postalCode: address.postalCode ?? null,
+      country: address.country ?? 'US',
+      latitude: address.latitude ?? null,
+      longitude: address.longitude ?? null,
+      isPrimary: address.isPrimary ?? index === 0,
+      countryId: address.countryId ?? null,
+      stateId: address.stateId ?? null,
+      cityId: address.cityId ?? null,
+      postalCodeId: address.postalCodeId ?? null
+    }))
+  });
+}
+
 async function main() {
   const geography = await ensureDemoGeography();
   const adminUser = await prisma.user.upsert({
@@ -448,11 +510,6 @@ async function main() {
       websiteUrl: 'https://brightsparks.example.com',
       contactEmail: 'hello@brightsparks.example.com',
       contactPhone: '+1-212-555-0199',
-      addressLine1: '45 Water Street',
-      city: 'New York',
-      region: 'NY',
-      postalCode: '10004',
-      country: 'US',
       status: 'APPROVED',
       isClaimed: true,
       isSponsored: true,
@@ -465,7 +522,6 @@ async function main() {
       approvedAt: new Date(),
       publishedAt: new Date(),
       approvedById: adminUser.id,
-      categoryId: servicesCategory.id,
       locationId: nyc.id,
       directoryId: nycDirectory.id,
       countryId: geography.country.id,
@@ -474,6 +530,38 @@ async function main() {
       postalCodeId: geography.postalCodes.nyc.id
     }
   });
+
+  await setListingCategories(listing.id, [
+    { categoryId: servicesCategory.id, isPrimary: true },
+    { categoryId: jobsCategory.id }
+  ]);
+
+  await setListingAddresses(listing.id, [
+    {
+      label: 'Manhattan HQ',
+      addressLine1: '45 Water Street',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10004',
+      country: 'US',
+      isPrimary: true,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
+    },
+    {
+      label: 'Midtown Satellite',
+      addressLine1: '135 W 50th Street',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10020',
+      country: 'US',
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id
+    }
+  ]);
 
   await prisma.listingSubcategory.upsert({
     where: {
@@ -515,10 +603,6 @@ async function main() {
       websiteUrl: 'https://harborhvac.example.com',
       contactEmail: 'contact@harborhvac.example.com',
       contactPhone: '+1-929-555-0100',
-      city: 'New York',
-      region: 'NY',
-      postalCode: '10004',
-      country: 'US',
       status: 'APPROVED',
       score: 90.1,
       rating: 4.7,
@@ -529,7 +613,6 @@ async function main() {
       approvedAt: new Date(),
       publishedAt: new Date(),
       approvedById: adminUser.id,
-      categoryId: servicesCategory.id,
       locationId: nyc.id,
       directoryId: nycDirectory.id,
       countryId: geography.country.id,
@@ -538,6 +621,25 @@ async function main() {
       postalCodeId: geography.postalCodes.nyc.id
     }
   });
+
+  await setListingCategories(harborListing.id, [
+    { categoryId: servicesCategory.id, isPrimary: true }
+  ]);
+
+  await setListingAddresses(harborListing.id, [
+    {
+      label: 'Financial District Office',
+      addressLine1: '140 Broadway',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10005',
+      country: 'US',
+      isPrimary: true,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id
+    }
+  ]);
 
   await prisma.listingSubcategory.upsert({
     where: {
@@ -565,10 +667,6 @@ async function main() {
       websiteUrl: 'https://steadfast.example.com',
       contactEmail: 'hello@steadfast.example.com',
       contactPhone: '+1-917-555-0105',
-      city: 'New York',
-      region: 'NY',
-      postalCode: '10004',
-      country: 'US',
       status: 'APPROVED',
       score: 82.4,
       rating: 4.5,
@@ -579,7 +677,6 @@ async function main() {
       approvedAt: new Date(),
       publishedAt: new Date(),
       approvedById: adminUser.id,
-      categoryId: servicesCategory.id,
       locationId: nyc.id,
       directoryId: nycDirectory.id,
       countryId: geography.country.id,
@@ -588,6 +685,25 @@ async function main() {
       postalCodeId: geography.postalCodes.nyc.id
     }
   });
+
+  await setListingCategories(steadfastListing.id, [
+    { categoryId: servicesCategory.id, isPrimary: true }
+  ]);
+
+  await setListingAddresses(steadfastListing.id, [
+    {
+      label: 'Uptown Service Center',
+      addressLine1: '200 W 67th Street',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10023',
+      country: 'US',
+      isPrimary: true,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id
+    }
+  ]);
 
   await prisma.listingSubcategory.upsert({
     where: {
