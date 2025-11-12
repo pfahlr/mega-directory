@@ -49,7 +49,7 @@ phases:
         framework: TBC (Astro or React or Node SSR)
         deployment: private server or local machine only
         features:
-          - listing moderation: edit, approve (save), deactivate
+          - listing moderation edit, approve (save), deactivate
           - directory page creation/editing
           - category/location review
           - SEO metadata input (meta_title, description, og:image)
