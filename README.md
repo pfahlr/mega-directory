@@ -34,6 +34,22 @@ python -m pip install -r apps/crawler/requirements-dev.txt
 
 Database schema and seed scripts live under `/db`. Run Prisma/DB commands from the `apps/api` workspace once the API server has been configured with a connection string (see future Codex tasks for details). Shared constants (ports, labels, etc.) live in `packages/shared-config` and are linked into each app automatically.
 
+### Geographic Seed Data
+
+The global hierarchy for countries, states/provinces, cities, and postal codes
+is populated with `db/scripts/seedGeography.ts`. By default the script loads the
+small fixtures under `db/geography/sample`, but you can point it at the full
+datasets from the dr5hn and GeoNames projects:
+
+```bash
+GEO_DATASET_DIR="$HOME/datasets/geography" \
+GEO_POSTAL_FILE="$HOME/datasets/geography/allCountries.txt" \
+npx ts-node db/scripts/seedGeography.ts
+```
+
+See `db/geography/README.md` for the expected file layout, batching controls,
+and notes about countries that do not issue postal codes.
+
 ## Running with Docker Compose
 
 `docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro-powered `web` frontend. Bring them up together with:

@@ -2,7 +2,233 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+async function ensureDemoGeography() {
+  const unitedStates = await prisma.country.upsert({
+    where: { id: 233 },
+    update: {
+      name: 'United States',
+      iso2: 'US',
+      iso3: 'USA',
+      numericCode: '840',
+      phoneCode: '+1',
+      capital: 'Washington D.C.',
+      currency: 'USD',
+      currencyName: 'United States dollar',
+      currencySymbol: '$',
+      region: 'Americas',
+      subregion: 'Northern America',
+      timezones: [
+        {
+          zoneName: 'America/New_York',
+          gmtOffset: -18000,
+          gmtOffsetName: 'UTC-05:00',
+          abbreviation: 'EST',
+          tzName: 'Eastern Standard Time'
+        }
+      ],
+      translations: {}
+    },
+    create: {
+      id: 233,
+      name: 'United States',
+      iso2: 'US',
+      iso3: 'USA',
+      numericCode: '840',
+      phoneCode: '+1',
+      capital: 'Washington D.C.',
+      currency: 'USD',
+      currencyName: 'United States dollar',
+      currencySymbol: '$',
+      tld: '.us',
+      nativeName: 'United States',
+      region: 'Americas',
+      subregion: 'Northern America',
+      timezones: [
+        {
+          zoneName: 'America/New_York',
+          gmtOffset: -18000,
+          gmtOffsetName: 'UTC-05:00',
+          abbreviation: 'EST',
+          tzName: 'Eastern Standard Time'
+        }
+      ],
+      translations: {},
+      latitude: 38.893838,
+      longitude: -77.15466,
+      emoji: '🇺🇸',
+      emojiU: 'U+1F1FA U+1F1F8',
+      hasStates: true,
+      hasPostalCodes: true
+    }
+  });
+
+  const newYorkState = await prisma.stateProvince.upsert({
+    where: { id: 3930 },
+    update: {
+      name: 'New York',
+      stateCode: 'NY',
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    },
+    create: {
+      id: 3930,
+      name: 'New York',
+      stateCode: 'NY',
+      type: 'state',
+      latitude: 43.2994285,
+      longitude: -74.2179326,
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    }
+  });
+
+  const californiaState = await prisma.stateProvince.upsert({
+    where: { id: 3876 },
+    update: {
+      name: 'California',
+      stateCode: 'CA',
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    },
+    create: {
+      id: 3876,
+      name: 'California',
+      stateCode: 'CA',
+      type: 'state',
+      latitude: 36.778261,
+      longitude: -119.4179324,
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    }
+  });
+
+  const nycCity = await prisma.city.upsert({
+    where: { id: 5128581 },
+    update: {
+      name: 'New York City',
+      asciiName: 'New York',
+      countryId: unitedStates.id,
+      countryCode: 'US',
+      stateId: newYorkState.id,
+      stateCode: 'NY',
+      stateName: 'New York'
+    },
+    create: {
+      id: 5128581,
+      name: 'New York City',
+      asciiName: 'New York',
+      latitude: 40.7127753,
+      longitude: -74.0059728,
+      timezone: 'America/New_York',
+      wikiDataId: 'Q60',
+      stateId: newYorkState.id,
+      stateCode: 'NY',
+      stateName: 'New York',
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    }
+  });
+
+  const sfCity = await prisma.city.upsert({
+    where: { id: 5391959 },
+    update: {
+      name: 'San Francisco',
+      asciiName: 'San Francisco',
+      countryId: unitedStates.id,
+      countryCode: 'US',
+      stateId: californiaState.id,
+      stateCode: 'CA',
+      stateName: 'California'
+    },
+    create: {
+      id: 5391959,
+      name: 'San Francisco',
+      asciiName: 'San Francisco',
+      latitude: 37.7749295,
+      longitude: -122.4194155,
+      timezone: 'America/Los_Angeles',
+      wikiDataId: 'Q62',
+      stateId: californiaState.id,
+      stateCode: 'CA',
+      stateName: 'California',
+      countryId: unitedStates.id,
+      countryCode: 'US'
+    }
+  });
+
+  const nycPostal = await prisma.postalCode.upsert({
+    where: {
+      countryId_code_placeName: {
+        countryId: unitedStates.id,
+        code: '10004',
+        placeName: 'New York City'
+      }
+    },
+    update: {
+      stateId: newYorkState.id,
+      cityId: nycCity.id
+    },
+    create: {
+      code: '10004',
+      placeName: 'New York City',
+      countryId: unitedStates.id,
+      countryCode: 'US',
+      stateId: newYorkState.id,
+      stateCode: 'NY',
+      stateName: 'New York',
+      cityId: nycCity.id,
+      latitude: 40.6884,
+      longitude: -74.017,
+      accuracy: 1
+    }
+  });
+
+  const sfPostal = await prisma.postalCode.upsert({
+    where: {
+      countryId_code_placeName: {
+        countryId: unitedStates.id,
+        code: '94105',
+        placeName: 'San Francisco'
+      }
+    },
+    update: {
+      stateId: californiaState.id,
+      cityId: sfCity.id
+    },
+    create: {
+      code: '94105',
+      placeName: 'San Francisco',
+      countryId: unitedStates.id,
+      countryCode: 'US',
+      stateId: californiaState.id,
+      stateCode: 'CA',
+      stateName: 'California',
+      cityId: sfCity.id,
+      latitude: 37.7898,
+      longitude: -122.3942,
+      accuracy: 1
+    }
+  });
+
+  return {
+    country: unitedStates,
+    states: {
+      ny: newYorkState,
+      ca: californiaState
+    },
+    cities: {
+      nyc: nycCity,
+      sf: sfCity
+    },
+    postalCodes: {
+      nyc: nycPostal,
+      sf: sfPostal
+    }
+  };
+}
+
 async function main() {
+  const geography = await ensureDemoGeography();
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
@@ -41,25 +267,57 @@ async function main() {
 
   const nyc = await prisma.location.upsert({
     where: { slug: 'new-york-city' },
-    update: {},
+    update: {
+      state: 'NY',
+      country: 'US',
+      timezone: 'America/New_York',
+      latitude: 40.7128,
+      longitude: -74.006,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
+    },
     create: {
       name: 'New York City',
       slug: 'new-york-city',
       state: 'NY',
       country: 'US',
-      timezone: 'America/New_York'
+      timezone: 'America/New_York',
+      latitude: 40.7128,
+      longitude: -74.006,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
     }
   });
 
   const sf = await prisma.location.upsert({
     where: { slug: 'san-francisco' },
-    update: {},
+    update: {
+      state: 'CA',
+      country: 'US',
+      timezone: 'America/Los_Angeles',
+      latitude: 37.7749,
+      longitude: -122.4194,
+      countryId: geography.country.id,
+      stateId: geography.states.ca.id,
+      cityId: geography.cities.sf.id,
+      postalCodeId: geography.postalCodes.sf.id
+    },
     create: {
       name: 'San Francisco',
       slug: 'san-francisco',
       state: 'CA',
       country: 'US',
-      timezone: 'America/Los_Angeles'
+      timezone: 'America/Los_Angeles',
+      latitude: 37.7749,
+      longitude: -122.4194,
+      countryId: geography.country.id,
+      stateId: geography.states.ca.id,
+      cityId: geography.cities.sf.id,
+      postalCodeId: geography.postalCodes.sf.id
     }
   });
 
@@ -209,7 +467,11 @@ async function main() {
       approvedById: adminUser.id,
       categoryId: servicesCategory.id,
       locationId: nyc.id,
-      directoryId: nycDirectory.id
+      directoryId: nycDirectory.id,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
     }
   });
 
@@ -253,6 +515,10 @@ async function main() {
       websiteUrl: 'https://harborhvac.example.com',
       contactEmail: 'contact@harborhvac.example.com',
       contactPhone: '+1-929-555-0100',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10004',
+      country: 'US',
       status: 'APPROVED',
       score: 90.1,
       rating: 4.7,
@@ -265,7 +531,11 @@ async function main() {
       approvedById: adminUser.id,
       categoryId: servicesCategory.id,
       locationId: nyc.id,
-      directoryId: nycDirectory.id
+      directoryId: nycDirectory.id,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
     }
   });
 
@@ -295,6 +565,10 @@ async function main() {
       websiteUrl: 'https://steadfast.example.com',
       contactEmail: 'hello@steadfast.example.com',
       contactPhone: '+1-917-555-0105',
+      city: 'New York',
+      region: 'NY',
+      postalCode: '10004',
+      country: 'US',
       status: 'APPROVED',
       score: 82.4,
       rating: 4.5,
@@ -307,7 +581,11 @@ async function main() {
       approvedById: adminUser.id,
       categoryId: servicesCategory.id,
       locationId: nyc.id,
-      directoryId: nycDirectory.id
+      directoryId: nycDirectory.id,
+      countryId: geography.country.id,
+      stateId: geography.states.ny.id,
+      cityId: geography.cities.nyc.id,
+      postalCodeId: geography.postalCodes.nyc.id
     }
   });
 
