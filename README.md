@@ -23,19 +23,20 @@ Mega Directory is a server-rendered directory listing platform built with Astro,
 
 ## Setup
 
-Install dependencies for each JavaScript project individually:
+Install dependencies for each workspace inside the monorepo:
 
 ```bash
-cd api && npm install
-cd astro && npm install
-cd admin && npm install
+cd apps/api && npm install
+cd apps/web && npm install
+cd apps/admin && npm install
+python -m pip install -r apps/crawler/requirements-dev.txt
 ```
 
-Database schema and seed scripts live under `/db`. Run Prisma commands from the `api` workspace once the API server has been configured with a connection string (see future Codex tasks for details).
+Database schema and seed scripts live under `/db`. Run Prisma/DB commands from the `apps/api` workspace once the API server has been configured with a connection string (see future Codex tasks for details). Shared constants (ports, labels, etc.) live in `packages/shared-config` and are linked into each app automatically.
 
 ## Running with Docker Compose
 
-`docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro frontend. Bring them up together with:
+`docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro-powered `web` frontend. Bring them up together with:
 
 ```bash
 docker compose up --build
@@ -52,7 +53,7 @@ Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) be
 
 ## Railway Deployment
 
-The repository is ready to deploy on [Railway](https://railway.app) using the Dockerfiles under `api/` and `astro/`. Follow the step-by-step guide in `docs/deployment/railway.md` to provision the Postgres plugin, deploy the two services, and wire their environment variables together.
+The repository is ready to deploy on [Railway](https://railway.app) using the Dockerfiles under `apps/api/` and `apps/web/`. Follow the step-by-step guide in `docs/deployment/railway.md` to provision the Postgres plugin, deploy the two services, and wire their environment variables together.
 
 ## Admin & Crawler Tools
 
@@ -60,24 +61,24 @@ The admin interface and crawler agent run outside Docker so that they can be ope
 
 - Admin interface:  
   ```bash
-  cd admin
+  cd apps/admin
   npm run dev
   ```
-- Python crawler agent (configure `agents/crawler/config/targets.json` first):  
+- Python crawler agent (configure `apps/crawler/config/targets.json` first):  
   ```bash
-  cd agents/crawler
+  cd apps/crawler
   python main.py
   ```
   To replay the built-in demo data against your local API without touching real websites, run:
   ```bash
-  python agents/crawler/dev_runner.py --run-once
+  python apps/crawler/dev_runner.py --run-once
   ```
 
 Additional details about each agent live in `docs/AGENTS.md`.
 
 ### Dev Bootstrap Script
 
-When you need the entire stack (API + Astro + Admin + crawler) running locally, use the helper script:
+When you need the entire stack (API + web + Admin + crawler) running locally, use the helper script:
 
 ```bash
 ./scripts/dev-bootstrap.sh
@@ -92,18 +93,22 @@ It launches:
 
 Override any port or secret via environment variables (e.g., `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT`, `CRAWLER_INTERVAL`, `ADMIN_JWT_SECRET`, `CRAWLER_API_TOKEN`). Set `SKIP_CRAWLER=1` if you want to keep the crawler offline. The script requires `npm` and `python3` to be available on your PATH.
 
-The bootstrapper now installs missing dependencies for you: it runs `npm install` for the API, Astro, and admin workspaces when their `node_modules/` folders are absent and installs the crawler's Python requirements from `agents/crawler/requirements-dev.txt` (using `pip --user` unless you're already inside a virtual environment). Set `DEV_BOOTSTRAP_FORCE_INSTALL=1` to force a reinstall if you need to pick up dependency changes.
+The bootstrapper now installs missing dependencies for you: it runs `npm install` for the API, web, and admin workspaces when their `node_modules/` folders are absent and installs the crawler's Python requirements from `apps/crawler/requirements-dev.txt` (using `pip --user` unless you're already inside a virtual environment). Set `DEV_BOOTSTRAP_FORCE_INSTALL=1` to force a reinstall if you need to pick up dependency changes.
 
 ## Project Structure
 
 ```
-/astro             - Astro frontend (SSR entry point and UI components)
-/api               - Express API placeholder (filled out in later tasks)
-/admin             - Standalone moderation UI
-/agents/crawler    - Python crawler agent source + configs
-/codex/TASKS       - Codex YAML task definitions
-/db                - Prisma schema and seeding scripts
-/docs              - Developer documentation (see docs/AGENTS.md)
+/apps
+  /api        - TypeScript Express API, health checks, ingestion endpoints
+  /web        - Astro SSR frontend and shared UI components
+  /admin      - Standalone moderation UI
+  /crawler    - Python crawler agent source + configs
+/packages
+  /shared-config - Reusable constants shared across apps
+/codex/TASKS  - Codex YAML task definitions
+/db           - Prisma schema and seeding scripts
+/docs         - Developer documentation (see docs/AGENTS.md)
+/scripts      - Local tooling (bootstrap helpers, etc.)
 ```
 
 ## License

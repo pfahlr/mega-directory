@@ -3,8 +3,8 @@
 Deploy the Mega Directory API, Astro frontend, and PostgreSQL database on [Railway](https://railway.app) using the Dockerfiles that live in this repository. Railway treats each runtime as an isolated service, so you will provision three services inside a single project:
 
 1. **PostgreSQL database** (managed by Railway)
-2. **Express API** built from `api/Dockerfile`
-3. **Astro web frontend** built from `astro/Dockerfile`
+2. **Express API** built from `apps/api/Dockerfile`
+3. **Astro web frontend** built from `apps/web/Dockerfile`
 
 The sections below walk through prerequisites, per-service configuration, and an end-to-end deployment workflow.
 
@@ -18,8 +18,8 @@ The sections below walk through prerequisites, per-service configuration, and an
 > **Tip:** Run `docker build` locally before pushing to Railway if you want to catch Dockerfile issues early:
 >
 > ```bash
-> docker build -t mega-directory-api -f api/Dockerfile ./api
-> docker build -t mega-directory-web -f astro/Dockerfile ./astro
+> docker build -t mega-directory-api -f apps/api/Dockerfile ./apps/api
+> docker build -t mega-directory-web -f apps/web/Dockerfile ./apps/web
 > ```
 
 ## Provision the PostgreSQL service
@@ -34,8 +34,8 @@ _No Dockerfile is required for this step because Railway manages the database co
 
 | Setting | Value |
 | --- | --- |
-| Build context | `./api` |
-| Dockerfile | `api/Dockerfile` |
+| Build context | `./apps/api` |
+| Dockerfile | `apps/api/Dockerfile` |
 | Default port | `3001` (Railway sets `PORT`, so no manual mapping needed) |
 | Health check | `GET /health` |
 
@@ -62,7 +62,7 @@ railway login
 railway link
 
 # Deploy the API container
-railway up --service api --path api --dockerfile api/Dockerfile
+railway up --service api --path apps/api --dockerfile apps/api/Dockerfile
 ```
 
 If you prefer the dashboard, choose **New** → **Deploy from Repo** (or **Deploy from tarball**), point it at this repository, and set the build context to `api/` with the Dockerfile located at `api/Dockerfile`.
@@ -71,8 +71,8 @@ If you prefer the dashboard, choose **New** → **Deploy from Repo** (or **Deplo
 
 | Setting | Value |
 | --- | --- |
-| Build context | `./astro` |
-| Dockerfile | `astro/Dockerfile` |
+| Build context | `./apps/web` |
+| Dockerfile | `apps/web/Dockerfile` |
 | Default port | `3000` |
 | Health check | `GET /` |
 
@@ -88,7 +88,7 @@ The Astro Dockerfile performs a production build in a first stage and serves the
 ### Deploying via CLI
 
 ```bash
-railway up --service web --path astro --dockerfile astro/Dockerfile
+railway up --service web --path apps/web --dockerfile apps/web/Dockerfile
 ```
 
 Again, the dashboard workflow mirrors the API deployment—point to `astro/` as the path and keep the Dockerfile selection at `astro/Dockerfile`.

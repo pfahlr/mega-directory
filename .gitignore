@@ -1,10 +1,15 @@
 node_modules/
+**/node_modules/
 .env
 .env.*
 __pycache__/
 *.sqlite
 *.sqlite3
 dist/
+**/dist/
 build/
+**/build/
+.turbo/
+*.tsbuildinfo
 .next/
 .vercel/
