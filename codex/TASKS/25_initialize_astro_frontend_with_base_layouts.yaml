@@ -9,5 +9,5 @@ Set up the main Astro-powered frontend application:
 - Create routing system for directory pages (by slug/subdomain)
 - Support both subdomain and subdirectory routing for directory URLs
 - Prepare slots for SEO meta tag injection (meta title, description, og:image, etc)
-- additional information in `codex/TASKS/codex_phase_1b_2.yaml`
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
 dependencies: [24]
