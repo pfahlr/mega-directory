@@ -1,0 +1,11 @@
+- id: 40
+filename: 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc.yaml
+title: Document Full Development Setup and Env Var Usage (Makefile, SOPS, etc.)
+description: >
+Write detailed docs for environment setup:
+- Project structure and local dev flow
+- Use of Makefile + env.json
+- SOPS encryption/decryption
+- API key setup and secrets injection
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: []

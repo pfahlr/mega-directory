@@ -1,0 +1,10 @@
+- id: 35
+filename: 35_implement_shared_post-processing_for_crawler_and_text_import_scripts.yaml
+title: Implement Shared Post-Processing for Crawler and Text Import Scripts
+description: >
+Create shared Python module to:
+- Enrich listings with AI-generated short/long descriptions
+- Clean titles and normalize data
+- To be reused across ingestion sources (crawler, manual import)
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: []
