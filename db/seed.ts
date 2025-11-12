@@ -63,56 +63,79 @@ async function main() {
     }
   });
 
+  const nycDirectoryData = {
+    title: 'NYC Professional Services',
+    slug: 'professional-services-new-york-city',
+    subdomain: 'services.nyc',
+    subdirectory: 'professional-services/new-york-city',
+    hostname: 'services.nyc.example.com',
+    heroTitle: 'Trusted Pros in New York City',
+    heroSubtitle: 'Browse curated electricians, plumbers, HVAC, and more.',
+    status: 'ACTIVE' as const,
+    isActive: true,
+    metaTitle: 'Professional Services in NYC',
+    metaDescription: 'Hand-reviewed professional services in the five boroughs.',
+    metaKeywords: 'electricians,hvac,maintenance,new york',
+    ogImageUrl: 'https://cdn.example.com/directories/pro-services-nyc.png',
+    locationAgnostic: false,
+    categoryId: servicesCategory.id,
+    locationId: nyc.id
+  };
+
   const nycDirectory = await prisma.directory.upsert({
-    where: { slug: 'professional-services-new-york-city' },
-    update: {},
-    create: {
-      name: 'NYC Professional Services',
-      slug: 'professional-services-new-york-city',
-      subdomain: 'services.nyc',
-      hostname: 'services.nyc.example.com',
-      heroTitle: 'Trusted Pros in New York City',
-      heroSubtitle: 'Browse curated electricians, plumbers, HVAC, and more.',
-      status: 'ACTIVE',
-      isActive: true,
-      metaTitle: 'Professional Services in NYC',
-      metaDescription: 'Hand-reviewed professional services in the five boroughs.',
-      categoryId: servicesCategory.id,
-      locationId: nyc.id
-    }
+    where: { slug: nycDirectoryData.slug },
+    update: nycDirectoryData,
+    create: nycDirectoryData
   });
 
-  await prisma.directory.upsert({
-    where: { slug: 'professional-services-san-francisco' },
-    update: {},
-    create: {
-      name: 'SF Professional Services',
-      slug: 'professional-services-san-francisco',
-      subdomain: 'services.sf',
-      hostname: 'services.sf.example.com',
-      heroTitle: 'Bay Area Specialists',
-      heroSubtitle: 'Top-rated maintainers for your next remodel or repair.',
-      status: 'DRAFT',
-      isActive: false,
-      categoryId: servicesCategory.id,
-      locationId: sf.id
-    }
-  });
+  const sfDirectoryData = {
+    title: 'SF Professional Services',
+    slug: 'professional-services-san-francisco',
+    subdomain: 'services.sf',
+    subdirectory: 'professional-services/san-francisco',
+    hostname: 'services.sf.example.com',
+    heroTitle: 'Bay Area Specialists',
+    heroSubtitle: 'Top-rated maintainers for your next remodel or repair.',
+    status: 'DRAFT' as const,
+    isActive: false,
+    metaTitle: 'Professional Services in SF',
+    metaDescription: 'Hand-reviewed professional services across the Bay Area.',
+    metaKeywords: 'electricians,hvac,maintenance,san francisco',
+    ogImageUrl: 'https://cdn.example.com/directories/pro-services-sf.png',
+    locationAgnostic: false,
+    categoryId: servicesCategory.id,
+    locationId: sf.id
+  };
 
   await prisma.directory.upsert({
-    where: { slug: 'jobs-new-york-city' },
-    update: {},
-    create: {
-      name: 'NYC Jobs Directory',
-      slug: 'jobs-new-york-city',
-      subdomain: 'jobs.nyc',
-      hostname: 'jobs.nyc.example.com',
-      heroTitle: 'Hiring in NYC',
-      heroSubtitle: 'Recruiting partners for finance, media, and tech.',
-      status: 'DRAFT',
-      categoryId: jobsCategory.id,
-      locationId: nyc.id
-    }
+    where: { slug: sfDirectoryData.slug },
+    update: sfDirectoryData,
+    create: sfDirectoryData
+  });
+
+  const nycJobsDirectoryData = {
+    title: 'NYC Jobs Directory',
+    slug: 'jobs-new-york-city',
+    subdomain: 'jobs.nyc',
+    subdirectory: 'jobs/new-york-city',
+    hostname: 'jobs.nyc.example.com',
+    heroTitle: 'Hiring in NYC',
+    heroSubtitle: 'Recruiting partners for finance, media, and tech.',
+    status: 'DRAFT' as const,
+    isActive: false,
+    metaTitle: 'NYC Jobs & Recruiters',
+    metaDescription: 'Recruiting firms and boards focused on New York City talent.',
+    metaKeywords: 'jobs,recruiting,new york city',
+    ogImageUrl: 'https://cdn.example.com/directories/jobs-nyc.png',
+    locationAgnostic: false,
+    categoryId: jobsCategory.id,
+    locationId: nyc.id
+  };
+
+  await prisma.directory.upsert({
+    where: { slug: nycJobsDirectoryData.slug },
+    update: nycJobsDirectoryData,
+    create: nycJobsDirectoryData
   });
 
   const electricalSubcategory = await prisma.subcategory.upsert({

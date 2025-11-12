@@ -52,13 +52,13 @@ CREATE TABLE "Location" (
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE "Directory" (
+CREATE TABLE "directory_pages" (
   "id" SERIAL PRIMARY KEY,
-  "name" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
   "slug" TEXT NOT NULL UNIQUE,
   "subdomain" TEXT NOT NULL UNIQUE,
+  "subdirectory" TEXT NOT NULL UNIQUE,
   "hostname" TEXT,
-  "pathPrefix" TEXT DEFAULT '/',
   "heroTitle" TEXT,
   "heroSubtitle" TEXT,
   "introMarkdown" TEXT,
@@ -66,14 +66,17 @@ CREATE TABLE "Directory" (
   "featuredLimit" INTEGER NOT NULL DEFAULT 3,
   "metaTitle" TEXT,
   "metaDescription" TEXT,
+  "metaKeywords" TEXT,
+  "ogImageUrl" TEXT,
+  "locationAgnostic" BOOLEAN NOT NULL DEFAULT FALSE,
   "isActive" BOOLEAN NOT NULL DEFAULT FALSE,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "categoryId" INTEGER NOT NULL,
   "locationId" INTEGER,
-  CONSTRAINT "Directory_categoryId_locationId_key" UNIQUE ("categoryId", "locationId"),
-  CONSTRAINT "Directory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT "Directory_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT "directory_pages_categoryId_locationId_key" UNIQUE ("categoryId", "locationId"),
+  CONSTRAINT "directory_pages_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT "directory_pages_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE "Subcategory" (
@@ -136,7 +139,7 @@ CREATE TABLE "Listing" (
   "approvedById" INTEGER,
   CONSTRAINT "Listing_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "Listing_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT "Listing_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "Directory"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT "Listing_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "directory_pages"("id") ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT "Listing_approvedById_fkey" FOREIGN KEY ("approvedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -165,7 +168,7 @@ CREATE TABLE "FeaturedSlot" (
   "directoryId" INTEGER NOT NULL,
   "listingId" INTEGER,
   CONSTRAINT "FeaturedSlot_directoryId_tier_position_key" UNIQUE ("directoryId", "tier", "position"),
-  CONSTRAINT "FeaturedSlot_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "Directory"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT "FeaturedSlot_directoryId_fkey" FOREIGN KEY ("directoryId") REFERENCES "directory_pages"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "FeaturedSlot_listingId_fkey" FOREIGN KEY ("listingId") REFERENCES "Listing"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
