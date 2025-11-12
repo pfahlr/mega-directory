@@ -1,0 +1,11 @@
+id: 25
+title: "Initialize Astro Frontend with Base Layouts"
+description: >
+  Set up the main Astro-powered frontend application:
+  - Install and configure Astro with TypeScript, Tailwind CSS, and necessary integrations
+  - Create base layout for pages, with head tags and site-wide styling
+  - Implement global header and footer components
+  - Create routing system for directory pages (by slug/subdomain)
+  - Support both subdomain and subdirectory routing for directory URLs
+  - Prepare slots for SEO meta tag injection (meta title, description, og:image, etc)
+dependencies: [24]

@@ -1,0 +1,10 @@
+id: 201
+title: "Phase 2: User Auth and Account Bootstrap"
+description: >
+  Implement user account bootstrapping workflow:
+  - On interaction requiring login, auto-generate a user stub (UUID, anonymous username)
+  - Present token-based login link with option to set email, username, and password
+  - Support login via email (magic link or password if present)
+  - Prepare schema for password-less login, with future 2FA extensibility
+  - Ensure consistent user session management and backend token handling
+dependencies: []
