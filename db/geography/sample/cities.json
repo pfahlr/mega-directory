@@ -1,0 +1,58 @@
+[
+  {
+    "id": 5128581,
+    "name": "New York City",
+    "ascii_name": "New York",
+    "state_id": 3930,
+    "state_code": "NY",
+    "state_name": "New York",
+    "country_id": 233,
+    "country_code": "US",
+    "country_name": "United States",
+    "latitude": "40.71277530",
+    "longitude": "-74.00597280",
+    "wikiDataId": "Q60"
+  },
+  {
+    "id": 5391959,
+    "name": "San Francisco",
+    "ascii_name": "San Francisco",
+    "state_id": 3876,
+    "state_code": "CA",
+    "state_name": "California",
+    "country_id": 233,
+    "country_code": "US",
+    "country_name": "United States",
+    "latitude": "37.77492950",
+    "longitude": "-122.41941550",
+    "wikiDataId": "Q62"
+  },
+  {
+    "id": 6167865,
+    "name": "Toronto",
+    "ascii_name": "Toronto",
+    "state_id": 1108,
+    "state_code": "ON",
+    "state_name": "Ontario",
+    "country_id": 39,
+    "country_code": "CA",
+    "country_name": "Canada",
+    "latitude": "43.65107000",
+    "longitude": "-79.34701500",
+    "wikiDataId": "Q172"
+  },
+  {
+    "id": 292223,
+    "name": "Dubai",
+    "ascii_name": "Dubai",
+    "state_id": null,
+    "state_code": null,
+    "state_name": null,
+    "country_id": 229,
+    "country_code": "AE",
+    "country_name": "United Arab Emirates",
+    "latitude": "25.27698700",
+    "longitude": "55.29624900",
+    "wikiDataId": "Q613"
+  }
+]

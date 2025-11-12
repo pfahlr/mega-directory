@@ -1,0 +1,95 @@
+[
+  {
+    "id": 233,
+    "name": "United States",
+    "iso3": "USA",
+    "iso2": "US",
+    "numeric_code": "840",
+    "phone_code": "+1",
+    "capital": "Washington D.C.",
+    "currency": "USD",
+    "currency_name": "United States dollar",
+    "currency_symbol": "USD",
+    "tld": ".us",
+    "native": "United States",
+    "region": "Americas",
+    "subregion": "Northern America",
+    "timezones": [
+      {
+        "zoneName": "America/New_York",
+        "gmtOffset": -18000,
+        "gmtOffsetName": "UTC-05:00",
+        "abbreviation": "EST",
+        "tzName": "Eastern Standard Time"
+      }
+    ],
+    "translations": {},
+    "latitude": "38.89383800",
+    "longitude": "-77.15466000",
+    "emoji": "🇺🇸",
+    "emojiU": "U+1F1FA U+1F1F8",
+    "wikiDataId": "Q30"
+  },
+  {
+    "id": 39,
+    "name": "Canada",
+    "iso3": "CAN",
+    "iso2": "CA",
+    "numeric_code": "124",
+    "phone_code": "+1",
+    "capital": "Ottawa",
+    "currency": "CAD",
+    "currency_name": "Canadian dollar",
+    "currency_symbol": "CA$",
+    "tld": ".ca",
+    "native": "Canada",
+    "region": "Americas",
+    "subregion": "Northern America",
+    "timezones": [
+      {
+        "zoneName": "America/Toronto",
+        "gmtOffset": -18000,
+        "gmtOffsetName": "UTC-05:00",
+        "abbreviation": "EST",
+        "tzName": "Eastern Standard Time"
+      }
+    ],
+    "translations": {},
+    "latitude": "56.13036600",
+    "longitude": "-106.34677100",
+    "emoji": "🇨🇦",
+    "emojiU": "U+1F1E8 U+1F1E6",
+    "wikiDataId": "Q16"
+  },
+  {
+    "id": 229,
+    "name": "United Arab Emirates",
+    "iso3": "ARE",
+    "iso2": "AE",
+    "numeric_code": "784",
+    "phone_code": "+971",
+    "capital": "Abu Dhabi",
+    "currency": "AED",
+    "currency_name": "United Arab Emirates dirham",
+    "currency_symbol": "د.إ",
+    "tld": ".ae",
+    "native": "دولة الإمارات العربية المتحدة",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "timezones": [
+      {
+        "zoneName": "Asia/Dubai",
+        "gmtOffset": 14400,
+        "gmtOffsetName": "UTC+04:00",
+        "abbreviation": "GST",
+        "tzName": "Gulf Standard Time"
+      }
+    ],
+    "translations": {},
+    "latitude": "24.00000000",
+    "longitude": "54.00000000",
+    "emoji": "🇦🇪",
+    "emojiU": "U+1F1E6 U+1F1EA",
+    "wikiDataId": "Q878"
+  }
+]

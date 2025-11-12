@@ -1,0 +1,95 @@
+---
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { siteConfig } from '../config/site-config.js';
+import '../styles/global.css';
+
+const {
+  title,
+  description,
+  navItems,
+  showHeader = true,
+  showFooter = true,
+  seo = {},
+} = Astro.props;
+
+const siteName = siteConfig.siteName;
+const resolvedTitle = title ?? siteName;
+const computedTitle =
+  seo.title ??
+  (resolvedTitle === siteName ? siteName : `${resolvedTitle} · ${siteName}`);
+const resolvedDescription = seo.description ?? description ?? siteConfig.defaultDescription;
+const resolvedNavItems =
+  navItems ??
+  [
+    { href: '#listings', label: 'Listings' },
+    { href: '#categories', label: 'Categories' },
+    { href: '#insights', label: 'Insights' },
+  ];
+
+const canonicalBase = siteConfig.canonicalUrl?.replace(/\/$/, '') || '';
+const currentPath = typeof Astro.url === 'object' ? Astro.url.pathname : '';
+const canonicalUrl =
+  seo.canonicalUrl ??
+  (canonicalBase ? `${canonicalBase}${currentPath || '/'}` : currentPath || '/');
+const ogImage = seo.image ?? seo.openGraph?.image ?? siteConfig.defaultOgImage;
+const ogTitle = seo.openGraph?.title ?? computedTitle;
+const ogDescription = seo.openGraph?.description ?? resolvedDescription;
+const ogType = seo.openGraph?.type ?? 'website';
+const twitterCard = seo.twitter?.card ?? 'summary_large_image';
+const twitterTitle = seo.twitter?.title ?? computedTitle;
+const twitterDescription = seo.twitter?.description ?? resolvedDescription;
+const twitterImage = seo.twitter?.image ?? ogImage;
+const twitterHandle = seo.twitter?.handle ?? siteConfig.twitterHandle;
+const jsonLd = seo.jsonLd;
+const noindex = seo.noindex === true;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{computedTitle}</title>
+    <meta name="description" content={resolvedDescription} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      as="style"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:type" content={ogType} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={twitterTitle} />
+    <meta name="twitter:description" content={twitterDescription} />
+    {twitterImage && <meta name="twitter:image" content={twitterImage} />}
+    {twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
+    <meta name="theme-color" content="#020617" />
+    {jsonLd && (
+      <script type="application/ld+json" is:inline>
+        {JSON.stringify(jsonLd)}
+      </script>
+    )}
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    {showHeader && <SiteHeader navItems={resolvedNavItems} />}
+    <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+      <main id="main-content" class="flex-1 space-y-14 pb-10 pt-4">
+        <slot />
+      </main>
+      {showFooter && <SiteFooter />}
+    </div>
+  </body>
+</html>

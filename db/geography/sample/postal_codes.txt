@@ -1,0 +1,3 @@
+US	10004	New York City	New York	NY	New York County	061			40.688400	-74.017000	1
+US	94105	San Francisco	California	CA	San Francisco County	075			37.789800	-122.394200	1
+CA	M5H	Toronto	Ontario	ON	Toronto Division	3520			43.650200	-79.384900	1
