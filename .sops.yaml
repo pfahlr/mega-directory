@@ -12,7 +12,7 @@ creation_rules:
   # Default: PGP recipient for all files (kept for local development)
   - path_regex: ./*
     unencrypted_suffix: "_unencrypted"
-    gcp_kms:
-      projects/second-form-471412-c5/locations/global/keyRings/newlit-keyring/cryptoKeys/newlit-sops-key
+    #gcp_kms:
+    #  projects/second-form-471412-c5/locations/global/keyRings/newlit-keyring/cryptoKeys/newlit-sops-key
     pgp: 'CB3B963C0AB97B34BAF22D68F9D46501F1146F9F'
 
