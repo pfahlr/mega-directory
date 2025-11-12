@@ -1,0 +1,122 @@
+project: mega-directory
+version: 1.0
+phases:
+  - phase: 1
+    description: Core system buildout — listings pipeline, directory structure, admin tools, crawler, API, and frontend delivery
+
+    components:
+      api_server:
+        language: TypeScript
+        framework: Node/Express
+        deployment: Railway
+        endpoints:
+          - listings: [GET, POST, PUT, DELETE]
+          - addresses: [GET, POST, PUT, DELETE]
+          - categories: [GET, POST, PUT, DELETE]
+          - directory_pages: [GET, POST, PUT, DELETE]
+          - directory_metadata: [GET, PUT]
+        notes:
+          - Postal, city, state/province, and country tables are loaded from external datasets.
+          - Listings reference postal_code_id or city_id depending on geography.
+          - Listings with multiple addresses appear once per address on location-aware directories, once total on agnostic ones.
+
+      database:
+        schema:
+          - countries → states → cities → postal_codes
+          - listings (FK: postal_code OR city)
+          - physical_addresses (FK: listing)
+          - categories
+          - listings_categories (many-to-many)
+          - directory_pages:
+              - fields: title, meta_title, meta_description, subdomain, subdirectory, og_image, location_agnostic
+              - relations: many categories, many locations
+          - admin_users
+        seed_data:
+          - countries/states/cities/postal codes from:
+              - https://github.com/dr5hn/countries-states-cities-database
+              - https://download.geonames.org/export/zip/
+
+      frontend:
+        framework: Astro
+        deployment: Railway
+        subdomain_vs_subdirectory:
+          behavior: configurable
+          rules:
+            - if subdomain_selected: subdirectory → 301 redirect to subdomain
+            - if subdirectory_selected: subdomain → 301 redirect to subdirectory
+
+      admin_app:
+        framework: TBC (Astro or React or Node SSR)
+        deployment: private server or local machine only
+        features:
+          - listing moderation: edit, approve (save), deactivate
+          - directory page creation/editing
+          - category/location review
+          - SEO metadata input (meta_title, description, og:image)
+        pagination: 50 items/page
+        security: token-based access (auth to be configured)
+
+      crawler:
+        language: Python
+        libraries: requests, BeautifulSoup4, requests-cache
+        cache_duration: 30 days (SQLite)
+        config:
+          - api_endpoint, token
+          - crawl_targets: [categories, locations, keywords, count]
+          - field_strategy: {source: scrape | ai, provider, model, jinja_prompt}
+        output: JSON data posted to API
+        deployment: private server or local machine only
+
+      supplemental_scripts:
+        - data_collector.py:
+            input_formats: [html, csv, raw_text]
+            modes:
+              - soup_parsed → raw JSON
+              - llm_parsed (via OpenRouter/GPT) → structured JSON
+            step2:
+              - transforms: AI-generated summaries, enriched categorization
+              - result: final listing JSON submitted to API
+
+      environment:
+        secrets:
+          - GEOCODEMAPS_API_KEY
+          - GOOGLEMAPS_API_KEY
+        secrets_setup:
+          - Makefile + env.json + sops encrypted values
+
+      geolocation:
+        source: geocode.maps.co → fallback: Google Maps Geocode API
+        trigger: automatic on listing with address
+
+  - phase: 2
+    description: User account system and social features (optional post-MVP)
+    components:
+      user_accounts:
+        creation_modes:
+          - anonymous token
+          - email-only with login code
+          - full email + username + password
+        auth:
+          - magic login link always available
+          - password optional
+          - future: 2FA on password accounts
+      user_features:
+        - collection_lists:
+            - add/remove listings
+            - public shareable links: /[username]/[list]
+            - export: CSV, KML, GPS
+        - votes: up/down
+        - reviews: optional photos
+        - dead_listing_reports
+
+tasks:
+  phase_1_range: 001–040
+  phase_2_range: 201–204
+  additional_notes:
+    - phase_1 should prioritize crawler/admin/api/web integration
+    - phase_2 should not begin until core pipeline and moderation is live
+    - all directory creation is manual for now
+
+resumption_instructions: >
+  To continue development planning from here, paste this YAML into a new conversation
+  and ask for task breakdown, CODEX_TODO.md generation, database modeling, or next-step execution.

@@ -1,0 +1,10 @@
+- id: 36
+filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+title: Create Text-Based Data Import Script with LLM and HTML Parsing Modes
+description: >
+- Develop CLI script that accepts data inputs via file/stdin and mode flag (--format html|text|json|csv).
+- Route parsing through BS4 (html), or LLM-based extractors (text).
+- Output intermediate JSON file for manual review or later enrichment.
+- when --formmat is json|csv then this data should be ingested, enriched, and stored to the database via the api
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: []
