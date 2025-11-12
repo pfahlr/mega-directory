@@ -122,4 +122,37 @@ Please let me know immediately what, if any of this is vague or unclear. I want 
  
  2) basic data json file ---> generated short/long description, title improvements, determination of subcategory / alternate categories by free openrouter llm models ---> insert into database via api
     
-                                        
+ ---
+ 
+## Subdomain vs Subdirectory: The spec allows both a subdomain and a subdirectory for a directory page. Clarify the desired behavior (e.g. should one always redirect to the other?). Implementation could simply enforce a canonical structure, but decide whether the primary path is the subdomain or the directory URL.
+ - There should be a configuration option on the astro site that determines if the directories will be referenced by either subdomain or subdirectory. If subdomain is selected then when an http request for the corresponding subdirectory is made, the server should issue a redirect to the subdomain. If subdirectory is selected, the opposite should occcur. 
+
+
+## Postal-Code and City Fallback: The approach for cities without postal codes is “city-only”. Confirm: will listings in such countries have postal_code_id = NULL and rely solely on city_id? How to query/filter these listings versus postal-coded listings? Ensure the schema allows queries like “all listings in city X” covering both cases.
+
+ - Yes in countries where there is no postal code, we will use city as in "all listings in city x"
+
+
+## Multiple Addresses: If a listing has multiple addresses, should all be displayed on the listing detail page, and should the listing appear under each relevant location-based directory page? (Likely yes.) Plan how to handle multiple map pins for one listing if needed.
+
+ - Listings with multiple addresses should appear once for each address on non-location agnostic directories, and only once for location agnostic directories
+
+## LLM Prompts and Limits: Defining the prompts for raw text parsing and enrichment will require iteration. Also consider rate limits or token limits (e.g. breaking very long HTML into pieces).
+  
+  - yes!
+
+## Environment Setup: Ensure the build system (Makefile/SOPS) loads the new GEOCODEMAPS_API_KEY and GOOGLEMAPS_API_KEY variables correctly. This is part of dev setup but should be tested.
+
+ - I was just configuring this.
+
+---
+
+## Consolidated Development Plan
+
+Great — I’ll generate a full Codex task set (around 20 tasks) based on the complete updated functionality we’ve outlined, including all aspects from directory pages and geographic structuring to crawler design, admin review flow, and phased-in user accounts.
+
+I’ll let you know as soon as the full task set is ready. You can continue working or chatting in the meantime.
+
+
+
+
