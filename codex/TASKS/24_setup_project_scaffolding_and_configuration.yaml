@@ -1,6 +1,12 @@
 id: 24
-title: "Setup Project Scaffolding And Configuration"
+title: "Setup Project Scaffolding and Configuration"
 description: >
-  Placeholder for task: Setup project scaffolding and configuration.
-  This task is part of phase 1.
+  Initialize and structure the repository for the mega-directory project. This includes:
+  - Base directory layout for apps: `apps/web`, `apps/api`, `apps/admin`, `apps/crawler`
+  - Shared libraries under `packages/`
+  - Initial Astro site in `apps/web` with placeholder routing and shared layout
+  - Basic Express or Fastify API in `apps/api` with TypeScript, supporting health check
+  - Configuration files including `.editorconfig`, `.gitignore`, `tsconfig.json`, workspace settings
+  - README with clear overview of development, environment setup, and monorepo structure
+  - Add Makefile and SOPS integration for secrets management via `env.json` as already scaffolded
 dependencies: []
