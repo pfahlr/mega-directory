@@ -1,0 +1,2044 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a7884-c448-7c02-bbe4-6575b3ce451f
+--------
+user
+Implement the functionality described in codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml, then verify with any available tests.
+ERROR: MCP client for `vibe-check-mcp-server` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.vibe-check-mcp-server]
+startup_timeout_sec = XX
+ERROR: MCP client for `exa` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.exa]
+startup_timeout_sec = XX
+ERROR: MCP client for `mcp` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.mcp]
+startup_timeout_sec = XX
+
+thinking
+**Seeking AGENTS instructions**
+exec
+zsh -lc ls in /var/home/rick/Development/mega-directory succeeded in 174ms:
+AGENTS.md
+apps
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+docs.tar
+env.json
+Makefile
+package.json
+packages
+README.md
+scripts
+tests
+tsconfig.json
+
+thinking
+**Inspecting task file**
+exec
+zsh -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Opening task file**
+exec
+zsh -lc 'cat codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+id: 36
+filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+title: Create Text-Based Data Import Script with LLM and HTML Parsing Modes
+description: >
+- Develop CLI script that accepts data inputs via file/stdin and mode flag (--format html|text|json|csv).
+- Route parsing through BS4 (html), or LLM-based extractors (text).
+- Output intermediate JSON file for manual review or later enrichment.
+- when --formmat is json|csv then this data should be ingested, enriched, and stored to the database via the api
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: []
+
+thinking
+**Searching for existing scripts**
+exec
+zsh -lc 'rg -n "text-based" -n' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+codex/TASKS/work_list:14:36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:13:Implement the functionality described in codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml, then verify with any available tests.
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:74:zsh -lc 'cat codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:76:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:89:zsh -lc 'rg -n "text-based" -n' in /var/home/rick/Development/mega-directory
+codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml:2:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:446:bash -lc "sed -n '1,200p' codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml" in /var/home/rick/Development/mega-directory succeeded in 46ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:448:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:461:bash -lc 'rg -n "text-based" -n' in /var/home/rick/Development/mega-directory succeeded in 48ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:462:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:446:bash -lc "sed -n '1,200p' codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml" in /var/home/rick/Development/mega-directory succeeded in 46ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:463:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:448:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:464:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:461:bash -lc 'rg -n "text-based" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:465:codex/TASKS/work_list:14:36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:466:codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml:2:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:467:codex/LOGS/codex_run_2025-11-12_06-13-21.log:7:Tasks: 24_setup_project_scaffolding_and_configuration 25a_initialize_astro_frontend_with_base_layouts 25_define_directory_page_model_and_metadata_fields 26_initialize_geographic_location_tables_and_seed_data 27_implement_directory_pages_table_and_metadata_fields 28_build_admin_ui_for_directory_page_creation_and_editing 29_implement_listings_table_enhancements_for_multiple_categories_and_locations 30_set_up_geocoding_integration_with_fallback_support 31_build_map_widget_for_directory_pages_with_location-aware_listings 32_create_admin_api_endpoints_for_listings_addresses_categories_directories 33_add_directory_routing_logic_subdomain_subdirectory_handling 34_extend_crawler_to_handle_address_and_category_assignment 35_implement_shared_post-processing_for_crawler_and_text_import_scripts 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes 37_generate_admin_interface_for_reviewing_imported_json_listing_data 39_render_canonical_meta_tags_from_directory_configuration 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:468:codex/LOGS/tasklog_25a_initialize_astro_frontend_with_base_layouts_1762948216.log:575:codex/LOGS/codex_run_2025-11-12_06-13-21.log:7:Tasks: 24_setup_project_scaffolding_and_configuration 25a_initialize_astro_frontend_with_base_layouts 25_define_directory_page_model_and_metadata_fields 26_initialize_geographic_location_tables_and_seed_data 27_implement_directory_pages_table_and_metadata_fields 28_build_admin_ui_for_directory_page_creation_and_editing 29_implement_listings_table_enhancements_for_multiple_categories_and_locations 30_set_up_geocoding_integration_with_fallback_support 31_build_map_widget_for_directory_pages_with_location-aware_listings 32_create_admin_api_endpoints_for_listings_addresses_categories_directories 33_add_directory_routing_logic_subdomain_subdirectory_handling 34_extend_crawler_to_handle_address_and_category_assignment 35_implement_shared_post-processing_for_crawler_and_text_import_scripts 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes 37_generate_admin_interface_for_reviewing_imported_json_listing_data 39_render_canonical_meta_tags_from_directory_configuration 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:481:codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:804:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:462:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:446:bash -lc "sed -n '1,200p' codex/TASKS/36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml" in /var/home/rick/Development/mega-directory succeeded in 46ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:805:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:463:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:448:filename: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes.yaml
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:806:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:464:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:461:bash -lc 'rg -n "text-based" -n' in /var/home/rick/Development/mega-directory
+
+thinking
+**Exploring code structure and searching for scripts**
+exec
+zsh -lc 'rg -n "import" scripts -g"*.py"' in /var/home/rick/Development/mega-directory exited 1 in 42ms:
+
+
+thinking
+**Listing scripts directory**
+exec
+zsh -lc 'ls scripts' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+dev-bootstrap.sh
+dev_bootstrap.sh
+
+thinking
+**Checking packages for crawler**
+exec
+zsh -lc 'ls packages' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+shared-config
+
+thinking
+**Listing applications**
+exec
+zsh -lc 'ls apps' in /var/home/rick/Development/mega-directory succeeded in 37ms:
+admin
+api
+crawler
+web
+
+thinking
+**Exploring apps/crawler directory**
+exec
+zsh -lc 'ls apps/crawler' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+config
+crawler.py
+dev_runner.py
+llm.py
+main.py
+post_processing.py
+__pycache__
+requirements-dev.txt
+targets.example.json
+tests
+
+thinking
+**Inspecting main file**
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/main.py" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+import json
+from crawler import run_crawler
+
+if __name__ == "__main__":
+    with open("config/targets.json", "r") as f:
+        config = json.load(f)
+    run_crawler(config)
+
+thinking
+**Inspecting crawler.py**
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+import logging
+import os
+import re
+from typing import Any, Dict, Iterable, List, Optional
+from urllib.parse import quote_plus, urljoin
+
+import requests
+from bs4 import BeautifulSoup, Tag
+from jinja2 import Environment, StrictUndefined, TemplateError
+
+from llm import LLMClient, LLMRequest
+from post_processing import ListingPostProcessor, PostProcessingContext
+
+try:
+    import requests_cache
+except ModuleNotFoundError:  # pragma: no cover - shim is only needed locally
+    from types import SimpleNamespace
+
+thinking
+**Planning text import script**
+
+I see this file is large and has post-processing logic I might reuse, so I want to understand that well first. I’ll check out the post_processing directory under apps/crawler to get a sense of existing code before I implement a new text-based data import script. This way I can share logic and keep things consistent.
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/post_processing.py" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+import re
+from typing import Any, Dict, Optional
+
+from jinja2 import Environment, StrictUndefined, TemplateError
+
+from llm import LLMClient, LLMRequest
+
+
+DEFAULT_SUMMARY_MAX_CHARS = 280
+DEFAULT_DESCRIPTION_MAX_CHARS = 1200
+_SEPARATOR_PATTERN = re.compile(r"\s*([|/•–—-])\s*")
+_WHITESPACE_PATTERN = re.compile(r"\s+")
+
+
+@dataclass
+class PostProcessingContext:
+    title: Optional[str] = None
+
+thinking
+**Continuing to gather information**
+exec
+zsh -lc "sed -n '200,400p' apps/crawler/post_processing.py" in /var/home/rick/Development/mega-directory succeeded in 38ms:
+        return None
+
+    @staticmethod
+    def _coerce_positive_int(value: Any) -> Optional[int]:
+        if isinstance(value, int) and value > 0:
+            return value
+        if isinstance(value, float) and value > 0:
+            return int(value)
+        return None
+
+    @staticmethod
+    def _should_generate(current_value: Any, config: Dict[str, Any]) -> bool:
+        always = bool(config.get("always"))
+        if always:
+            return True
+        return not isinstance(current_value, str) or not current_value.strip()
+
+    @staticmethod
+    def _truncate(value: str, limit: Optional[int]) -> str:
+        if not limit or len(value) <= limit:
+
+thinking
+**Inspecting LLM client script**
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/llm.py" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+"""Shared LLM helper types for crawler-adjacent tools."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, Optional
+
+
+@dataclass
+class LLMRequest:
+    provider: str
+    model: str
+    prompt: str
+    field_name: str
+    options: Dict[str, Any] = field(default_factory=dict)
+    target: Optional[Dict[str, Any]] = None
+    listing: Optional[Dict[str, Any]] = None
+
+
+LLMClient = Callable[[LLMRequest], str]
+
+thinking
+**Planning test-driven development approach**
+exec
+zsh -lc 'ls apps/crawler/tests' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+__pycache__
+test_config_schema.py
+test_crawler.py
+test_post_processing.py
+
+thinking
+**Considering test implementation**
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/tests/test_post_processing.py" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+import pytest
+
+AGENT_DIR = Path(__file__).resolve().parents[1]
+if str(AGENT_DIR) not in sys.path:
+    sys.path.insert(0, str(AGENT_DIR))
+
+from post_processing import ListingPostProcessor, PostProcessingContext  # type: ignore[import-not-found]
+
+
+def test_processor_normalizes_existing_fields_without_llm() -> None:
+    processor = ListingPostProcessor()
+    context = PostProcessingContext(
+        title="  ACME   Electric  ",
+        snippet="Licensed and insured electricians serving the lakeshore.",
+        category="Electricians",
+
+thinking
+**Outlining implementation plan**
+Plan update
+  → Review existing crawler utilities/post-processing along with task requirements to design the import script API & data flow.
+  • Add failing tests covering CLI parsing, HTML/text/JSON/CSV flows, and API interactions for the new import script.
+  • Implement the import CLI, integrate shared post-processing/LLM helpers, and wire up data ingestion routes.
+  • Run relevant test suites and summarize results.
+
+thinking
+**Searching for shared modules and imports**
+exec
+zsh -lc 'rg -n "post_processing" -n' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+apps/crawler/tests/test_post_processing.py:12:from post_processing import ListingPostProcessor, PostProcessingContext  # type: ignore[import-not-found]
+apps/crawler/tests/test_config_schema.py:94:def test_schema_accepts_post_processing_config(schema: dict) -> None:
+apps/crawler/tests/test_config_schema.py:98:        "post_processing": {
+apps/crawler/tests/test_config_schema.py:109:                "post_processing": {
+apps/crawler/tests/test_config_schema.py:122:    assert not errors, f"post_processing config failed schema validation: {[e.message for e in errors]}"
+apps/crawler/tests/test_config_schema.py:125:def test_schema_rejects_invalid_post_processing_llm(schema: dict) -> None:
+apps/crawler/tests/test_config_schema.py:133:                "post_processing": {
+apps/crawler/tests/test_config_schema.py:145:    assert errors, "expected schema to reject incomplete post_processing"
+apps/crawler/tests/test_crawler.py:517:def test_run_crawler_applies_post_processing_generation() -> None:
+apps/crawler/tests/test_crawler.py:539:        "post_processing": {
+apps/crawler/tests/test_crawler.py:550:                "post_processing": {
+apps/crawler/targets.example.json:15:  "post_processing": {
+apps/crawler/targets.example.json:57:      "post_processing": {
+apps/crawler/config/targets.schema.json:30:    "post_processing": {
+apps/crawler/config/targets.schema.json:173:        "post_processing": {
+apps/crawler/crawler.py:15:from post_processing import ListingPostProcessor, PostProcessingContext
+apps/crawler/crawler.py:815:        post_processing_config = self._resolve_post_processing_config(root_config, target_config)
+apps/crawler/crawler.py:828:            extras=self._build_post_processing_extras(listing, batch),
+apps/crawler/crawler.py:830:        payload = self.post_processor.process(payload, context, config=post_processing_config)
+apps/crawler/crawler.py:853:    def _resolve_post_processing_config(
+
+thinking
+**Analyzing previous attempts and planning script creation**
+exec
+zsh -lc 'rg -n "text import" -n' in /var/home/rick/Development/mega-directory succeeded in 77ms:
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:192:**Planning text import script**
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:338:zsh -lc 'rg -n "text import" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:228:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:235:**Searching repository for text import**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:237:bash -lc 'rg -n "text import" -n' in /var/home/rick/Development/mega-directory succeeded in 789ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:238:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:228:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:239:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:235:**Searching repository for text import**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:240:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:237:bash -lc 'rg -n "text import" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:357:**Locating text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:369:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:371:bash -lc 'rg -n "text import" -g "*.md"' in /var/home/rick/Development/mega-directory exited 1 in 51ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:378:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:228:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:379:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:238:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:228:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:380:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:357:**Locating text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:381:codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:369:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:413:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:438:**Searching for text import script**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:440:bash -lc 'rg -n "text import" -g "*.ts"' in /var/home/rick/Development/mega-directory exited 1 in 48ms:
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:459:**Searching for text import scripts**
+codex/LOGS/tasklog_35_implement_shared_post-processing_for_crawler_and_text_import_scripts_1762957666.log:471:**Investigating text import script presence**
+
+thinking
+**Inspecting config schema for post-processing**
+exec
+zsh -lc "sed -n '1,200p' apps/crawler/config/targets.schema.json" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mega-directory.dev/schemas/crawler-targets.json",
+  "title": "Mega Directory Crawler Configuration",
+  "type": "object",
+  "description": "Schema describing crawler API targets, scraping targets, and optional LLM field generation rules.",
+  "additionalProperties": true,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer for tooling to locate this schema definition."
+    },
+    "api_endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Single API endpoint to POST crawler batches to when api_targets is omitted."
+    },
+    "api_token": {
+      "$ref": "#/$defs/nonEmptyString",
+      "description": "Bearer token paired with api_endpoint."
+
+thinking
+**Locating text import script**
+exec
+zsh -lc 'rg -n "text-based" -n codex/TASKS/codex_phase_1b_2.yaml' in /var/home/rick/Development/mega-directory exited 1 in 40ms:
+
+
+thinking
+**Checking if file is zipped**
+exec
+zsh -lc 'rg -n "import" codex/TASKS/codex_phase_1b_2.yaml' in /var/home/rick/Development/mega-directory exited 1 in 42ms:
+
+
+thinking
+**Verifying file type**
+exec
+zsh -lc "sed -n '1,200p' codex/TASKS/codex_phase_1b_2.yaml" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+project: mega-directory
+version: 1.0
+phases:
+  - phase: 1
+    description: Core system buildout — listings pipeline, directory structure, admin tools, crawler, API, and frontend delivery
+
+    components:
+      api_server:
+        language: TypeScript
+        framework: Node/Express
+        deployment: Railway
+        endpoints:
+          - listings: [GET, POST, PUT, DELETE]
+          - addresses: [GET, POST, PUT, DELETE]
+          - categories: [GET, POST, PUT, DELETE]
+          - directory_pages: [GET, POST, PUT, DELETE]
+          - directory_metadata: [GET, PUT]
+        notes:
+          - Postal, city, state/province, and country tables are loaded from external datasets.
+          - Listings reference postal_code_id or city_id depending on geography.
+
+thinking
+**Exploring API ingestion points**
+exec
+zsh -lc 'ls apps/api' in /var/home/rick/Development/mega-directory succeeded in 43ms:
+dist
+Dockerfile
+node_modules
+package.json
+package-lock.json
+src
+test
+tsconfig.json
+types
+
+thinking
+**Exploring source directory**
+exec
+zsh -lc 'ls apps/api/src' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+geocoding.ts
+logger.ts
+server.ts
+
+thinking
+**Considering simplicity and server setup**
+exec
+zsh -lc "sed -n '1,200p' apps/api/src/server.ts" in /var/home/rick/Development/mega-directory succeeded in 44ms:
+import express, { type Express, type Request, type RequestHandler, type Response } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
+import { DEFAULT_PORTS, PROJECT_NAME } from '@mega-directory/config';
+import { geocodeListingLocation, type GeocodingAddress } from './geocoding';
+import { createLogger, createRequestLogger, type Logger } from './logger';
+
+const DEFAULT_PORT = DEFAULT_PORTS.api;
+const DEFAULT_LISTING_STATUS: ListingStatus = 'INACTIVE';
+const MAX_SLUG_LENGTH = 80;
+const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
+
+type ExpressApp = ReturnType<typeof express>;
+
+type ListingStatus = 'INACTIVE' | 'ACTIVE' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
+type DirectoryStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+
+type NullableString = string | null;
+
+type ListingLocation =
+
+thinking
+**Searching for ingestion POST route**
+exec
+zsh -lc 'rg -n "app.post" -n apps/api/src/server.ts' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+274:  app.post('/v1/admin/auth', createAdminAuthHandler(config));
+280:  app.post('/v1/crawler/ping', crawlerAuth, (_req, res) => {
+284:  app.post('/v1/crawler/listings', crawlerAuth, createListingIngestionHandler(app));
+724:  app.post('/v1/admin/categories', adminAuth, (req: Request, res: Response) => {
+843:  app.post('/v1/admin/listings', adminAuth, (req: Request, res: Response) => {
+988:  app.post('/v1/admin/addresses', adminAuth, (req: Request, res: Response) => {
+1114:  app.post('/v1/admin/directories', adminAuth, (req: Request, res: Response) => {
+
+thinking
+**Checking ingestion handler**
+exec
+zsh -lc "sed -n '284,420p' apps/api/src/server.ts" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+  app.post('/v1/crawler/listings', crawlerAuth, createListingIngestionHandler(app));
+
+  registerAdminRoutes(app, adminAuth);
+
+  return app;
+}
+
+export function startServer() {
+  const app = createServer();
+  const { port } = getAppLocals(app).config;
+  app.listen(port, () => {
+    getAppLocals(app).logger.info(
+      { event: 'api.start', port, environment: process.env.NODE_ENV || 'development' },
+      `API server running at http://localhost:${port}`
+    );
+  });
+}
+
+if (require.main === module) {
+  startServer();
+
+thinking
+**Clarifying input expectations**
+exec
+zsh -lc "sed -n '420,640p' apps/api/src/server.ts" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+        .status(400)
+        .json({ error: 'Invalid listing payload', details: ['Request body must be an object or array'] });
+    }
+    if (payloads.length === 0) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid listing payload', details: ['At least one listing must be provided'] });
+    }
+
+    const invalidEntries: Array<{ index: number; messages: string[] }> = [];
+    const validEntries: Array<{ index: number; value: NormalizedListing }> = [];
+
+    payloads.forEach((payload, index) => {
+      const validation = validateListingPayload(payload);
+      if (validation.valid) {
+        validEntries.push({ index, value: validation.value });
+      } else {
+        invalidEntries.push({ index, messages: validation.errors });
+      }
+    });
+
+thinking
+**Preparing for ingestion scripting**
+exec
+zsh -lc 'ls packages/shared-config' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+index.d.ts
+index.js
+package.json
+README.md
+
+thinking
+**Searching for import scripts**
+exec
+zsh -lc 'rg -n "import script" -g"*.py"' in /var/home/rick/Development/mega-directory exited 1 in 49ms:
+
+
+thinking
+**Locating script placement**
+exec
+zsh -lc "sed -n '1,200p' README.md" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+# Mega Directory
+
+Mega Directory is a server-rendered directory listing platform built with Astro, Express, and Prisma. It supports dynamic subdomains, AI-generated content enrichment, and moderation workflows.
+
+## Features
+
+- 🛰️ Subdomain-based regional directories (e.g. electricians.nyc.example.com)
+- ⚡ Express API with JWT-based auth
+- 🧠 AI agents for crawling, enrichment, and moderation (via OpenRouter)
+- 🧩 Admin dashboard for approving or rejecting listings
+- 💅 Tailwind CSS and minimal JavaScript for accessibility and performance
+- 🐳 Dockerized and deployable behind Cloudflare with SSR
+
+## Tech Stack
+
+- Astro (SSR)
+- Express.js
+- Prisma + PostgreSQL
+- Tailwind CSS
+- OpenRouter (AI Agents)
+
+thinking
+**Searching for data collector references**
+exec
+zsh -lc 'rg -n "data collector" -n' in /var/home/rick/Development/mega-directory succeeded in 50ms:
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:572:**Searching for data collector references**
+codex/LOGS/tasklog_36_create_text-based_data_import_script_with_llm_and_html_parsing_modes_1762958558.log:574:zsh -lc 'rg -n "data collector" -n' in /var/home/rick/Development/mega-directory
+
+thinking
+**Investigating post-processing usage**
+exec
+zsh -lc 'rg -n "post_processing" apps/crawler/crawler.py' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+15:from post_processing import ListingPostProcessor, PostProcessingContext
+815:        post_processing_config = self._resolve_post_processing_config(root_config, target_config)
+828:            extras=self._build_post_processing_extras(listing, batch),
+830:        payload = self.post_processor.process(payload, context, config=post_processing_config)
+853:    def _resolve_post_processing_config(
+858:        root_map = self._coerce_mapping(root_config.get("post_processing"))
+859:        target_map = self._coerce_mapping(target_config.get("post_processing"))
+880:    def _build_post_processing_extras(self, listing: Listing, batch: CrawlerBatch) -> Dict[str, Any]:
+
+thinking
+**Inspecting functions**
+exec
+zsh -lc "sed -n '760,880p' apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+        target_config: Dict[str, Any],
+        root_config: Dict[str, Any],
+    ) -> List[Dict[str, Any]]:
+        category_slug = self._resolve_category_slug(target_config)
+        payloads: List[Dict[str, Any]] = []
+        for listing in batch.listings:
+            payload = self._build_listing_payload(
+                listing,
+                target_config,
+                root_config,
+                category_slug,
+                batch,
+            )
+            if payload:
+                payloads.append(payload)
+        return payloads
+
+    def _build_listing_payload(
+        self,
+        listing: Listing,
+exec
+zsh -lc "sed -n '880,980p' apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+    def _build_post_processing_extras(self, listing: Listing, batch: CrawlerBatch) -> Dict[str, Any]:
+        extras: Dict[str, Any] = {}
+        keyword = self._normalize_string(listing.extras.get("keyword"))
+        batch_keyword = self._normalize_string(batch.metadata.get("keyword"))
+        search_url = self._normalize_string(batch.metadata.get("search_url"))
+        if keyword:
+            extras["keyword"] = keyword
+        elif batch_keyword:
+            extras["keyword"] = batch_keyword
+        if search_url:
+            extras["search_url"] = search_url
+        if batch.location:
+            extras["batch_location"] = batch.location
+        if listing.categories:
+            extras["categories"] = ", ".join(listing.categories)
+        return extras
+
+    def _resolve_location_label(self, listing: Listing, fallback: Optional[str]) -> Optional[str]:
+        location = getattr(listing, "location", None)
+        if isinstance(location, dict):
+
+thinking
+**Planning data import script design**
+
+I’m outlining a CLI script to parse various input formats like HTML, text, JSON, or CSV, using BeautifulSoup or LLM extractors, then output intermediate JSON or post enriched data to an API. I’ll explore existing crawler tests and API usage to align the script’s architecture and behavior, focusing on argument handling, input/output options, and API integration.
+exec
+zsh -lc 'rg -n "api_endpoint" -n' in /var/home/rick/Development/mega-directory succeeded in 47ms:
+apps/crawler/dev_runner.py:82:        "api_endpoint": endpoint,
+apps/crawler/dev_runner.py:163:    config = build_demo_config(args.api_endpoint, args.api_token)
+apps/crawler/tests/test_config_schema.py:70:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_config_schema.py:96:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_config_schema.py:127:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_crawler.py:144:        "api_endpoint": "https://api.example.com",
+apps/crawler/tests/test_crawler.py:256:        "api_endpoint": "https://api.example.com",
+apps/crawler/tests/test_crawler.py:281:        "api_endpoint": "https://api.example.com",
+apps/crawler/tests/test_crawler.py:315:        "api_endpoint": "https://api.example.com",
+apps/crawler/tests/test_crawler.py:337:def test_run_crawler_posts_batches_to_api_endpoint() -> None:
+apps/crawler/tests/test_crawler.py:339:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_crawler.py:365:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_crawler.py:400:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_crawler.py:431:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/tests/test_crawler.py:537:        "api_endpoint": "https://api.example.com/v1/crawler/listings",
+apps/crawler/config/targets.schema.json:13:    "api_endpoint": {
+apps/crawler/config/targets.schema.json:20:      "description": "Bearer token paired with api_endpoint."
+apps/crawler/config/targets.schema.json:56:        { "required": ["api_endpoint", "api_token"] }
+apps/crawler/crawler.py:703:            endpoint = config.get("api_endpoint")
+apps/crawler/crawler.py:718:                "Crawler config must define api_endpoint/api_token or an api_targets list to POST listings"
+
+thinking
+**Examining crawler test and dev runner**
+exec
+zsh -lc "sed -n '1,240p' apps/crawler/dev_runner.py" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+#!/usr/bin/env python3
+
+"""Developer-friendly crawler loop that replays sample HTML into the local API."""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import os
+from pathlib import Path
+import textwrap
+import time
+from typing import Any, Dict
+
+import requests
+
+from crawler import run_crawler
+
+
+SAMPLE_DIRECTORY_HTML = textwrap.dedent(
+
+thinking
+**Investigating run_crawler integration**
+exec
+zsh -lc 'rg -n "def run_crawler" -n apps/crawler' in /var/home/rick/Development/mega-directory succeeded in 45ms:
+apps/crawler/crawler.py:984:def run_crawler(
+exec
+zsh -lc "sed -n '980,1240p' apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+            normalized = normalized[:max_length].rstrip("-")
+        return normalized
+
+
+def run_crawler(
+    config: Dict[str, Any],
+    session: Optional[requests.Session] = None,
+    llm_client: Optional[LLMClient] = None,
+    logger: Optional[logging.Logger] = None,
+) -> List[CrawlerBatch]:
+    crawler = Crawler(session=session, llm_client=llm_client, logger=logger)
+    return crawler.run(config)
+
+
+def _resolve_log_level() -> int:
+    configured = (
+        os.getenv("CRAWLER_LOG_LEVEL")
+        or os.getenv("LOG_LEVEL")
+        or ("INFO" if os.getenv("NODE_ENV") == "production" else "DEBUG")
+    ).upper()
+
+thinking
+**Planning crawler script implementation**
+exec
+zsh -lc 'cat apps/crawler/requirements-dev.txt' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+beautifulsoup4>=4.12.2
+jinja2>=3.1.4
+requests>=2.32.3
+requests-cache>=1.2.0
+
+thinking
+**Designing CLI text import script**
+exec
+zsh -lc 'rg -n "text-based" -g"*.md"' in /var/home/rick/Development/mega-directory exited 1 in 47ms:
+
+
+thinking
+**Searching for import references in docs**
+exec
+zsh -lc 'rg -n "import" docs -g"*.md" | head' in /var/home/rick/Development/mega-directory succeeded in 44ms:
+docs/development_phase_1b.md:5:We need to plan out some further development additions and refinements. It appears the api is missing a number of operations, but it seems the important base functionality is there so it shouldn't be a huge problem. I wanted to rethink some of the ways things work. Let's first of all think about the structure of the data. 
+docs/development_phase_1b.md:9:Rather than automatically generating directories from categories and locations, which could get messy if we try to have the system create all the permutations, furthermore, there will be significant SEO infomation that must be provided when creating a single directory page. So, we'll need a table to represent the individual directory pages. This way we can create directories that perhaps present more than one category or more than one postal code or city when these groupings represent very small amounts of listings or for whatever reason it makes sense to group or not group these together. The directory page can have its own title to concatenate with the site name to generate the content for the <title> tag and meta title, it can have an editable field for meta keywords, a field where the admin can specify the specific subdomain and the subdirectory used to represent the directory (based on the site configuration either the subdomain will 301 redirect to the subdirectory or the subdirectory to the subdomain, either way it should be possible for the admin to supply independent values for each of these), further meta tag values should include the description, og:image, etc. While the main site configuration should provide default values for these, it is important that it be possible to override them on individual directories.
+docs/development_phase_1b.md:74:Please let me know immediately what, if any of this is vague or unclear. I want to be able to generate a list of codex tasks that will result in this functionality getting built without missing any important components necessary to make this work. 
+docs/development_phase_1b.md:117:## Data Collection Script: Should this script write directly to the database/API, or output standardized JSON files to be reviewed/imported separately?
+docs/development_phase_1b.md:119: - hmm, good point, that's not a bad idea. Data import in this fashion should occur in two steps. 
+
+thinking
+**Opening documentation near line 117**
+exec
+zsh -lc "sed -n '117,200p' docs/development_phase_1b.md" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+## Data Collection Script: Should this script write directly to the database/API, or output standardized JSON files to be reviewed/imported separately?
+
+ - hmm, good point, that's not a bad idea. Data import in this fashion should occur in two steps. 
+ 
+ 1) beautiful soup parsed html, or llm parsed html or other mixed content  ---> basic data json file
+ 
+ 2) basic data json file ---> generated short/long description, title improvements, determination of subcategory / alternate categories by free openrouter llm models ---> insert into database via api
+    
+ ---
+ 
+## Subdomain vs Subdirectory: The spec allows both a subdomain and a subdirectory for a directory page. Clarify the desired behavior (e.g. should one always redirect to the other?). Implementation could simply enforce a canonical structure, but decide whether the primary path is the subdomain or the directory URL.
+ - There should be a configuration option on the astro site that determines if the directories will be referenced by either subdomain or subdirectory. If subdomain is selected then when an http request for the corresponding subdirectory is made, the server should issue a redirect to the subdomain. If subdirectory is selected, the opposite should occcur. 
+
+
+## Postal-Code and City Fallback: The approach for cities without postal codes is “city-only”. Confirm: will listings in such countries have postal_code_id = NULL and rely solely on city_id? How to query/filter these listings versus postal-coded listings? Ensure the schema allows queries like “all listings in city X” covering both cases.
+
+ - Yes in countries where there is no postal code, we will use city as in "all listings in city x"
+
+
+## Multiple Addresses: If a listing has multiple addresses, should all be displayed on the listing detail page, and should the listing appear under each relevant location-based directory page? (Likely yes.) Plan how to handle multiple map pins for one listing if needed.
+
+
+thinking
+**Outlining CLI multi-format import script**
+thinking
+**Designing CLI argument parsing and workflow**
+
+I’m mapping out the CLI interface with options for input format, files, category defaults, LLM settings, API credentials, and post-processing config. I’ll enforce validations like requiring category info for HTML/text formats and API tokens for JSON/CSV ingestion. This sets the foundation for parsing inputs, extracting or loading listings, optionally enriching them, and ingesting to the API if needed.
+Plan update
+  ✓ Review existing crawler utilities/post-processing along with task requirements to design the import script API & data flow.
+  → Add failing tests covering CLI parsing, HTML/text/JSON/CSV flows, and API interactions for the new import script.
+  • Implement the import CLI, integrate shared post-processing/LLM helpers, and wire up data ingestion routes.
+  • Run relevant test suites and summarize results.
+
+thinking
+**Designing and outlining tests**
+exec
+zsh -lc 'rg -n "requests.post" -n apps/crawler/crawler.py' in /var/home/rick/Development/mega-directory exited 1 in 42ms:
+
+
+thinking
+**Searching for _post function**
+exec
+zsh -lc 'rg -n "post_to_api" -n apps/crawler/crawler.py' in /var/home/rick/Development/mega-directory exited 1 in 42ms:
+
+
+thinking
+**Searching for POST requests in crawler**
+exec
+zsh -lc "rg -n \"\\.post\" apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 44ms:
+284:        self.post_processor = ListingPostProcessor(llm_client=llm_client)
+746:            response = self.session.post(
+830:        payload = self.post_processor.process(payload, context, config=post_processing_config)
+
+thinking
+**Reviewing specific line**
+exec
+zsh -lc "sed -n '700,780p' apps/crawler/crawler.py" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+                    )
+                )
+        else:
+            endpoint = config.get("api_endpoint")
+            token = config.get("api_token")
+            timeout = self._coerce_positive_timeout(config.get("api_request_timeout"))
+            if endpoint and token:
+                resolved.append(
+                    APITarget(
+                        name="default",
+                        endpoint=endpoint,
+                        token=token,
+                        timeout=timeout,
+                    )
+                )
+
+        if not resolved:
+            raise ValueError(
+                "Crawler config must define api_endpoint/api_token or an api_targets list to POST listings"
+            )
+
+thinking
+**Planning comprehensive tests and module exports**
+
+I'm organizing tests for key components like the API ingestor, extractors, loaders, and enrichers while ensuring proper data shapes and headers. I’m also planning module exports and defining functions with matching names to keep tests clean and aligned with the implementation. It's a lot, but focusing on manageable, focused tests should keep things clear!
+exec
+zsh -lc "cat <<'EOF' > /tmp/test_text_importer.py
+from __future__ import annotations
+
+from pathlib import Path
+import json
+import sys
+
+import pytest
+
+AGENT_DIR = Path(__file__).resolve().parents[1]
+if str(AGENT_DIR) not in sys.path:
+    sys.path.insert(0, str(AGENT_DIR))
+
+from text_import import (  # type: ignore[import-not-found]
+    HTMLListingExtractor,
+    TextLLMExtractor,
+    JSONListingLoader,
+    CSVListingLoader,
+    ImportDefaults,
+    ListingEnricher,
+    ListingAPIIngestor,
+    write_intermediate_json,
+)
+
+
+def test_html_extractor_parses_title_and_summary() -> None:
+    html = \"\"\"
+    <section>
+      <article data-listing>
+        <a class=\"listing-title\" href=\"https://example.com\">Example Electric</a>
+        <p class=\"listing-description\">Licensed electricians.</p>
+      </article>
+      <article data-listing>
+        <a class=\"listing-title\" href=\"https://another.example.com\">Bright Sparks</a>
+        <p class=\"listing-description\">Emergency crews.</p>
+      </article>
+    </section>
+    \"\"\".strip()
+
+    listings = HTMLListingExtractor().extract(html)
+
+    assert len(listings) == 2
+    assert listings[0][\"title\"] == \"Example Electric\"
+    assert listings[0][\"sourceUrl\"] == \"https://example.com\"
+    assert listings[0][\"summary\"] == \"Licensed electricians.\"
+
+
+def test_text_extractor_uses_llm_output() -> None:
+    prompts: list[str] = []
+
+    def fake_llm(request):  # type: ignore[no-untyped-def]
+        prompts.append(request.prompt)
+        return json.dumps(
+            {
+                \"listings\": [
+                    {
+                        \"title\": \"Bright Sparks\",
+                        \"summary\": \"Emergency crews\",
+                        \"categorySlug\": \"electricians\",
+                    }
+                ]
+            }
+        )
+
+    extractor = TextLLMExtractor(fake_llm, provider=\"openrouter\", model=\"gpt-4o-mini\")
+
+    listings = extractor.extract(\"Bright Sparks emergency electricians\")
+
+    assert prompts, \"expected llm client to be invoked\"
+    assert listings[0][\"title\"] == \"Bright Sparks\"
+    assert listings[0][\"categorySlug\"] == \"electricians\"
+
+
+def test_json_loader_accepts_wrapped_payload() -> None:
+    payload = json.dumps({\"listings\": [{\"title\": \"Example\", \"categorySlug\": \"electricians\"}]})
+
+    listings = JSONListingLoader().load(payload)
+
+    assert listings == [{\"title\": \"Example\", \"categorySlug\": \"electricians\"}]
+
+
+def test_csv_loader_returns_row_dicts() -> None:
+    csv_data = \"title,categorySlug,sourceUrl\\nExample Electric,electricians,https://example.com\\n\"
+
+    listings = CSVListingLoader().load(csv_data)
+
+    assert listings == [
+        {
+            \"title\": \"Example Electric\",
+            \"categorySlug\": \"electricians\",
+            \"sourceUrl\": \"https://example.com\",
+        }
+    ]
+
+
+def test_enricher_applies_defaults_and_slugifies() -> None:
+    defaults = ImportDefaults(
+        category=\"Electricians\",
+        category_slug=\"electricians\",
+        source_name=\"Manual Import\",
+        location_label=\"Grand Rapids, MI\",
+    )
+    enricher = ListingEnricher()
+    listings = [{\"title\": \"  Bright Sparks  \", \"summary\": \"Emergency crews\"}]
+
+    enriched = enricher.enrich(listings, defaults)
+
+    assert enriched[0][\"categorySlug\"] == \"electricians\"
+    assert enriched[0][\"slug\"] == \"bright-sparks\"
+    assert enriched[0][\"sourceName\"] == \"Manual Import\"
+
+
+def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
+    class FakeResponse:
+        def __init__(self) -> None:
+            self.status_code = 202
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return {\"ingestedCount\": 1}
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, object]] = []
+
+        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
+            self.calls.append({\"url\": url, \"json\": json, \"headers\": headers, \"timeout\": timeout})
+            return FakeResponse()
+
+    session = FakeSession()
+    ingestor = ListingAPIIngestor(
+        endpoint=\"https://api.example.com/v1/crawler/listings\",
+        token=\"secret-token\",
+        session=session,  # type: ignore[arg-type]
+        timeout=10,
+    )
+
+    response = ingestor.ingest([
+        {\"title\": \"Example\", \"categorySlug\": \"electricians\", \"slug\": \"example\"}
+    ])
+
+    assert response == {\"ingestedCount\": 1}
+    assert session.calls[0][\"headers\"] == {
+        \"Authorization\": \"Bearer secret-token\",
+        \"Content-Type\": \"application/json\",
+    }
+    assert session.calls[0][\"json\"] == {
+        \"listings\": [{\"title\": \"Example\", \"categorySlug\": \"electricians\", \"slug\": \"example\"}]
+    }
+
+
+def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
+    target = tmp_path / \"listings.json\"
+    listings = [{\"title\": \"Example\", \"categorySlug\": \"electricians\"}]
+
+    write_intermediate_json(listings, target)
+
+    saved = json.loads(target.read_text(encoding=\"utf-8\"))
+    assert saved[\"listings\"][0][\"title\"] == \"Example\"
+EOF
+" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+
+
+thinking
+**Moving test file correctly**
+file update
+A /var/home/rick/Development/mega-directory/apps/crawler/tests/test_text_import.py
+from __future__ import annotations
+
+from pathlib import Path
+import json
+import sys
+
+import pytest
+
+AGENT_DIR = Path(__file__).resolve().parents[1]
+if str(AGENT_DIR) not in sys.path:
+    sys.path.insert(0, str(AGENT_DIR))
+
+from text_import import (  # type: ignore[import-not-found]
+    HTMLListingExtractor,
+    TextLLMExtractor,
+    JSONListingLoader,
+    CSVListingLoader,
+    ImportDefaults,
+    ListingEnricher,
+    ListingAPIIngestor,
+    write_intermediate_json,
+)
+
+
+def test_html_extractor_parses_title_and_summary() -> None:
+    html = """
+    <section>
+      <article data-listing>
+        <a class="listing-title" href="https://example.com">Example Electric</a>
+        <p class="listing-description">Licensed electricians.</p>
+      </article>
+      <article data-listing>
+        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
+        <p class="listing-description">Emergency crews.</p>
+      </article>
+    </section>
+    """.strip()
+
+    listings = HTMLListingExtractor().extract(html)
+
+    assert len(listings) == 2
+    assert listings[0]["title"] == "Example Electric"
+    assert listings[0]["sourceUrl"] == "https://example.com"
+    assert listings[0]["summary"] == "Licensed electricians."
+
+
+def test_text_extractor_uses_llm_output() -> None:
+    prompts: list[str] = []
+
+    def fake_llm(request):  # type: ignore[no-untyped-def]
+        prompts.append(request.prompt)
+        return json.dumps(
+            {
+                "listings": [
+                    {
+                        "title": "Bright Sparks",
+                        "summary": "Emergency crews",
+                        "categorySlug": "electricians",
+                    }
+                ]
+            }
+        )
+
+    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
+
+    listings = extractor.extract("Bright Sparks emergency electricians")
+
+    assert prompts, "expected llm client to be invoked"
+    assert listings[0]["title"] == "Bright Sparks"
+    assert listings[0]["categorySlug"] == "electricians"
+
+
+def test_json_loader_accepts_wrapped_payload() -> None:
+    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
+
+    listings = JSONListingLoader().load(payload)
+
+    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
+
+
+def test_csv_loader_returns_row_dicts() -> None:
+    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
+
+    listings = CSVListingLoader().load(csv_data)
+
+    assert listings == [
+        {
+            "title": "Example Electric",
+            "categorySlug": "electricians",
+            "sourceUrl": "https://example.com",
+        }
+    ]
+
+
+def test_enricher_applies_defaults_and_slugifies() -> None:
+    defaults = ImportDefaults(
+        category="Electricians",
+        category_slug="electricians",
+        source_name="Manual Import",
+        location_label="Grand Rapids, MI",
+    )
+    enricher = ListingEnricher()
+    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
+
+    enriched = enricher.enrich(listings, defaults)
+
+    assert enriched[0]["categorySlug"] == "electricians"
+    assert enriched[0]["slug"] == "bright-sparks"
+    assert enriched[0]["sourceName"] == "Manual Import"
+
+
+def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
+    class FakeResponse:
+        def __init__(self) -> None:
+            self.status_code = 202
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return {"ingestedCount": 1}
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, object]] = []
+
+        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
+            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
+            return FakeResponse()
+
+    session = FakeSession()
+    ingestor = ListingAPIIngestor(
+        endpoint="https://api.example.com/v1/crawler/listings",
+        token="secret-token",
+        session=session,  # type: ignore[arg-type]
+        timeout=10,
+    )
+
+    response = ingestor.ingest(
+        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
+    )
+
+    assert response == {"ingestedCount": 1}
+    assert session.calls[0]["headers"] == {
+        "Authorization": "Bearer secret-token",
+        "Content-Type": "application/json",
+    }
+    assert session.calls[0]["json"] == {
+        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
+    }
+
+
+def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
+    target = tmp_path / "listings.json"
+    listings = [{"title": "Example", "categorySlug": "electricians"}]
+
+    write_intermediate_json(listings, target)
+
+    saved = json.loads(target.read_text(encoding="utf-8"))
+    assert saved["listings"][0]["title"] == "Example"
+apply_patch(auto_approved=true) exited 0 in 6ms:
+Success. Updated the following files:
+A apps/crawler/tests/test_text_import.py
+file update:
+diff --git a/apps/crawler/tests/test_text_import.py b/apps/crawler/tests/test_text_import.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..95cbaf02899b3defecb629cadd4c2d39d3e89d3a
+--- /dev/null
++++ b/apps/crawler/tests/test_text_import.py
+@@ -0,0 +1,160 @@
++from __future__ import annotations
++
++from pathlib import Path
++import json
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++from text_import import (  # type: ignore[import-not-found]
++    HTMLListingExtractor,
++    TextLLMExtractor,
++    JSONListingLoader,
++    CSVListingLoader,
++    ImportDefaults,
++    ListingEnricher,
++    ListingAPIIngestor,
++    write_intermediate_json,
++)
++
++
++def test_html_extractor_parses_title_and_summary() -> None:
++    html = """
++    <section>
++      <article data-listing>
++        <a class="listing-title" href="https://example.com">Example Electric</a>
++        <p class="listing-description">Licensed electricians.</p>
++      </article>
++      <article data-listing>
++        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
++        <p class="listing-description">Emergency crews.</p>
++      </article>
++    </section>
++    """.strip()
++
++    listings = HTMLListingExtractor().extract(html)
++
++    assert len(listings) == 2
++    assert listings[0]["title"] == "Example Electric"
++    assert listings[0]["sourceUrl"] == "https://example.com"
++    assert listings[0]["summary"] == "Licensed electricians."
++
++
++def test_text_extractor_uses_llm_output() -> None:
++    prompts: list[str] = []
++
++    def fake_llm(request):  # type: ignore[no-untyped-def]
++        prompts.append(request.prompt)
++        return json.dumps(
++            {
++                "listings": [
++                    {
++                        "title": "Bright Sparks",
++                        "summary": "Emergency crews",
++                        "categorySlug": "electricians",
++                    }
++                ]
++            }
++        )
++
++    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
++
++    listings = extractor.extract("Bright Sparks emergency electricians")
++
++    assert prompts, "expected llm client to be invoked"
++    assert listings[0]["title"] == "Bright Sparks"
++    assert listings[0]["categorySlug"] == "electricians"
++
++
++def test_json_loader_accepts_wrapped_payload() -> None:
++    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
++
++    listings = JSONListingLoader().load(payload)
++
++    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
++
++
++def test_csv_loader_returns_row_dicts() -> None:
++    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
++
++    listings = CSVListingLoader().load(csv_data)
++
++    assert listings == [
++        {
++            "title": "Example Electric",
++            "categorySlug": "electricians",
++            "sourceUrl": "https://example.com",
++        }
++    ]
++
++
++def test_enricher_applies_defaults_and_slugifies() -> None:
++    defaults = ImportDefaults(
++        category="Electricians",
++        category_slug="electricians",
++        source_name="Manual Import",
++        location_label="Grand Rapids, MI",
++    )
++    enricher = ListingEnricher()
++    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
++
++    enriched = enricher.enrich(listings, defaults)
++
++    assert enriched[0]["categorySlug"] == "electricians"
++    assert enriched[0]["slug"] == "bright-sparks"
++    assert enriched[0]["sourceName"] == "Manual Import"
++
++
++def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
++    class FakeResponse:
++        def __init__(self) -> None:
++            self.status_code = 202
++
++        def raise_for_status(self) -> None:
++            return None
++
++        def json(self) -> dict[str, object]:
++            return {"ingestedCount": 1}
++
++    class FakeSession:
++        def __init__(self) -> None:
++            self.calls: list[dict[str, object]] = []
++
++        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
++            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
++            return FakeResponse()
++
++    session = FakeSession()
++    ingestor = ListingAPIIngestor(
++        endpoint="https://api.example.com/v1/crawler/listings",
++        token="secret-token",
++        session=session,  # type: ignore[arg-type]
++        timeout=10,
++    )
++
++    response = ingestor.ingest(
++        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    )
++
++    assert response == {"ingestedCount": 1}
++    assert session.calls[0]["headers"] == {
++        "Authorization": "Bearer secret-token",
++        "Content-Type": "application/json",
++    }
++    assert session.calls[0]["json"] == {
++        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    }
++
++
++def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
++    target = tmp_path / "listings.json"
++    listings = [{"title": "Example", "categorySlug": "electricians"}]
++
++    write_intermediate_json(listings, target)
++
++    saved = json.loads(target.read_text(encoding="utf-8"))
++    assert saved["listings"][0]["title"] == "Example"
+
+file update:
+diff --git a/apps/crawler/tests/test_text_import.py b/apps/crawler/tests/test_text_import.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..95cbaf02899b3defecb629cadd4c2d39d3e89d3a
+--- /dev/null
++++ b/apps/crawler/tests/test_text_import.py
+@@ -0,0 +1,160 @@
++from __future__ import annotations
++
++from pathlib import Path
++import json
++import sys
++
++import pytest
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++from text_import import (  # type: ignore[import-not-found]
++    HTMLListingExtractor,
++    TextLLMExtractor,
++    JSONListingLoader,
++    CSVListingLoader,
++    ImportDefaults,
++    ListingEnricher,
++    ListingAPIIngestor,
++    write_intermediate_json,
++)
++
++
++def test_html_extractor_parses_title_and_summary() -> None:
++    html = """
++    <section>
++      <article data-listing>
++        <a class="listing-title" href="https://example.com">Example Electric</a>
++        <p class="listing-description">Licensed electricians.</p>
++      </article>
++      <article data-listing>
++        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
++        <p class="listing-description">Emergency crews.</p>
++      </article>
++    </section>
++    """.strip()
++
++    listings = HTMLListingExtractor().extract(html)
++
++    assert len(listings) == 2
++    assert listings[0]["title"] == "Example Electric"
++    assert listings[0]["sourceUrl"] == "https://example.com"
++    assert listings[0]["summary"] == "Licensed electricians."
++
++
++def test_text_extractor_uses_llm_output() -> None:
++    prompts: list[str] = []
++
++    def fake_llm(request):  # type: ignore[no-untyped-def]
++        prompts.append(request.prompt)
++        return json.dumps(
++            {
++                "listings": [
++                    {
++                        "title": "Bright Sparks",
++                        "summary": "Emergency crews",
++                        "categorySlug": "electricians",
++                    }
++                ]
++            }
++        )
++
++    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
++
++    listings = extractor.extract("Bright Sparks emergency electricians")
++
++    assert prompts, "expected llm client to be invoked"
++    assert listings[0]["title"] == "Bright Sparks"
++    assert listings[0]["categorySlug"] == "electricians"
++
++
++def test_json_loader_accepts_wrapped_payload() -> None:
++    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
++
++    listings = JSONListingLoader().load(payload)
++
++    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
++
++
++def test_csv_loader_returns_row_dicts() -> None:
++    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
++
++    listings = CSVListingLoader().load(csv_data)
++
++    assert listings == [
++        {
++            "title": "Example Electric",
++            "categorySlug": "electricians",
++            "sourceUrl": "https://example.com",
++        }
++    ]
++
++
++def test_enricher_applies_defaults_and_slugifies() -> None:
++    defaults = ImportDefaults(
++        category="Electricians",
++        category_slug="electricians",
++        source_name="Manual Import",
++        location_label="Grand Rapids, MI",
++    )
++    enricher = ListingEnricher()
++    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
++
++    enriched = enricher.enrich(listings, defaults)
++
++    assert enriched[0]["categorySlug"] == "electricians"
++    assert enriched[0]["slug"] == "bright-sparks"
++    assert enriched[0]["sourceName"] == "Manual Import"
++
++
++def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
++    class FakeResponse:
++        def __init__(self) -> None:
++            self.status_code = 202
++
++        def raise_for_status(self) -> None:
++            return None
++
++        def json(self) -> dict[str, object]:
++            return {"ingestedCount": 1}
++
++    class FakeSession:
++        def __init__(self) -> None:
++            self.calls: list[dict[str, object]] = []
++
++        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
++            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
++            return FakeResponse()
++
++    session = FakeSession()
++    ingestor = ListingAPIIngestor(
++        endpoint="https://api.example.com/v1/crawler/listings",
++        token="secret-token",
++        session=session,  # type: ignore[arg-type]
++        timeout=10,
++    )
++
++    response = ingestor.ingest(
++        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    )
++
++    assert response == {"ingestedCount": 1}
++    assert session.calls[0]["headers"] == {
++        "Authorization": "Bearer secret-token",
++        "Content-Type": "application/json",
++    }
++    assert session.calls[0]["json"] == {
++        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    }
++
++
++def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
++    target = tmp_path / "listings.json"
++    listings = [{"title": "Example", "categorySlug": "electricians"}]
++
++    write_intermediate_json(listings, target)
++
++    saved = json.loads(target.read_text(encoding="utf-8"))
++    assert saved["listings"][0]["title"] == "Example"
+
+
+thinking
+**Evaluating pytest import necessity**
+file update
+M /var/home/rick/Development/mega-directory/apps/crawler/tests/test_text_import.py
+@@ -6,4 +6,2 @@
+ 
+-import pytest
+-
+ AGENT_DIR = Path(__file__).resolve().parents[1]
+apply_patch(auto_approved=true) exited 0 in 7ms:
+Success. Updated the following files:
+M apps/crawler/tests/test_text_import.py
+file update:
+diff --git a/apps/crawler/tests/test_text_import.py b/apps/crawler/tests/test_text_import.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..6d5c1cb4ddeb4de8a162d80c34ef3aced8fbfc7f
+--- /dev/null
++++ b/apps/crawler/tests/test_text_import.py
+@@ -0,0 +1,158 @@
++from __future__ import annotations
++
++from pathlib import Path
++import json
++import sys
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++from text_import import (  # type: ignore[import-not-found]
++    HTMLListingExtractor,
++    TextLLMExtractor,
++    JSONListingLoader,
++    CSVListingLoader,
++    ImportDefaults,
++    ListingEnricher,
++    ListingAPIIngestor,
++    write_intermediate_json,
++)
++
++
++def test_html_extractor_parses_title_and_summary() -> None:
++    html = """
++    <section>
++      <article data-listing>
++        <a class="listing-title" href="https://example.com">Example Electric</a>
++        <p class="listing-description">Licensed electricians.</p>
++      </article>
++      <article data-listing>
++        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
++        <p class="listing-description">Emergency crews.</p>
++      </article>
++    </section>
++    """.strip()
++
++    listings = HTMLListingExtractor().extract(html)
++
++    assert len(listings) == 2
++    assert listings[0]["title"] == "Example Electric"
++    assert listings[0]["sourceUrl"] == "https://example.com"
++    assert listings[0]["summary"] == "Licensed electricians."
++
++
++def test_text_extractor_uses_llm_output() -> None:
++    prompts: list[str] = []
++
++    def fake_llm(request):  # type: ignore[no-untyped-def]
++        prompts.append(request.prompt)
++        return json.dumps(
++            {
++                "listings": [
++                    {
++                        "title": "Bright Sparks",
++                        "summary": "Emergency crews",
++                        "categorySlug": "electricians",
++                    }
++                ]
++            }
++        )
++
++    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
++
++    listings = extractor.extract("Bright Sparks emergency electricians")
++
++    assert prompts, "expected llm client to be invoked"
++    assert listings[0]["title"] == "Bright Sparks"
++    assert listings[0]["categorySlug"] == "electricians"
++
++
++def test_json_loader_accepts_wrapped_payload() -> None:
++    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
++
++    listings = JSONListingLoader().load(payload)
++
++    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
++
++
++def test_csv_loader_returns_row_dicts() -> None:
++    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
++
++    listings = CSVListingLoader().load(csv_data)
++
++    assert listings == [
++        {
++            "title": "Example Electric",
++            "categorySlug": "electricians",
++            "sourceUrl": "https://example.com",
++        }
++    ]
++
++
++def test_enricher_applies_defaults_and_slugifies() -> None:
++    defaults = ImportDefaults(
++        category="Electricians",
++        category_slug="electricians",
++        source_name="Manual Import",
++        location_label="Grand Rapids, MI",
++    )
++    enricher = ListingEnricher()
++    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
++
++    enriched = enricher.enrich(listings, defaults)
++
++    assert enriched[0]["categorySlug"] == "electricians"
++    assert enriched[0]["slug"] == "bright-sparks"
++    assert enriched[0]["sourceName"] == "Manual Import"
++
++
++def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
++    class FakeResponse:
++        def __init__(self) -> None:
++            self.status_code = 202
++
++        def raise_for_status(self) -> None:
++            return None
++
++        def json(self) -> dict[str, object]:
++            return {"ingestedCount": 1}
++
++    class FakeSession:
++        def __init__(self) -> None:
++            self.calls: list[dict[str, object]] = []
++
++        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
++            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
++            return FakeResponse()
++
++    session = FakeSession()
++    ingestor = ListingAPIIngestor(
++        endpoint="https://api.example.com/v1/crawler/listings",
++        token="secret-token",
++        session=session,  # type: ignore[arg-type]
++        timeout=10,
++    )
++
++    response = ingestor.ingest(
++        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    )
++
++    assert response == {"ingestedCount": 1}
++    assert session.calls[0]["headers"] == {
++        "Authorization": "Bearer secret-token",
++        "Content-Type": "application/json",
++    }
++    assert session.calls[0]["json"] == {
++        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    }
++
++
++def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
++    target = tmp_path / "listings.json"
++    listings = [{"title": "Example", "categorySlug": "electricians"}]
++
++    write_intermediate_json(listings, target)
++
++    saved = json.loads(target.read_text(encoding="utf-8"))
++    assert saved["listings"][0]["title"] == "Example"
+
+file update:
+diff --git a/apps/crawler/tests/test_text_import.py b/apps/crawler/tests/test_text_import.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..6d5c1cb4ddeb4de8a162d80c34ef3aced8fbfc7f
+--- /dev/null
++++ b/apps/crawler/tests/test_text_import.py
+@@ -0,0 +1,158 @@
++from __future__ import annotations
++
++from pathlib import Path
++import json
++import sys
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++from text_import import (  # type: ignore[import-not-found]
++    HTMLListingExtractor,
++    TextLLMExtractor,
++    JSONListingLoader,
++    CSVListingLoader,
++    ImportDefaults,
++    ListingEnricher,
++    ListingAPIIngestor,
++    write_intermediate_json,
++)
++
++
++def test_html_extractor_parses_title_and_summary() -> None:
++    html = """
++    <section>
++      <article data-listing>
++        <a class="listing-title" href="https://example.com">Example Electric</a>
++        <p class="listing-description">Licensed electricians.</p>
++      </article>
++      <article data-listing>
++        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
++        <p class="listing-description">Emergency crews.</p>
++      </article>
++    </section>
++    """.strip()
++
++    listings = HTMLListingExtractor().extract(html)
++
++    assert len(listings) == 2
++    assert listings[0]["title"] == "Example Electric"
++    assert listings[0]["sourceUrl"] == "https://example.com"
++    assert listings[0]["summary"] == "Licensed electricians."
++
++
++def test_text_extractor_uses_llm_output() -> None:
++    prompts: list[str] = []
++
++    def fake_llm(request):  # type: ignore[no-untyped-def]
++        prompts.append(request.prompt)
++        return json.dumps(
++            {
++                "listings": [
++                    {
++                        "title": "Bright Sparks",
++                        "summary": "Emergency crews",
++                        "categorySlug": "electricians",
++                    }
++                ]
++            }
++        )
++
++    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
++
++    listings = extractor.extract("Bright Sparks emergency electricians")
++
++    assert prompts, "expected llm client to be invoked"
++    assert listings[0]["title"] == "Bright Sparks"
++    assert listings[0]["categorySlug"] == "electricians"
++
++
++def test_json_loader_accepts_wrapped_payload() -> None:
++    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
++
++    listings = JSONListingLoader().load(payload)
++
++    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
++
++
++def test_csv_loader_returns_row_dicts() -> None:
++    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
++
++    listings = CSVListingLoader().load(csv_data)
++
++    assert listings == [
++        {
++            "title": "Example Electric",
++            "categorySlug": "electricians",
++            "sourceUrl": "https://example.com",
++        }
++    ]
++
++
++def test_enricher_applies_defaults_and_slugifies() -> None:
++    defaults = ImportDefaults(
++        category="Electricians",
++        category_slug="electricians",
++        source_name="Manual Import",
++        location_label="Grand Rapids, MI",
++    )
++    enricher = ListingEnricher()
++    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
++
++    enriched = enricher.enrich(listings, defaults)
++
++    assert enriched[0]["categorySlug"] == "electricians"
++    assert enriched[0]["slug"] == "bright-sparks"
++    assert enriched[0]["sourceName"] == "Manual Import"
++
++
++def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
++    class FakeResponse:
++        def __init__(self) -> None:
++            self.status_code = 202
++
++        def raise_for_status(self) -> None:
++            return None
++
++        def json(self) -> dict[str, object]:
++            return {"ingestedCount": 1}
++
++    class FakeSession:
++        def __init__(self) -> None:
++            self.calls: list[dict[str, object]] = []
++
++        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
++            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
++            return FakeResponse()
++
++    session = FakeSession()
++    ingestor = ListingAPIIngestor(
++        endpoint="https://api.example.com/v1/crawler/listings",
++        token="secret-token",
++        session=session,  # type: ignore[arg-type]
++        timeout=10,
++    )
++
++    response = ingestor.ingest(
++        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    )
++
++    assert response == {"ingestedCount": 1}
++    assert session.calls[0]["headers"] == {
++        "Authorization": "Bearer secret-token",
++        "Content-Type": "application/json",
++    }
++    assert session.calls[0]["json"] == {
++        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    }
++
++
++def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
++    target = tmp_path / "listings.json"
++    listings = [{"title": "Example", "categorySlug": "electricians"}]
++
++    write_intermediate_json(listings, target)
++
++    saved = json.loads(target.read_text(encoding="utf-8"))
++    assert saved["listings"][0]["title"] == "Example"
+
+
+thinking
+**Verifying test failure with pytest**
+exec
+zsh -lc 'cd /var/home/rick/Development/mega-directory && pytest apps/crawler/tests/test_text_import.py' in /var/home/rick/Development/mega-directory exited 2 in 1.30s:
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0
+rootdir: /var/home/rick/Development/mega-directory
+plugins: Faker-37.8.0, xdist-3.8.0, mock-3.15.1, metadata-3.1.1, cov-7.0.0, asyncio-1.2.0, html-4.1.1, hypothesis-6.141.1, anyio-4.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+___________ ERROR collecting apps/crawler/tests/test_text_import.py ____________
+ImportError while importing test module '/var/home/rick/Development/mega-directory/apps/crawler/tests/test_text_import.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps/crawler/tests/test_text_import.py:11: in <module>
+    from text_import import (  # type: ignore[import-not-found]
+E   ModuleNotFoundError: No module named 'text_import'
+=========================== short test summary info ============================
+ERROR apps/crawler/tests/test_text_import.py
+file update:
+diff --git a/apps/crawler/tests/test_text_import.py b/apps/crawler/tests/test_text_import.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..6d5c1cb4ddeb4de8a162d80c34ef3aced8fbfc7f
+--- /dev/null
++++ b/apps/crawler/tests/test_text_import.py
+@@ -0,0 +1,158 @@
++from __future__ import annotations
++
++from pathlib import Path
++import json
++import sys
++
++AGENT_DIR = Path(__file__).resolve().parents[1]
++if str(AGENT_DIR) not in sys.path:
++    sys.path.insert(0, str(AGENT_DIR))
++
++from text_import import (  # type: ignore[import-not-found]
++    HTMLListingExtractor,
++    TextLLMExtractor,
++    JSONListingLoader,
++    CSVListingLoader,
++    ImportDefaults,
++    ListingEnricher,
++    ListingAPIIngestor,
++    write_intermediate_json,
++)
++
++
++def test_html_extractor_parses_title_and_summary() -> None:
++    html = """
++    <section>
++      <article data-listing>
++        <a class="listing-title" href="https://example.com">Example Electric</a>
++        <p class="listing-description">Licensed electricians.</p>
++      </article>
++      <article data-listing>
++        <a class="listing-title" href="https://another.example.com">Bright Sparks</a>
++        <p class="listing-description">Emergency crews.</p>
++      </article>
++    </section>
++    """.strip()
++
++    listings = HTMLListingExtractor().extract(html)
++
++    assert len(listings) == 2
++    assert listings[0]["title"] == "Example Electric"
++    assert listings[0]["sourceUrl"] == "https://example.com"
++    assert listings[0]["summary"] == "Licensed electricians."
++
++
++def test_text_extractor_uses_llm_output() -> None:
++    prompts: list[str] = []
++
++    def fake_llm(request):  # type: ignore[no-untyped-def]
++        prompts.append(request.prompt)
++        return json.dumps(
++            {
++                "listings": [
++                    {
++                        "title": "Bright Sparks",
++                        "summary": "Emergency crews",
++                        "categorySlug": "electricians",
++                    }
++                ]
++            }
++        )
++
++    extractor = TextLLMExtractor(fake_llm, provider="openrouter", model="gpt-4o-mini")
++
++    listings = extractor.extract("Bright Sparks emergency electricians")
++
++    assert prompts, "expected llm client to be invoked"
++    assert listings[0]["title"] == "Bright Sparks"
++    assert listings[0]["categorySlug"] == "electricians"
++
++
++def test_json_loader_accepts_wrapped_payload() -> None:
++    payload = json.dumps({"listings": [{"title": "Example", "categorySlug": "electricians"}]})
++
++    listings = JSONListingLoader().load(payload)
++
++    assert listings == [{"title": "Example", "categorySlug": "electricians"}]
++
++
++def test_csv_loader_returns_row_dicts() -> None:
++    csv_data = "title,categorySlug,sourceUrl\nExample Electric,electricians,https://example.com\n"
++
++    listings = CSVListingLoader().load(csv_data)
++
++    assert listings == [
++        {
++            "title": "Example Electric",
++            "categorySlug": "electricians",
++            "sourceUrl": "https://example.com",
++        }
++    ]
++
++
++def test_enricher_applies_defaults_and_slugifies() -> None:
++    defaults = ImportDefaults(
++        category="Electricians",
++        category_slug="electricians",
++        source_name="Manual Import",
++        location_label="Grand Rapids, MI",
++    )
++    enricher = ListingEnricher()
++    listings = [{"title": "  Bright Sparks  ", "summary": "Emergency crews"}]
++
++    enriched = enricher.enrich(listings, defaults)
++
++    assert enriched[0]["categorySlug"] == "electricians"
++    assert enriched[0]["slug"] == "bright-sparks"
++    assert enriched[0]["sourceName"] == "Manual Import"
++
++
++def test_api_ingestor_posts_batch_with_bearer_token(tmp_path: Path) -> None:
++    class FakeResponse:
++        def __init__(self) -> None:
++            self.status_code = 202
++
++        def raise_for_status(self) -> None:
++            return None
++
++        def json(self) -> dict[str, object]:
++            return {"ingestedCount": 1}
++
++    class FakeSession:
++        def __init__(self) -> None:
++            self.calls: list[dict[str, object]] = []
++
++        def post(self, url, json=None, headers=None, timeout=None):  # type: ignore[no-untyped-def]
++            self.calls.append({"url": url, "json": json, "headers": headers, "timeout": timeout})
++            return FakeResponse()
++
++    session = FakeSession()
++    ingestor = ListingAPIIngestor(
++        endpoint="https://api.example.com/v1/crawler/listings",
++        token="secret-token",
++        session=session,  # type: ignore[arg-type]
++        timeout=10,
++    )
++
++    response = ingestor.ingest(
++        [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    )
++
++    assert response == {"ingestedCount": 1}
++    assert session.calls[0]["headers"] == {
++        "Authorization": "Bearer secret-token",
++        "Content-Type": "application/json",
++    }
++    assert session.calls[0]["json"] == {
++        "listings": [{"title": "Example", "categorySlug": "electricians", "slug": "example"}]
++    }
++
++
++def test_write_intermediate_json_persists_payload(tmp_path: Path) -> None:
++    target = tmp_path / "listings.json"
++    listings = [{"title": "Example", "categorySlug": "electricians"}]
++
++    write_intermediate_json(listings, target)
++
++    saved = json.loads(target.read_text(encoding="utf-8"))
++    assert saved["listings"][0]["title"] == "Example"
+
+
+
+thinking
+**Designing text import module and CLI**
+
+I’m planning a new module at `apps/crawler/text_import.py` to handle HTML, text, JSON, and CSV listing imports with classes for extraction, loading, enriching, and ingestion. I’ll replicate some constants to avoid circular imports, use jinja2 for prompt templating, implement LLM client wrappers, and build a CLI parsing inputs, defaults, and post-processing configs to run workflows and optionally post to an API. I want to keep the design modular and cover normalization, error handling, and user feedback in the CLI.
+thinking
+**Implementing LLM client and CLI validations**
+
+I’m focusing on building a robust HTTPChatLLMClient that dynamically selects endpoints per provider and handles system prompts, plus ensuring the CLI enforces required args depending on format—like requiring LLM config for text imports and category or category slug for HTML/text. I’m also setting up error handling, Jinja2 prompt rendering, and clean exits, preparing to assemble all pieces into the new module.

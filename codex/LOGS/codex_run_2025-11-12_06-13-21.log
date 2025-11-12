@@ -1,0 +1,150 @@
+🚀 Codex Runner @ Wed Nov 12 06:13:21 AM EST 2025
+Working Dir: /home/rick/Development/mega-directory
+Task Dir: codex/TASKS
+Log Dir: codex/LOGS
+Auto-Commit: true
+Config File: ./codex.toml
+Tasks: 24_setup_project_scaffolding_and_configuration 25a_initialize_astro_frontend_with_base_layouts 25_define_directory_page_model_and_metadata_fields 26_initialize_geographic_location_tables_and_seed_data 27_implement_directory_pages_table_and_metadata_fields 28_build_admin_ui_for_directory_page_creation_and_editing 29_implement_listings_table_enhancements_for_multiple_categories_and_locations 30_set_up_geocoding_integration_with_fallback_support 31_build_map_widget_for_directory_pages_with_location-aware_listings 32_create_admin_api_endpoints_for_listings_addresses_categories_directories 33_add_directory_routing_logic_subdomain_subdirectory_handling 34_extend_crawler_to_handle_address_and_category_assignment 35_implement_shared_post-processing_for_crawler_and_text_import_scripts 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes 37_generate_admin_interface_for_reviewing_imported_json_listing_data 39_render_canonical_meta_tags_from_directory_configuration 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc
+===========================================
+🟡 Executing task: 24_setup_project_scaffolding_and_configuration
+✅ Task 24_setup_project_scaffolding_and_configuration completed successfully.
+📝 Committing files for 24_setup_project_scaffolding_and_configuration...
+[main 368d619] Codex Task: 24_setup_project_scaffolding_and_configuration
+ 74 files changed, 55 insertions(+), 15361 deletions(-)
+ delete mode 100644 admin/data/categoryLocationDiscoveries.js
+ delete mode 100644 admin/data/categoryLocations.js
+ delete mode 100644 admin/data/listings.js
+ delete mode 100644 admin/data/seoEntries.js
+ delete mode 100644 admin/index.js
+ delete mode 100644 admin/package-lock.json
+ delete mode 100644 admin/package.json
+ delete mode 100644 admin/public/css/admin.css
+ delete mode 100644 admin/routes/categoryLocations.js
+ delete mode 100644 admin/routes/listings.js
+ delete mode 100644 admin/routes/seo.js
+ delete mode 100644 admin/services/apiClient.js
+ delete mode 100644 admin/services/categoryLocationService.js
+ delete mode 100644 admin/services/listingsService.js
+ delete mode 100644 admin/services/seoService.js
+ delete mode 100644 admin/test/categoryLocationService.test.js
+ delete mode 100644 admin/test/listingsService.test.js
+ delete mode 100644 admin/test/seoService.test.js
+ delete mode 100644 admin/views/category-locations/index.ejs
+ delete mode 100644 admin/views/errors/not-found.ejs
+ delete mode 100644 admin/views/listings/index.ejs
+ delete mode 100644 admin/views/partials/page-end.ejs
+ delete mode 100644 admin/views/partials/page-start.ejs
+ delete mode 100644 admin/views/seo/index.ejs
+ delete mode 100644 agents/crawler/config/targets.json
+ delete mode 100644 agents/crawler/config/targets.schema.json
+ delete mode 100644 agents/crawler/crawler.py
+ delete mode 100644 agents/crawler/dev_runner.py
+ delete mode 100644 agents/crawler/main.py
+ delete mode 100644 agents/crawler/requirements-dev.txt
+ delete mode 100644 agents/crawler/targets.example.json
+ delete mode 100644 agents/crawler/tests/test_config_schema.py
+ delete mode 100644 agents/crawler/tests/test_crawler.py
+ delete mode 100644 api/.dockerignore
+ delete mode 100644 api/Dockerfile
+ delete mode 100644 api/index.js
+ delete mode 100644 api/logger.js
+ delete mode 100644 api/package-lock.json
+ delete mode 100644 api/package.json
+ delete mode 100644 api/test/server.test.js
+ delete mode 100644 astro/.dockerignore
+ delete mode 100644 astro/.gitignore
+ delete mode 100644 astro/.vscode/extensions.json
+ delete mode 100644 astro/.vscode/launch.json
+ delete mode 100644 astro/Dockerfile
+ delete mode 100644 astro/README.md
+ delete mode 100644 astro/astro.config.mjs
+ delete mode 100644 astro/package-lock.json
+ delete mode 100644 astro/package.json
+ delete mode 100644 astro/postcss.config.cjs
+ delete mode 100644 astro/public/favicon.svg
+ delete mode 100644 astro/src/components/CategoryCard.astro
+ delete mode 100644 astro/src/components/DirectoryListing.astro
+ delete mode 100644 astro/src/components/DirectoryPage.astro
+ delete mode 100644 astro/src/components/HeroSection.astro
+ delete mode 100644 astro/src/components/ListingItem.astro
+ delete mode 100644 astro/src/components/SiteFooter.astro
+ delete mode 100644 astro/src/components/SiteHeader.astro
+ delete mode 100644 astro/src/data/directory-catalog.js
+ delete mode 100644 astro/src/layouts/BaseLayout.astro
+ delete mode 100644 astro/src/lib/directory-helpers.js
+ delete mode 100644 astro/src/pages/index.astro
+ delete mode 100644 astro/src/pages/listings/[category]/[location].astro
+ delete mode 100644 astro/src/pages/listings/[category]/[location]/[subcategory].astro
+ delete mode 100644 astro/src/pages/listings/index.astro
+ delete mode 100644 astro/src/styles/global.css
+ delete mode 100644 astro/tailwind.config.mjs
+ delete mode 100644 astro/test/directory-helpers.test.mjs
+ delete mode 100644 astro/tsconfig.json
+📝 Commit created: 368d6193bae993aa8002f09eac16fae48d473019
+🧯 Rollback with: git reset --soft 368d6193bae993aa8002f09eac16fae48d473019^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 25a_initialize_astro_frontend_with_base_layouts
+✅ Task 25a_initialize_astro_frontend_with_base_layouts completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 25_define_directory_page_model_and_metadata_fields
+✅ Task 25_define_directory_page_model_and_metadata_fields completed successfully.
+📝 Committing files for 25_define_directory_page_model_and_metadata_fields...
+[main 76a0fb7] Codex Task: 25_define_directory_page_model_and_metadata_fields
+ 3 files changed, 83 insertions(+), 53 deletions(-)
+📝 Commit created: 76a0fb768faa1b38aeb4961b141d895942777bf5
+🧯 Rollback with: git reset --soft 76a0fb768faa1b38aeb4961b141d895942777bf5^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 26_initialize_geographic_location_tables_and_seed_data
+✅ Task 26_initialize_geographic_location_tables_and_seed_data completed successfully.
+📝 Committing files for 26_initialize_geographic_location_tables_and_seed_data...
+[main b9cdd19] Codex Task: 26_initialize_geographic_location_tables_and_seed_data
+ 3 files changed, 441 insertions(+), 7 deletions(-)
+📝 Commit created: b9cdd19a06729c2d6c60f7298fcff84c938f6460
+🧯 Rollback with: git reset --soft b9cdd19a06729c2d6c60f7298fcff84c938f6460^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 27_implement_directory_pages_table_and_metadata_fields
+✅ Task 27_implement_directory_pages_table_and_metadata_fields completed successfully.
+📝 Committing files for 27_implement_directory_pages_table_and_metadata_fields...
+[main c7c0580] Codex Task: 27_implement_directory_pages_table_and_metadata_fields
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+📝 Commit created: c7c05804cd7da03750ff620463e2c6994991b347
+🧯 Rollback with: git reset --soft c7c05804cd7da03750ff620463e2c6994991b347^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 28_build_admin_ui_for_directory_page_creation_and_editing
+✅ Task 28_build_admin_ui_for_directory_page_creation_and_editing completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 29_implement_listings_table_enhancements_for_multiple_categories_and_locations
+✅ Task 29_implement_listings_table_enhancements_for_multiple_categories_and_locations completed successfully.
+📝 Committing files for 29_implement_listings_table_enhancements_for_multiple_categories_and_locations...
+[main 636cabd] Codex Task: 29_implement_listings_table_enhancements_for_multiple_categories_and_locations
+ 2 files changed, 182 insertions(+), 28 deletions(-)
+📝 Commit created: 636cabde58f160d56ccb4ad3f57790e5fb93aeb4
+🧯 Rollback with: git reset --soft 636cabde58f160d56ccb4ad3f57790e5fb93aeb4^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 30_set_up_geocoding_integration_with_fallback_support
+✅ Task 30_set_up_geocoding_integration_with_fallback_support completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 31_build_map_widget_for_directory_pages_with_location-aware_listings
+✅ Task 31_build_map_widget_for_directory_pages_with_location-aware_listings completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 32_create_admin_api_endpoints_for_listings_addresses_categories_directories
+✅ Task 32_create_admin_api_endpoints_for_listings_addresses_categories_directories completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 33_add_directory_routing_logic_subdomain_subdirectory_handling
+✅ Task 33_add_directory_routing_logic_subdomain_subdirectory_handling completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 34_extend_crawler_to_handle_address_and_category_assignment
+✅ Task 34_extend_crawler_to_handle_address_and_category_assignment completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 35_implement_shared_post-processing_for_crawler_and_text_import_scripts
+✅ Task 35_implement_shared_post-processing_for_crawler_and_text_import_scripts completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes
