@@ -1,0 +1,23 @@
+# CODEX TODO PHASE 1B
+
+- [ ] 24_setup_project_scaffolding_and_configuration.yaml
+- [ ] 25_define_directory_page_model_and_metadata_fields.yaml
+- [ ] 26_implement_directory_page_url_routing_and_subdomain_support.yaml
+- [ ] 27_add_map_widget_and_listing_pin_features.yaml
+- [ ] 28_design_country_state_city_postal_schema.yaml
+- [ ] 29_import_geographic_data_from_external_sources.yaml
+- [ ] 30_extend_listing_model_with_geographic_references.yaml
+- [ ] 31_implement_geolocation_api_integration.yaml
+- [ ] 32_configure_environment_variables_for_geolocation_services.yaml
+- [ ] 33_build_directory_page_editor_in_admin_app.yaml
+- [ ] 34_add_location_aware_listing_map_integration.yaml
+- [ ] 35_refactor_listing_model_to_support_multiple_categories_addresses.yaml
+- [ ] 36_define_api_endpoints_for_directory_pages_and_geo_models.yaml
+- [ ] 37_create_data_import_script_for_scraped_or_pasted_data.yaml
+- [ ] 38_implement_llm_parsing_layer_for_messy_input.yaml
+- [ ] 39_refactor_description_generation_logic_to_shared_module.yaml
+- [ ] 40_connect_data_import_script_to_api_with_validation.yaml
+- [ ] 201_design_user_account_model_and_onboarding_flow.yaml
+- [ ] 202_implement_user_collections_and_sharing_features.yaml
+- [ ] 203_add_user_interactions_voting_reviews_and_reporting.yaml
+- [ ] 204_prepare_user_authentication_workflow_and_token_login.yaml
