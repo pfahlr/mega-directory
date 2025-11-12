@@ -2,6 +2,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -46,6 +48,118 @@ enum LlmTargetType {
   SUBCATEGORY
 }
 
+model Country {
+  id             Int              @id
+  name           String
+  iso2           String           @unique
+  iso3           String?
+  numericCode    String?
+  phoneCode      String?
+  capital        String?
+  currency       String?
+  currencyName   String?
+  currencySymbol String?
+  tld            String?
+  nativeName     String?
+  region         String?
+  subregion      String?
+  translations   Json?
+  timezones      Json?
+  latitude       Float?
+  longitude      Float?
+  emoji          String?
+  emojiU         String?
+  wikiDataId     String?
+  hasStates      Boolean         @default(true)
+  hasPostalCodes Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  states      StateProvince[]
+  cities      City[]
+  postalCodes PostalCode[]
+  listings    Listing[]         @relation("ListingCountry")
+  locations   Location[]        @relation("CountryLocations")
+}
+
+model StateProvince {
+  id          Int       @id
+  name        String
+  stateCode   String?
+  type        String?
+  latitude    Float?
+  longitude   Float?
+  countryId   Int
+  countryCode String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  country    Country    @relation(fields: [countryId], references: [id])
+  cities     City[]
+  postalCodes PostalCode[]
+  listings   Listing[]  @relation("ListingState")
+  locations  Location[] @relation("StateLocations")
+
+  @@index([countryId])
+  @@unique([countryId, stateCode])
+}
+
+model City {
+  id          Int             @id
+  name        String
+  asciiName   String?
+  latitude    Float?
+  longitude   Float?
+  population  Int?
+  timezone    String?
+  wikiDataId  String?
+  stateId     Int?
+  stateCode   String?
+  stateName   String?
+  countryId   Int
+  countryCode String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  country    Country          @relation(fields: [countryId], references: [id])
+  state      StateProvince?   @relation(fields: [stateId], references: [id])
+  postalCodes PostalCode[]
+  listings   Listing[]        @relation("ListingCity")
+  locations  Location[]       @relation("CityLocations")
+
+  @@index([countryId])
+  @@index([stateId])
+}
+
+model PostalCode {
+  id          Int             @id @default(autoincrement())
+  code        String
+  placeName   String
+  countryId   Int
+  countryCode String
+  stateId     Int?
+  stateCode   String?
+  stateName   String?
+  countyName  String?
+  countyCode  String?
+  cityId      Int?
+  latitude    Float?
+  longitude   Float?
+  accuracy    Int?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  country    Country          @relation(fields: [countryId], references: [id])
+  state      StateProvince?   @relation(fields: [stateId], references: [id])
+  city       City?            @relation(fields: [cityId], references: [id])
+  listings   Listing[]        @relation("ListingPostalCode")
+  locations  Location[]       @relation("PostalCodeLocations")
+
+  @@index([countryId, code])
+  @@index([cityId])
+  @@unique([countryId, code, placeName])
+}
+
 model Category {
   id              Int            @id @default(autoincrement())
   name            String
@@ -77,9 +191,23 @@ model Location {
   isActive        Boolean    @default(true)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+  countryId       Int?
+  stateId         Int?
+  cityId          Int?
+  postalCodeId    Int?
+
+  countryRecord    Country?       @relation("CountryLocations", fields: [countryId], references: [id])
+  stateRecord      StateProvince? @relation("StateLocations", fields: [stateId], references: [id])
+  cityRecord       City?          @relation("CityLocations", fields: [cityId], references: [id])
+  postalCodeRecord PostalCode?    @relation("PostalCodeLocations", fields: [postalCodeId], references: [id])
 
   listings    Listing[]
   directories Directory[]
+
+  @@index([countryId])
+  @@index([stateId])
+  @@index([cityId])
+  @@index([postalCodeId])
 }
 
 model Directory {
@@ -176,6 +304,10 @@ model Listing {
   locationId       Int?
   directoryId      Int?
   approvedById     Int?
+  countryId        Int?
+  stateId          Int?
+  cityId           Int?
+  postalCodeId     Int?
 
   category      Category             @relation(fields: [categoryId], references: [id])
   location      Location?            @relation(fields: [locationId], references: [id])
@@ -183,10 +315,18 @@ model Listing {
   approvedBy    User?                @relation("ListingApprovedBy", fields: [approvedById], references: [id])
   subcategories ListingSubcategory[]
   featuredSlots FeaturedSlot[]
+  countryRecord   Country?           @relation("ListingCountry", fields: [countryId], references: [id])
+  stateRecord     StateProvince?     @relation("ListingState", fields: [stateId], references: [id])
+  cityRecord      City?              @relation("ListingCity", fields: [cityId], references: [id])
+  postalCodeRecord PostalCode?       @relation("ListingPostalCode", fields: [postalCodeId], references: [id])
 
   @@index([directoryId])
   @@index([status])
   @@index([categoryId, locationId])
+  @@index([postalCodeId])
+  @@index([cityId])
+  @@index([stateId])
+  @@index([countryId])
 }
 
 model ListingSubcategory {
