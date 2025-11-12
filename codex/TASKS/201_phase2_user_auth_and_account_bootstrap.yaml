@@ -3,7 +3,7 @@ tasks:
     filename: 201_phase2_user_auth_and_account_bootstrap.yaml
     title: Phase 2: User Auth and Account Bootstrap
     description: >
-      Implement user account bootstrapping workflow:
+      Implement user account bootstrapping workflow
       - On interaction requiring login, auto-generate a user stub (UUID, anonymous username)
       - Present token-based login link with option to set email, username, and password
       - Support login via email (magic link or password if present)

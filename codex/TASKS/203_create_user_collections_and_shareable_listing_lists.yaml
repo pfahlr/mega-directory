@@ -2,12 +2,12 @@
     filename: 203_create_user_collections_and_shareable_listing_lists.yaml
     title: Create User Collections and Shareable Listing Lists
     description: >
-      Users can save listings into named lists:
+      Users can save listings into named lists
       - Users create/edit/delete multiple personal lists
       - Each list has a slug and is publicly viewable at /[username]/[slug]
       - Listings can be added/removed via AJAX
-      - Add export buttons: CSV, KML, GPX format support
-      - Create database schema: lists, list_items
-      - Endpoints: GET/POST/DELETE for lists and items
+      - Add export buttons CSV, KML, GPX format support
+      - Create database schema lists, list_items
+      - Endpoints GET/POST/DELETE for lists and items
       - Write tests for unique slugs per user, list membership validation, export functions
     dependencies: [201]
