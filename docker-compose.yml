@@ -3,7 +3,7 @@ version: '3.8'
 services:
   api:
     build:
-      context: ./api
+      context: ./apps/api
     ports:
       - '3001:3001'
     environment:
@@ -24,13 +24,13 @@ services:
       retries: 5
       start_period: 5s
     volumes:
-      - ./api:/app
+      - ./apps/api:/app
     networks:
       - app-network
 
-  astro:
+  web:
     build:
-      context: ./astro
+      context: ./apps/web
     ports:
       - '3000:3000'
     environment:
@@ -46,7 +46,7 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-      - ./astro:/app
+      - ./apps/web:/app
     networks:
       - app-network
 

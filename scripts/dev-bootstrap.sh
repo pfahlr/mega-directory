@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-PYTHON_REQUIREMENTS_FILE="${ROOT_DIR}/agents/crawler/requirements-dev.txt"
+PYTHON_REQUIREMENTS_FILE="${ROOT_DIR}/apps/crawler/requirements-dev.txt"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -149,17 +149,17 @@ start_process() {
 
 echo "[dev-bootstrap] Booting Mega Directory stack:"
 echo "  API       -> http://localhost:${API_PORT}"
-echo "  Astro     -> http://localhost:${ASTRO_PORT}"
+echo "  Web       -> http://localhost:${ASTRO_PORT}"
 echo "  Admin     -> http://localhost:${ADMIN_PORT}"
 echo "  Crawler   -> posting to ${CRAWLER_ENDPOINT_VALUE}"
 echo
 
-ensure_node_dependencies "api" "API server"
-ensure_node_dependencies "astro" "Astro frontend"
-ensure_node_dependencies "admin" "Admin UI"
+ensure_node_dependencies "apps/api" "API server"
+ensure_node_dependencies "apps/web" "Astro frontend"
+ensure_node_dependencies "apps/admin" "Admin UI"
 ensure_python_dependencies
 
-start_process "api" "api" env \
+start_process "api" "apps/api" env \
   PORT="${API_PORT}" \
   NODE_ENV="development" \
   LOG_LEVEL="${LOG_LEVEL:-debug}" \
@@ -171,13 +171,13 @@ start_process "api" "api" env \
   ADMIN_TOKEN_TTL_SECONDS="${ADMIN_TOKEN_TTL_SECONDS:-900}" \
   npm run dev
 
-start_process "astro" "astro" env \
+start_process "astro" "apps/web" env \
   PORT="${ASTRO_PORT}" \
   NODE_ENV="development" \
   API_BASE_URL="${API_BASE_URL_VALUE}" \
   npm run dev
 
-start_process "admin" "admin" env \
+start_process "admin" "apps/admin" env \
   PORT="${ADMIN_PORT}" \
   NODE_ENV="development" \
   API_BASE_URL="${API_BASE_URL_VALUE}" \
@@ -186,11 +186,11 @@ start_process "admin" "admin" env \
   npm run dev
 
 if [[ "${SKIP_CRAWLER:-0}" != "1" ]]; then
-  start_process "crawler" "." env \
+  start_process "crawler" "apps/crawler" env \
     CRAWLER_API_ENDPOINT="${CRAWLER_ENDPOINT_VALUE}" \
     CRAWLER_API_TOKEN="${CRAWLER_TOKEN_VALUE}" \
     CRAWLER_BEARER_TOKEN="${CRAWLER_TOKEN_VALUE}" \
-    "$PYTHON_BIN" agents/crawler/dev_runner.py \
+    "$PYTHON_BIN" dev_runner.py \
     --interval "${CRAWLER_INTERVAL}"
 else
   echo "[dev-bootstrap] SKIP_CRAWLER=1 detected; not starting the crawler demo."
