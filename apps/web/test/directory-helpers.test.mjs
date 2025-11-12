@@ -16,6 +16,7 @@ import {
   getDirectorySubdirectorySlug,
   segmentFeaturedListings,
   resolveCategorySeoMetadata,
+  buildDirectorySeoMetadata,
   buildDirectoryMapPins,
   shouldRenderDirectoryMap,
 } from '../src/lib/directory-helpers.js';
@@ -24,6 +25,7 @@ import {
   matchSubdomainRequest,
   buildDirectoryResponseTargets,
 } from '../src/lib/directory-routing.js';
+import { siteConfig } from '../src/config/site-config.js';
 
 const sampleDirectories = [
   {
@@ -143,6 +145,12 @@ const sampleDirectories = [
     ],
   },
 ];
+
+const cloneDirectory = (directory) => ({
+  ...directory,
+  category: directory?.category ? { ...directory.category } : undefined,
+  location: directory?.location ? { ...directory.location } : undefined,
+});
 
 test('sortListingsByScore orders items descending without mutating input', () => {
   const original = sampleDirectories[0].listings;
@@ -472,6 +480,41 @@ test('resolveCategorySeoMetadata trims values and applies layered fallbacks', ()
     defaultFallback.metaDescription,
     'Discover curated Mega Directory listings on Mega Directory.'
   );
+});
+
+test('buildDirectorySeoMetadata prioritizes directory overrides and normalizes keywords', () => {
+  const directory = cloneDirectory(sampleDirectories[0]);
+  Object.assign(directory, {
+    metaTitle: '  Custom NYC Pros ',
+    metaDescription: '  Tailored copy for editors ',
+    metaKeywords: 'hvac, electricians , 24/7 dispatch ,',
+    ogImageUrl: 'https://cdn.example.com/og/custom.png',
+  });
+
+  const result = buildDirectorySeoMetadata(directory);
+  assert.strictEqual(result.title, 'Custom NYC Pros');
+  assert.strictEqual(result.description, 'Tailored copy for editors');
+  assert.strictEqual(result.keywords, 'hvac, electricians, 24/7 dispatch');
+  assert.strictEqual(result.image, 'https://cdn.example.com/og/custom.png');
+});
+
+test('buildDirectorySeoMetadata falls back to hero subtitle and category metadata when overrides missing', () => {
+  const directory = cloneDirectory(sampleDirectories[0]);
+  Object.assign(directory, {
+    metaTitle: '',
+    title: '',
+    metaDescription: '',
+    metaKeywords: '',
+    ogImageUrl: '',
+    heroSubtitle: '  Rapid crews with on-call supervisors ',
+  });
+  directory.category.metaDescription = '';
+
+  const result = buildDirectorySeoMetadata(directory);
+  assert.strictEqual(result.title, 'Professional Services Directory · New York City');
+  assert.strictEqual(result.description, 'Rapid crews with on-call supervisors');
+  assert.strictEqual(result.keywords, null);
+  assert.strictEqual(result.image, siteConfig.defaultOgImage);
 });
 
 test('matchSubdirectoryRequest returns normalized directory + optional subcategory', () => {

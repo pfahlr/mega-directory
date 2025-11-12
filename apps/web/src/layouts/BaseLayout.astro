@@ -36,6 +36,7 @@ const ogImage = seo.image ?? seo.openGraph?.image ?? siteConfig.defaultOgImage;
 const ogTitle = seo.openGraph?.title ?? computedTitle;
 const ogDescription = seo.openGraph?.description ?? resolvedDescription;
 const ogType = seo.openGraph?.type ?? 'website';
+const keywords = typeof seo.keywords === 'string' ? seo.keywords : null;
 const twitterCard = seo.twitter?.card ?? 'summary_large_image';
 const twitterTitle = seo.twitter?.title ?? computedTitle;
 const twitterDescription = seo.twitter?.description ?? resolvedDescription;
@@ -52,6 +53,7 @@ const noindex = seo.noindex === true;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{computedTitle}</title>
     <meta name="description" content={resolvedDescription} />
+    {keywords && <meta name="keywords" content={keywords} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <link

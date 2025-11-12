@@ -78,6 +78,24 @@ const humanizeSlug = (value = '') =>
 
 const sanitizeText = (value) => (typeof value === 'string' ? value.trim() : '');
 
+const sanitizeKeywords = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .join(', ');
+};
+
+const sanitizeUrl = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
+};
+
 const getListingSlug = (listing) => normalizeSlug(listing?.slug ?? listing?.name, '');
 
 const normalizeListingSubcategories = (entries) => {
@@ -360,6 +378,45 @@ export function resolveCategorySeoMetadata(category = {}) {
   return {
     metaTitle: explicitTitle || name,
     metaDescription: explicitDescription || fallbackDescription,
+  };
+}
+
+export function buildDirectorySeoMetadata(directory = {}) {
+  const categorySeo = resolveCategorySeoMetadata(directory?.category ?? {});
+  const locationName = sanitizeText(directory?.location?.name);
+  const directoryTitle = sanitizeText(directory?.title);
+  const explicitMetaTitle = sanitizeText(directory?.metaTitle);
+  const derivedCategoryTitle = locationName
+    ? `${categorySeo.metaTitle} · ${locationName}`
+    : categorySeo.metaTitle;
+  const resolvedTitle =
+    explicitMetaTitle ||
+    directoryTitle ||
+    derivedCategoryTitle ||
+    siteConfig.siteName ||
+    DEFAULT_DIRECTORY_NAME;
+
+  const explicitDescription = sanitizeText(directory?.metaDescription);
+  const heroSubtitle = sanitizeText(directory?.heroSubtitle);
+  const resolvedDescription =
+    explicitDescription ||
+    heroSubtitle ||
+    categorySeo.metaDescription ||
+    siteConfig.defaultDescription ||
+    DEFAULT_CATEGORY_DESCRIPTION_TEMPLATE.replace('NAME', DEFAULT_DIRECTORY_NAME);
+
+  const keywords = sanitizeKeywords(directory?.metaKeywords);
+  const image =
+    sanitizeUrl(directory?.ogImageUrl) ||
+    sanitizeUrl(directory?.ogImage) ||
+    sanitizeUrl(directory?.category?.ogImageUrl) ||
+    sanitizeUrl(siteConfig.defaultOgImage);
+
+  return {
+    title: resolvedTitle,
+    description: resolvedDescription,
+    keywords: keywords || null,
+    image: image || null,
   };
 }
 

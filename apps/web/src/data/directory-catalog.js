@@ -7,6 +7,10 @@ export const directoryCatalog = [
     name: 'NYC Professional Services',
     heroTitle: 'Trusted Pros in New York City',
     heroSubtitle: 'Electricians, HVAC teams, and general contractors with transparent SLAs.',
+    metaTitle: 'Professional Services in NYC',
+    metaDescription: 'Hand-reviewed electricians, HVAC teams, and facilities partners across New York City.',
+    metaKeywords: 'electricians, hvac, maintenance, new york city',
+    ogImageUrl: 'https://cdn.megadirectory.local/og/pros-nyc.png',
     category: {
       slug: 'professional-services',
       name: 'Professional Services',
@@ -130,6 +134,10 @@ export const directoryCatalog = [
     name: 'Denver Professional Services',
     heroTitle: 'Rocky Mountain Response Teams',
     heroSubtitle: 'Contractors covering the Front Range with snow-readiness baked in.',
+    metaTitle: 'Professional Services in Denver',
+    metaDescription: 'High-altitude contractors for roofing, HVAC, and facilities teams across the Front Range.',
+    metaKeywords: 'contractors, roofing, hvac, denver',
+    ogImageUrl: 'https://cdn.megadirectory.local/og/pros-denver.png',
     category: {
       slug: 'professional-services',
       name: 'Professional Services',
@@ -217,6 +225,10 @@ export const directoryCatalog = [
     name: 'NYC Hiring Partners',
     heroTitle: 'Recruiters for media, finance, and tech',
     heroSubtitle: 'Boutique teams with candidate briefing portals and pay transparency baked in.',
+    metaTitle: 'NYC Jobs & Recruiters',
+    metaDescription: 'Recruiting partners and job boards covering finance, media, and tech roles in New York City.',
+    metaKeywords: 'jobs, recruiters, nyc, talent partners',
+    ogImageUrl: 'https://cdn.megadirectory.local/og/jobs-nyc.png',
     category: {
       slug: 'jobs',
       name: 'Jobs',
@@ -309,6 +321,10 @@ export const directoryCatalog = [
     name: 'Bay Area Hiring Partners',
     heroTitle: 'Operator-friendly recruiters on the West Coast',
     heroSubtitle: 'Embedded sourcers plus candidate concierge support for relocation.',
+    metaTitle: 'Bay Area Jobs & Recruiters',
+    metaDescription: 'Fractional and embedded recruiting teams covering product, design, and GTM roles in the Bay Area.',
+    metaKeywords: 'jobs, recruiters, bay area, san francisco',
+    ogImageUrl: 'https://cdn.megadirectory.local/og/jobs-sf.png',
     category: {
       slug: 'jobs',
       name: 'Jobs',
