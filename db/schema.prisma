@@ -79,6 +79,7 @@ model Country {
   cities      City[]
   postalCodes PostalCode[]
   listings    Listing[]         @relation("ListingCountry")
+  listingAddresses ListingAddress[] @relation("AddressCountry")
   locations   Location[]        @relation("CountryLocations")
 }
 
@@ -98,6 +99,7 @@ model StateProvince {
   cities     City[]
   postalCodes PostalCode[]
   listings   Listing[]  @relation("ListingState")
+  listingAddresses ListingAddress[] @relation("AddressState")
   locations  Location[] @relation("StateLocations")
 
   @@index([countryId])
@@ -125,6 +127,7 @@ model City {
   state      StateProvince?   @relation(fields: [stateId], references: [id])
   postalCodes PostalCode[]
   listings   Listing[]        @relation("ListingCity")
+  listingAddresses ListingAddress[] @relation("AddressCity")
   locations  Location[]       @relation("CityLocations")
 
   @@index([countryId])
@@ -153,6 +156,7 @@ model PostalCode {
   state      StateProvince?   @relation(fields: [stateId], references: [id])
   city       City?            @relation(fields: [cityId], references: [id])
   listings   Listing[]        @relation("ListingPostalCode")
+  listingAddresses ListingAddress[] @relation("AddressPostalCode")
   locations  Location[]       @relation("PostalCodeLocations")
 
   @@index([countryId, code])
@@ -172,7 +176,7 @@ model Category {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  listings      Listing[]
+  listingCategories ListingCategory[]
   directories   Directory[]
   subcategories Subcategory[]
 }
@@ -272,14 +276,6 @@ model Listing {
   websiteUrl       String?
   contactEmail     String?
   contactPhone     String?
-  addressLine1     String?
-  addressLine2     String?
-  city             String?
-  region           String?
-  postalCode       String?
-  country          String?          @default("US")
-  latitude         Float?
-  longitude        Float?
   priceRange       String?
   rating           Float?           @default(0)
   reviewCount      Int?             @default(0)
@@ -300,7 +296,6 @@ model Listing {
   archivedAt       DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  categoryId       Int
   locationId       Int?
   directoryId      Int?
   approvedById     Int?
@@ -309,12 +304,13 @@ model Listing {
   cityId           Int?
   postalCodeId     Int?
 
-  category      Category             @relation(fields: [categoryId], references: [id])
   location      Location?            @relation(fields: [locationId], references: [id])
   directory     Directory?           @relation(fields: [directoryId], references: [id])
   approvedBy    User?                @relation("ListingApprovedBy", fields: [approvedById], references: [id])
   subcategories ListingSubcategory[]
   featuredSlots FeaturedSlot[]
+  categories    ListingCategory[]
+  addresses     ListingAddress[]
   countryRecord   Country?           @relation("ListingCountry", fields: [countryId], references: [id])
   stateRecord     StateProvince?     @relation("ListingState", fields: [stateId], references: [id])
   cityRecord      City?              @relation("ListingCity", fields: [cityId], references: [id])
@@ -322,11 +318,53 @@ model Listing {
 
   @@index([directoryId])
   @@index([status])
-  @@index([categoryId, locationId])
   @@index([postalCodeId])
   @@index([cityId])
   @@index([stateId])
   @@index([countryId])
+}
+
+model ListingCategory {
+  listing     Listing  @relation(fields: [listingId], references: [id])
+  listingId   Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  isPrimary   Boolean  @default(false)
+  assignedAt  DateTime @default(now())
+
+  @@id([listingId, categoryId])
+  @@index([categoryId])
+}
+
+model ListingAddress {
+  id            Int       @id @default(autoincrement())
+  listingId     Int
+  label         String?
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  region        String?
+  postalCode    String?
+  country       String?   @default("US")
+  latitude      Float?
+  longitude     Float?
+  isPrimary     Boolean   @default(false)
+  countryId     Int?
+  stateId       Int?
+  cityId        Int?
+  postalCodeId  Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  listing         Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  countryRecord   Country?       @relation("AddressCountry", fields: [countryId], references: [id])
+  stateRecord     StateProvince? @relation("AddressState", fields: [stateId], references: [id])
+  cityRecord      City?          @relation("AddressCity", fields: [cityId], references: [id])
+  postalCodeRecord PostalCode?   @relation("AddressPostalCode", fields: [postalCodeId], references: [id])
+
+  @@index([listingId])
+  @@index([cityId])
+  @@index([postalCodeId])
 }
 
 model ListingSubcategory {
