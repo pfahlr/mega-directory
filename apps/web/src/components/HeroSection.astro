@@ -1,0 +1,90 @@
+---
+interface ActionLink {
+  label: string;
+  href: string;
+  ariaLabel?: string;
+  variant?: 'primary' | 'secondary';
+}
+
+interface Stat {
+  label: string;
+  value: string;
+  helper?: string;
+}
+
+const {
+  eyebrow = 'Human powered · API ready',
+  title = 'Directory pages that feel bespoke, not bloated.',
+  description = 'Mega Directory pairs trusted crawlers with editorial review so every listing feels intentional. Filter by accessibility scores, SEO readiness, or the data you already track.',
+  primaryAction = { label: 'Browse listings', href: '#listings' },
+  secondaryAction = { label: 'See how it works', href: '#insights', variant: 'secondary' },
+  stats = [
+    { label: 'Verified listings', value: '2,845', helper: 'Reviewed weekly' },
+    { label: 'Categories', value: '64', helper: 'Expanding monthly' },
+    { label: 'Avg. PageSpeed', value: '98', helper: 'on real hardware' },
+  ],
+  highlights = [
+    'Powered by Astro SSR + streaming islands.',
+    'Composable filters for categories, locations, and scores.',
+    'Admin workflow with audit trails & moderation cues.',
+  ],
+} = Astro.props;
+
+const resolveVariantClass = (variant: ActionLink['variant']) =>
+  variant === 'secondary'
+    ? 'border border-white/30 bg-transparent text-white hover:border-emerald-400'
+    : 'bg-emerald-400 text-slate-950 hover:bg-emerald-300';
+---
+
+<section class="grid gap-10 rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900/70 via-slate-900/40 to-slate-900/20 p-8 shadow-2xl shadow-black/30 lg:grid-cols-2">
+  <div class="space-y-6">
+    <p class="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-300">{eyebrow}</p>
+    <h1 class="text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+      {title}
+    </h1>
+    <p class="text-lg text-slate-300 md:text-xl">
+      {description}
+    </p>
+    <div class="flex flex-wrap gap-3">
+      {[primaryAction, secondaryAction].map((action) => (
+        <a
+          href={action.href}
+          aria-label={action.ariaLabel ?? action.label}
+          class={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400 ${resolveVariantClass(
+            action.variant
+          )}`}
+        >
+          {action.label}
+        </a>
+      ))}
+    </div>
+    <dl class="mt-6 grid gap-6 sm:grid-cols-3">
+      {stats.map((stat) => (
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center shadow-inner shadow-black/20">
+          <dt class="text-sm uppercase tracking-[0.2em] text-slate-400">{stat.label}</dt>
+          <dd class="mt-1 text-3xl font-semibold text-white">{stat.value}</dd>
+          {stat.helper && <p class="text-xs text-slate-400">{stat.helper}</p>}
+        </div>
+      ))}
+    </dl>
+  </div>
+  <div class="glass-panel flex flex-col justify-between border border-white/10 p-6">
+    <div class="space-y-4">
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">Why teams choose us</p>
+      <ul class="space-y-3 text-sm text-slate-200">
+        {highlights.map((highlight) => (
+          <li class="flex items-start gap-3">
+            <span class="mt-1 inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-400 shadow shadow-emerald-300"></span>
+            <span>{highlight}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100">
+      <p class="font-semibold text-emerald-200">Fully accessible by default</p>
+      <p class="mt-1 text-emerald-100">
+        Every component ships with semantic HTML, focus states, reduced motion guardrails, and WCAG AA color contrast.
+      </p>
+    </div>
+  </div>
+</section>

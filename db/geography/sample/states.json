@@ -1,0 +1,35 @@
+[
+  {
+    "id": 3930,
+    "name": "New York",
+    "country_id": 233,
+    "country_code": "US",
+    "country_name": "United States",
+    "state_code": "NY",
+    "type": "state",
+    "latitude": "43.29942850",
+    "longitude": "-74.21793260"
+  },
+  {
+    "id": 3876,
+    "name": "California",
+    "country_id": 233,
+    "country_code": "US",
+    "country_name": "United States",
+    "state_code": "CA",
+    "type": "state",
+    "latitude": "36.77826100",
+    "longitude": "-119.41793240"
+  },
+  {
+    "id": 1108,
+    "name": "Ontario",
+    "country_id": 39,
+    "country_code": "CA",
+    "country_name": "Canada",
+    "state_code": "ON",
+    "type": "province",
+    "latitude": "51.25377500",
+    "longitude": "-85.32321390"
+  }
+]

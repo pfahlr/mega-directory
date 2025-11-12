@@ -1,0 +1,77 @@
+{
+  "$schema": "./config/targets.schema.json",
+  "api_targets": [
+    {
+      "name": "dev",
+      "endpoint": "http://localhost:3001/v1/crawler/listings",
+      "token": "dev-token"
+    },
+    {
+      "name": "prod",
+      "endpoint": "https://api.yourdomain.com/v1/crawler/listings",
+      "token": "prod-token"
+    }
+  ],
+  "post_processing": {
+    "summary_max_chars": 240,
+    "summary": {
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "prompt_template": "Summarize {{ title }} in {{ location }} using {{ snippet }}."
+    }
+  },
+  "targets": [
+    {
+      "category": "Real Estate",
+      "locations": ["New York", "San Francisco"],
+      "subdomain": "realestate.local",
+      "keywords": ["ocean view", "downtown"],
+      "address_selectors": {
+        "addressLine1": ".listing-address .line1",
+        "city": ".listing-address .city",
+        "region": ".listing-address .region"
+      },
+      "address_patterns": [
+        {
+          "pattern": "(?P<city>[A-Za-z\\s]+),\\s*(?P<region>[A-Z]{2})"
+        }
+      ],
+      "category_rules": [
+        {
+          "slug": "real-estate-agents",
+          "selector": ".badge-agent"
+        },
+        {
+          "slug": "property-managers",
+          "pattern": "Property Management",
+          "flags": "i"
+        }
+      ],
+      "category_classifier": {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+        "prompt_template": "Choose {{ tokens.category_choices }} for {{ listing.title }} near {{ location }}.",
+        "choices": ["real-estate", "property-management"]
+      },
+      "listings_per_location": 50,
+      "post_processing": {
+        "normalize_titles": true,
+        "description": {
+          "provider": "openai",
+          "model": "gpt-4o-mini",
+          "prompt_template": "Write a persuasive description for {{ title }} serving {{ location }}. Context: {{ snippet }}."
+        }
+      },
+      "fields": {
+        "title": { "source": "scrape" },
+        "price": { "source": "scrape" },
+        "description": {
+          "source": "ai",
+          "provider": "openai",
+          "model": "gpt-4",
+          "prompt_template": "Write a friendly listing description for a {{ category }} in {{ location }}. Details: {{ details }}."
+        }
+      }
+    }
+  ]
+}

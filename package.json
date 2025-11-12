@@ -1,0 +1,14 @@
+{
+  "name": "mega-directory",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test:root && npm run test:workspaces",
+    "test:root": "node --test tests/**/*.test.js",
+    "test:workspaces": "npm run test --workspaces --if-present"
+  }
+}

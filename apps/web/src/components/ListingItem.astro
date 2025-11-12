@@ -1,0 +1,77 @@
+---
+interface Listing {
+  link_text: string;
+  uri: string;
+  description_short: string;
+  description_long?: string;
+  score?: number;
+  badges?: string[];
+  category?: string;
+  location?: string;
+  slug?: string;
+}
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
+const { listing }: { listing: Listing } = Astro.props;
+const headingId = `listing-${listing.slug ?? slugify(listing.link_text)}`;
+const badges = listing.badges ?? [];
+const hasMeta = Boolean(listing.category || listing.location);
+---
+
+<li>
+  <article class="card-surface flex flex-col gap-4 p-5" aria-labelledby={headingId}>
+    <header class="flex flex-wrap items-center gap-4">
+      <div class="min-w-0 flex-1">
+        {listing.category && (
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{listing.category}</p>
+        )}
+        <a
+          id={headingId}
+          class="mt-1 block text-lg font-semibold text-white transition hover:text-emerald-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+          href={listing.uri}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {listing.link_text}
+        </a>
+      </div>
+      {typeof listing.score === 'number' && (
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Score</p>
+          <p class="text-3xl font-semibold text-emerald-300">{listing.score}</p>
+        </div>
+      )}
+    </header>
+    <p class="text-sm text-slate-300">{listing.description_long ?? listing.description_short}</p>
+    {hasMeta && (
+      <dl class="flex flex-wrap gap-6 text-xs text-slate-400">
+        {listing.location && (
+          <div>
+            <dt class="uppercase tracking-[0.3em]">Location</dt>
+            <dd class="text-white">{listing.location}</dd>
+          </div>
+        )}
+        {listing.category && (
+          <div>
+            <dt class="uppercase tracking-[0.3em]">Category</dt>
+            <dd class="text-white">{listing.category}</dd>
+          </div>
+        )}
+      </dl>
+    )}
+    {badges.length > 0 && (
+      <div class="flex flex-wrap gap-2">
+        {badges.map((badge) => (
+          <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+            {badge}
+          </span>
+        ))}
+      </div>
+    )}
+  </article>
+</li>

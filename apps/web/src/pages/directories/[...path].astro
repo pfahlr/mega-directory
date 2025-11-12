@@ -1,0 +1,88 @@
+---
+import DirectoryPage from '../../components/DirectoryPage.astro';
+import { fetchDirectoryCatalog, fetchDirectoryBySlug } from '../../data/directory-service.js';
+import {
+  buildDirectoryRouteConfig,
+  buildDirectorySubcategories,
+  buildSubcategoryFilterNav,
+  filterListingsBySubcategory,
+  getDirectorySubdirectorySlug,
+  segmentFeaturedListings,
+  sortListingsByScore,
+} from '../../lib/directory-helpers.js';
+
+export async function getStaticPaths() {
+  const directories = await fetchDirectoryCatalog();
+  return directories.flatMap((directory) => {
+    const baseSlug = getDirectorySubdirectorySlug(directory);
+    const subcategoryEntries = buildDirectorySubcategories(directory).map((subcategory) => ({
+      params: { path: `${baseSlug}/${subcategory.slug}` },
+      props: { directorySlug: directory.slug, subcategorySlug: subcategory.slug },
+    }));
+
+    return [
+      {
+        params: { path: baseSlug },
+        props: { directorySlug: directory.slug },
+      },
+      ...subcategoryEntries,
+    ];
+  });
+}
+
+const { directorySlug, subcategorySlug = null } = Astro.props;
+const directory = await fetchDirectoryBySlug(directorySlug);
+
+if (!directory) {
+  throw new Error(`Directory not found for slug "${directorySlug}"`);
+}
+
+const hydratedDirectory = {
+  ...directory,
+  routes: buildDirectoryRouteConfig(directory),
+};
+
+const sortedListings = sortListingsByScore(directory.listings ?? []);
+const filteredListings = filterListingsBySubcategory(sortedListings, subcategorySlug);
+const filteredDirectory = { ...hydratedDirectory, listings: filteredListings };
+const { hero: featuredHero, tierTwo: featuredTierTwo, remainingListings } =
+  segmentFeaturedListings(filteredDirectory);
+
+const averageScore =
+  sortedListings.length === 0
+    ? '0.0'
+    : (
+        sortedListings.reduce(
+          (sum, listing) => sum + (typeof listing.score === 'number' ? listing.score : 0),
+          0,
+        ) / sortedListings.length
+      ).toFixed(1);
+
+const navItems = [
+  { href: '#hero', label: 'Overview' },
+  { href: '#listings', label: 'Listings' },
+  { href: '#review-notes', label: 'Notes' },
+];
+
+const heroStats = [
+  { label: 'Listings live', value: sortedListings.length },
+  { label: 'Avg score', value: averageScore },
+  { label: 'Coverage', value: directory.stats?.coverage ?? directory.location.name },
+  { label: 'Response SLA', value: directory.stats?.responseSla ?? '—' },
+];
+
+const subcategoryNav = buildSubcategoryFilterNav(hydratedDirectory, subcategorySlug);
+---
+
+<DirectoryPage
+  directory={hydratedDirectory}
+  navItems={navItems}
+  heroStats={heroStats}
+  featuredHero={featuredHero}
+  featuredTierTwo={featuredTierTwo}
+  listings={remainingListings}
+  mapListings={filteredListings}
+  totalListings={sortedListings.length}
+  subcategoryNav={subcategoryNav}
+  subcategorySlug={subcategorySlug}
+/>

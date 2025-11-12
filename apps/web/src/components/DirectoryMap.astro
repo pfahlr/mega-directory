@@ -1,0 +1,301 @@
+---
+const {
+  pins = [],
+  directoryName = 'Directory map',
+  locationName = '',
+  directorySlug = 'directory',
+  mapId = `directory-map-${directorySlug}`,
+  initialSlug = pins[0]?.slug ?? null,
+  description =
+    'Pins represent current listings with valid coordinates. Use the controls below to export or navigate.',
+} = Astro.props;
+
+const hasPins = Array.isArray(pins) && pins.length > 0;
+const safePins = hasPins ? pins : [];
+const serializedPins = JSON.stringify(safePins).replace(/</g, '\\u003c');
+const defaultInitialSlug = initialSlug ?? (safePins[0]?.slug ?? '');
+const fileStem = `${directorySlug || 'directory'}-map`;
+const toolbarLabel = `Map controls for ${directoryName}`;
+---
+
+{hasPins && (
+  <>
+    <section class="directory-map card-surface space-y-4 p-5" data-map-container={mapId}>
+      <header class="flex flex-col gap-1">
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Interactive map</p>
+        <h2 class="text-xl font-semibold text-white">{directoryName}</h2>
+        <p class="text-sm text-slate-400">{locationName || 'Location-aware listings plotted by latitude/longitude.'}</p>
+      </header>
+      <div
+        id={mapId}
+        class="directory-map__canvas"
+        role="presentation"
+        data-pins={serializedPins}
+        data-initial-slug={defaultInitialSlug}
+        data-file-stem={fileStem}
+      ></div>
+      <div class="directory-map__status" data-map-active>
+        <p class="text-sm text-slate-200">
+          <span data-map-active-name>{safePins[0]?.name ?? 'Select a listing to preview coordinates'}</span>
+        </p>
+        <p class="text-xs text-slate-500" data-map-active-location>
+          {safePins[0]?.locationLabel ?? description}
+        </p>
+      </div>
+      <div class="directory-map__toolbar" aria-label={toolbarLabel}>
+        <p class="text-xs text-slate-400">
+          {description}
+        </p>
+        <div class="flex flex-wrap gap-3" data-map-actions>
+          <button
+            type="button"
+            class="map-action-button"
+            data-map-action="csv"
+          >
+            Export CSV
+          </button>
+          <button
+            type="button"
+            class="map-action-button"
+            data-map-action="gpx"
+          >
+            Export GPX
+          </button>
+          <button
+            type="button"
+            class="map-action-button map-action-button--accent"
+            data-map-action="nav"
+          >
+            Open in maps
+          </button>
+        </div>
+      </div>
+    </section>
+    <script type="module" is:inline>
+      const mapId = {JSON.stringify(mapId)};
+      const mapElement = document.getElementById(mapId);
+      if (!mapElement || mapElement.dataset.initialized) {
+        return;
+      }
+
+      mapElement.dataset.initialized = 'true';
+      const pins = (() => {
+        try {
+          return JSON.parse(mapElement.dataset.pins || '[]');
+        } catch {
+          return [];
+        }
+      })();
+
+      if (!pins.length) {
+        return;
+      }
+
+      const initialSlug = mapElement.dataset.initialSlug || pins[0]?.slug;
+      const container = mapElement.closest('[data-map-container]');
+      const activeNameEl = container?.querySelector('[data-map-active-name]');
+      const activeLocationEl = container?.querySelector('[data-map-active-location]');
+      const actionButtons = Array.from(
+        container?.querySelectorAll('[data-map-action]') ?? []
+      );
+      const focusButtons = Array.from(
+        document.querySelectorAll(`[data-map-focus="${mapId}"]`)
+      );
+
+      const svgPin = (fill = '#14b8a6') =>
+        `data:image/svg+xml;utf8,${encodeURIComponent(
+          `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 2C10.149 2 5.354 6.795 5.354 12.646c0 7.567 9.075 16.534 10.046 17.459a1 1 0 0 0 1.4 0c0.971-.925 10.046-9.892 10.046-17.459C26.646 6.795 21.851 2 16 2Zm0 14.875a5.042 5.042 0 1 1 0-10.084 5.042 5.042 0 0 1 0 10.084Z" fill="${fill}"/></svg>`
+        )}`;
+
+      const modules = await Promise.all([
+        import('https://cdn.skypack.dev/ol/Map.js'),
+        import('https://cdn.skypack.dev/ol/View.js'),
+        import('https://cdn.skypack.dev/ol/layer/Tile.js'),
+        import('https://cdn.skypack.dev/ol/source/XYZ.js'),
+        import('https://cdn.skypack.dev/ol/layer/Vector.js'),
+        import('https://cdn.skypack.dev/ol/source/Vector.js'),
+        import('https://cdn.skypack.dev/ol/Feature.js'),
+        import('https://cdn.skypack.dev/ol/geom/Point.js'),
+        import('https://cdn.skypack.dev/ol/style/Icon.js'),
+        import('https://cdn.skypack.dev/ol/style/Style.js'),
+        import('https://cdn.skypack.dev/ol/proj.js'),
+      ]);
+
+      const [{ default: Map }, { default: View }, { default: TileLayer }, { default: XYZ }, { default: VectorLayer }, { default: VectorSource }, { default: Feature }, { default: Point }, { default: Icon }, { default: Style }, proj] = modules;
+      const { fromLonLat } = proj;
+
+      const defaultStyle = new Style({
+        image: new Icon({ src: svgPin('#14b8a6'), imgSize: [32, 32], anchor: [0.5, 1] }),
+      });
+      const activeStyle = new Style({
+        image: new Icon({ src: svgPin('#34d399'), imgSize: [34, 34], anchor: [0.5, 1] }),
+      });
+
+      const features = pins.map((pin) => {
+        const feature = new Feature({
+          geometry: new Point(fromLonLat([pin.longitude, pin.latitude])),
+        });
+        feature.setId(pin.slug);
+        return feature;
+      });
+
+      const vectorLayer = new VectorLayer({
+        source: new VectorSource({ features }),
+      });
+
+      const map = new Map({
+        target: mapElement,
+        layers: [
+          new TileLayer({
+            source: new XYZ({
+              url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              attributions: '© OpenStreetMap contributors',
+            }),
+          }),
+          vectorLayer,
+        ],
+        view: new View({
+          center: fromLonLat([pins[0].longitude, pins[0].latitude]),
+          zoom: 11,
+        }),
+      });
+
+      let activeSlug = initialSlug;
+
+      const findPin = (slug) => pins.find((pin) => pin.slug === slug);
+      const updateActiveDetails = (pin) => {
+        if (!pin) {
+          return;
+        }
+        if (activeNameEl) {
+          activeNameEl.textContent = pin.name;
+        }
+        if (activeLocationEl) {
+          activeLocationEl.textContent = pin.locationLabel || `${pin.latitude}, ${pin.longitude}`;
+        }
+      };
+
+      const applyFeatureStyles = () => {
+        vectorLayer.getSource().getFeatures().forEach((feature) => {
+          feature.setStyle(feature.getId() === activeSlug ? activeStyle : defaultStyle);
+        });
+      };
+
+      const focusListing = (slug) => {
+        const pin = findPin(slug);
+        if (!pin) {
+          return;
+        }
+        activeSlug = slug;
+        updateActiveDetails(pin);
+        applyFeatureStyles();
+        map.getView().animate({
+          center: fromLonLat([pin.longitude, pin.latitude]),
+          duration: 300,
+          zoom: Math.max(map.getView().getZoom(), 12),
+        });
+      };
+
+      map.on('click', (event) => {
+        map.forEachFeatureAtPixel(event.pixel, (feature) => {
+          const slug = feature.getId();
+          if (slug) {
+            focusListing(slug);
+          }
+        });
+      });
+
+      focusButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const slug = button.getAttribute('data-map-slug');
+          if (slug) {
+            focusListing(slug);
+          }
+        });
+      });
+
+      const toCsvValue = (value) => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+        const stringValue = String(value);
+        return /[",\n]/.test(stringValue) ? `"${stringValue.replace(/"/g, '""')}"` : stringValue;
+      };
+
+      const exportCsv = () => {
+        const header = ['name', 'latitude', 'longitude', 'location', 'summary', 'url', 'rank', 'score'];
+        const rows = pins.map((pin) =>
+          [
+            pin.name,
+            pin.latitude,
+            pin.longitude,
+            pin.locationLabel ?? '',
+            pin.summary ?? '',
+            pin.url ?? '',
+            pin.rank ?? '',
+            pin.score ?? '',
+          ].map(toCsvValue).join(',')
+        );
+        const blob = new Blob([header.join(',') + '\n' + rows.join('\n')], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `${mapElement.dataset.fileStem || 'directory-map'}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      };
+
+      const escapeXml = (value = '') =>
+        String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+
+      const exportGpx = () => {
+        const wpts = pins
+          .map(
+            (pin) =>
+              `  <wpt lat="${pin.latitude}" lon="${pin.longitude}">\n    <name>${escapeXml(pin.name)}</name>\n    <desc>${escapeXml(pin.summary ?? pin.locationLabel ?? '')}</desc>\n  </wpt>`
+          )
+          .join('\n');
+        const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Mega Directory">\n${wpts}\n</gpx>`;
+        const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `${mapElement.dataset.fileStem || 'directory-map'}.gpx`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      };
+
+      const openNavigation = () => {
+        const pin = findPin(activeSlug) ?? pins[0];
+        if (!pin) {
+          return;
+        }
+        const destination = encodeURIComponent(`${pin.latitude},${pin.longitude}`);
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      };
+
+      actionButtons.forEach((button) => {
+        const action = button.getAttribute('data-map-action');
+        if (action === 'csv') {
+          button.addEventListener('click', exportCsv);
+        } else if (action === 'gpx') {
+          button.addEventListener('click', exportGpx);
+        } else if (action === 'nav') {
+          button.addEventListener('click', openNavigation);
+        }
+      });
+
+      focusListing(activeSlug);
+    </script>
+  </>
+)}

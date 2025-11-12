@@ -1,0 +1,31 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#0b2c2c" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" rx="48" />
+  <g fill="none" stroke="url(#accent)" stroke-width="2" opacity="0.4">
+    <circle cx="200" cy="120" r="90" />
+    <circle cx="1030" cy="540" r="110" />
+    <circle cx="320" cy="470" r="70" />
+  </g>
+  <text x="120" y="230" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="56" fill="#a5f3fc" letter-spacing="0.05em">
+    MEGA DIRECTORY
+  </text>
+  <text x="120" y="320" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="96" font-weight="600" fill="#e2e8f0">
+    Human-Reviewed Listings
+  </text>
+  <text x="120" y="390" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="32" fill="#cbd5f5">
+    Subdomain + subdirectory routing with ADA-first layouts
+  </text>
+  <text x="120" y="460" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" fill="#94a3b8">
+    astro · tailwindcss · express api · prisma
+  </text>
+</svg>

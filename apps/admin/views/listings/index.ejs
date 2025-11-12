@@ -1,0 +1,143 @@
+<%- include('../partials/page-start', { title: 'Listing Review', active: 'listings' }) %>
+<%
+  const pageData = pagination || {
+    totalItems: listings.length,
+    start: listings.length ? 1 : 0,
+    end: listings.length,
+    page: 1,
+    totalPages: 1,
+    hasPrevious: false,
+    hasNext: false,
+    previousPage: null,
+    nextPage: null
+  };
+%>
+<section class="panel stack gap-md listing-review">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Moderation</p>
+      <h2>Review incoming listings</h2>
+      <p class="muted">Edit listing details, capture manual notes, and choose whether to approve or deactivate each entry.</p>
+    </div>
+    <div class="badge">Pending <strong><%= pageData.totalItems %></strong></div>
+  </header>
+
+  <% if (typeof savedCount === 'number') { %>
+    <div class="alert success">Saved <strong><%= savedCount %></strong> listing<%= savedCount === 1 ? '' : 's' %> just now.</div>
+  <% } %>
+
+  <% if (!pageData.totalItems) { %>
+    <p class="empty-state">No listings need attention. Check back after the crawler runs.</p>
+  <% } else { %>
+    <form method="POST" action="/listings" class="stack gap-lg">
+      <input type="hidden" name="page" value="<%= pageData.page %>" />
+
+      <div class="stack gap-md">
+        <div class="pagination-bar">
+          <p>
+            Showing <strong><%= pageData.start %>–<%= pageData.end %></strong> of
+            <strong><%= pageData.totalItems %></strong> pending listings
+          </p>
+          <div class="pagination-bar__controls">
+            <% if (pageData.hasPrevious) { %>
+              <a class="btn secondary" href="/listings?page=<%= pageData.previousPage %>">Previous</a>
+            <% } else { %>
+              <span class="btn secondary is-disabled" aria-disabled="true">Previous</span>
+            <% } %>
+            <% if (pageData.hasNext) { %>
+              <a class="btn secondary" href="/listings?page=<%= pageData.nextPage %>">Next</a>
+            <% } else { %>
+              <span class="btn secondary is-disabled" aria-disabled="true">Next</span>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="listing-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-action">Save</th>
+                <th scope="col" class="col-action">Deactivate</th>
+                <th scope="col">Listing details</th>
+                <th scope="col">Moderator notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% listings.forEach((listing, index) => { %>
+                <% const submittedLabel = listing.submittedAt ? new Date(listing.submittedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'; %>
+                <% const updatedLabel = listing.lastUpdated ? new Date(listing.lastUpdated).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'; %>
+                <tr>
+                  <td class="table-checkbox">
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="listings[<%= index %>][save]" value="1" <%= listing.status === 'approved' ? 'checked' : '' %> />
+                      <span class="sr-only">Mark <%= listing.businessName %> for approval</span>
+                    </label>
+                  </td>
+                  <td class="table-checkbox">
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="listings[<%= index %>][deactivate]" value="1" <%= listing.status === 'deactivated' ? 'checked' : '' %> />
+                      <span class="sr-only">Deactivate <%= listing.businessName %></span>
+                    </label>
+                  </td>
+                  <td class="listing-table__details">
+                    <input type="hidden" name="listings[<%= index %>][id]" value="<%= listing.id %>" />
+                    <div class="listing-table__fields stack gap-sm">
+                      <label class="field-label">Business name
+                        <input class="field-control" type="text" name="listings[<%= index %>][businessName]" value="<%= listing.businessName %>" />
+                      </label>
+                      <label class="field-label">Website URL
+                        <input class="field-control" type="url" name="listings[<%= index %>][website]" value="<%= listing.website %>" placeholder="https://example.com" />
+                      </label>
+                    </div>
+                    <div class="listing-table__meta">
+                      <p class="eyebrow"><%= listing.category %> • <%= listing.location %></p>
+                      <p class="muted">Status <strong class="status-label"><%= listing.status %></strong></p>
+                      <p class="muted">Phone <strong><%= listing.phone %></strong></p>
+                      <p class="muted">Quality score <strong><%= listing.score %>/100</strong> • Source <strong><%= listing.source %></strong></p>
+                      <p class="muted">Submitted <strong><%= submittedLabel %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
+                    </div>
+                    <p class="summary"><%= listing.summary %></p>
+                  </td>
+                  <td class="listing-table__notes">
+                    <label class="field-label sr-only" for="notes-<%= listing.id %>">Moderator notes</label>
+                    <textarea
+                      id="notes-<%= listing.id %>"
+                      class="field-control"
+                      name="listings[<%= index %>][notes]"
+                      rows="4"
+                      placeholder="Add verification notes or follow-ups"><%= listing.notes %></textarea>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <p>
+            Showing <strong><%= pageData.start %>–<%= pageData.end %></strong> of
+            <strong><%= pageData.totalItems %></strong> pending listings
+          </p>
+          <div class="pagination-bar__controls">
+            <% if (pageData.hasPrevious) { %>
+              <a class="btn secondary" href="/listings?page=<%= pageData.previousPage %>">Previous</a>
+            <% } else { %>
+              <span class="btn secondary is-disabled" aria-disabled="true">Previous</span>
+            <% } %>
+            <% if (pageData.hasNext) { %>
+              <a class="btn secondary" href="/listings?page=<%= pageData.nextPage %>">Next</a>
+            <% } else { %>
+              <span class="btn secondary is-disabled" aria-disabled="true">Next</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Save changes</button>
+        <p class="muted">Changes persist in memory for this demo app.</p>
+      </div>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/page-end') %>

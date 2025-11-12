@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import HeroSection from '../components/HeroSection.astro';
+import ListingItem from '../components/ListingItem.astro';
+
+const featuredListings = [
+  {
+    link_text: 'Northwind Coffee Roasters',
+    uri: 'https://example.com/northwind',
+    description_short: 'Solar-powered roastery shipping to 38 states with zero-waste packaging.',
+    description_long:
+      'Certified organic beans, flexible wholesale programs, and an ADA-compliant tasting room that doubles as a community studio.',
+    score: 97,
+    badges: ['Carbon neutral', 'Wholesale ready', 'Local pickup'],
+    category: 'Food & Beverage',
+    location: 'Portland, OR',
+    slug: 'northwind-coffee',
+  },
+  {
+    link_text: 'FieldNotes Therapy Collective',
+    uri: 'https://example.com/fieldnotes',
+    description_short: 'Trauma-informed therapists specializing in remote-first care.',
+    description_long:
+      'Hybrid practice with multilingual staff, asynchronous intake, and transparent pricing curated for startups and schools.',
+    score: 94,
+    badges: ['Virtual sessions', 'Sliding scale', 'HIPAA compliant'],
+    category: 'Health & Wellness',
+    location: 'Chicago, IL',
+    slug: 'fieldnotes-therapy',
+  },
+  {
+    link_text: 'Arcadia Creative Studios',
+    uri: 'https://example.com/arcadia',
+    description_short: 'Boutique brand studio with inclusive workshops for community teams.',
+    description_long:
+      'Delivers identity systems, accessible design systems, and fractional art direction with transparent sprint-based billing.',
+    score: 92,
+    badges: ['Brand systems', 'Workshop facilitation', 'Accessibility audits'],
+    category: 'Creative Agencies',
+    location: 'Austin, TX',
+    slug: 'arcadia-creative',
+  },
+];
+
+const categories = [
+  {
+    icon: '🍳',
+    name: 'Food & Beverage',
+    description: 'Restaurants, roasters, caterers, and CPG teams championing sustainable menus.',
+    listings: 428,
+    slug: 'food-beverage',
+  },
+  {
+    icon: '🧘',
+    name: 'Health & Wellness',
+    description: 'Therapists, fitness collectives, clinics, and mobile care.',
+    listings: 362,
+    slug: 'health-wellness',
+  },
+  {
+    icon: '💡',
+    name: 'Creative Agencies',
+    description: 'Studios delivering identity, product, and growth campaigns.',
+    listings: 515,
+    slug: 'creative-agencies',
+  },
+  {
+    icon: '🌱',
+    name: 'Sustainability',
+    description: 'Climate, clean-tech, circular economy, and agritech pioneers.',
+    listings: 295,
+    slug: 'sustainability',
+  },
+];
+
+const insightCards = [
+  {
+    title: 'Scored with context',
+    body: 'We combine Lighthouse data, manual QA, and reviewer notes so you know why a listing ranks.',
+  },
+  {
+    title: 'Composable filters',
+    body: 'Filter by location, accessibility tags, tokens-per-field, or bring your own weights via the API.',
+  },
+  {
+    title: 'LLM-ready payloads',
+    body: 'Schema-rich responses make it easy to drop listings into chat workflows without extra prompting.',
+  },
+];
+---
+
+<BaseLayout title="Mega Directory">
+  <HeroSection />
+
+  <section id="listings" class="space-y-6">
+    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">Featured</p>
+        <h2 class="text-2xl font-semibold text-white">High-intent listings curated weekly</h2>
+        <p class="text-sm text-slate-400">
+          Human-reviewed businesses that also pass automated QA, ADA, and SEO checks.
+        </p>
+      </div>
+      <a
+        class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:border-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+        href="/directories"
+      >
+        View full directory
+      </a>
+    </div>
+    <ol class="grid gap-6 md:grid-cols-2" role="list">
+      {featuredListings.map((listing) => (
+        <ListingItem listing={listing} />
+      ))}
+    </ol>
+  </section>
+
+  <section id="categories" class="space-y-6">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">Browse</p>
+      <h2 class="text-2xl font-semibold text-white">Categories with editorial guardrails</h2>
+      <p class="text-sm text-slate-400">
+        Each category includes SEO metadata, admin workflows, and webhook-friendly payloads.
+      </p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      {categories.map((category) => (
+        <CategoryCard category={category} />
+      ))}
+    </div>
+  </section>
+
+  <section id="insights" class="space-y-6">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">Insights</p>
+      <h2 class="text-2xl font-semibold text-white">Built for operations and automation</h2>
+      <p class="text-sm text-slate-400">
+        Combine crawler data with the admin app or pipe everything through the API server.
+      </p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-3">
+      {insightCards.map((card) => (
+        <article class="card-surface flex h-full flex-col gap-3 p-5">
+          <h3 class="text-lg font-semibold text-white">{card.title}</h3>
+          <p class="text-sm text-slate-300">{card.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
