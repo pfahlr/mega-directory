@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type RequestHandler, type Response } from 'express';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { DEFAULT_PORTS, PROJECT_NAME } from '@mega-directory/config';
+import directoryCatalog from '@mega-directory/directory-data';
 import { geocodeListingLocation, type GeocodingAddress } from './geocoding';
 import { createLogger, createRequestLogger, type Logger } from './logger';
 
@@ -84,6 +85,21 @@ interface ListingAddressRecord {
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+interface ListingReviewEntry {
+  index: number;
+  id: number;
+  businessName?: string;
+  website?: NullableString;
+  notes?: NullableString;
+  status?: ListingStatus;
+}
+
+interface ListingReviewFailure {
+  index: number;
+  id?: number;
+  reason: string;
 }
 
 interface CategoryRecord {
@@ -282,6 +298,26 @@ export function createServer(options: CreateServerOptions = {}): Express {
   });
 
   app.post('/v1/crawler/listings', crawlerAuth, createListingIngestionHandler(app));
+
+  app.get('/v1/directories', (_req, res) => {
+    res.json({ data: directoryCatalog });
+  });
+
+  app.get('/v1/directories/:slug', (req, res) => {
+    const slugParam = sanitizeNullableString(req.params?.slug);
+    if (!slugParam) {
+      return res.status(404).json({ error: 'Directory not found' });
+    }
+    const normalized = slugify(slugParam);
+    const entry =
+      directoryCatalog.find(
+        (record: { slug?: string }) => slugify(record?.slug ?? '') === normalized
+      ) ?? null;
+    if (!entry) {
+      return res.status(404).json({ error: 'Directory not found' });
+    }
+    return res.json({ data: entry });
+  });
 
   registerAdminRoutes(app, adminAuth);
 
@@ -964,6 +1000,60 @@ function registerAdminListingRoutes(app: ExpressApp, adminAuth: RequestHandler) 
     store.addresses = store.addresses.filter((address) => address.listingId !== listingId);
     return res.status(204).json({});
   });
+
+  app.post('/v1/admin/listings/review', adminAuth, (req: Request, res: Response) => {
+    if (!isPlainObject(req.body) || !Array.isArray(req.body.listings)) {
+      return res.status(400).json({
+        error: 'Invalid payload',
+        details: ['listings must be an array']
+      });
+    }
+    const store = getAppLocals(app).adminStore;
+    let delivered = 0;
+    const failures: ListingReviewFailure[] = [];
+
+    req.body.listings.forEach((entry: unknown, index: number) => {
+      const normalized = normalizeListingReviewEntry(entry, index);
+      if ('errors' in normalized) {
+        failures.push({
+          index,
+          reason: normalized.errors.join('; ')
+        });
+        return;
+      }
+
+      const record = normalized.record;
+      const listing = store.listings.find((candidate) => candidate.id === record.id);
+      if (!listing) {
+        failures.push({ index, id: record.id, reason: 'Listing not found' });
+        return;
+      }
+
+      if (record.businessName) {
+        listing.title = record.businessName;
+      }
+      if (Object.prototype.hasOwnProperty.call(record, 'website')) {
+        listing.websiteUrl = record.website ?? null;
+      }
+      if (Object.prototype.hasOwnProperty.call(record, 'notes')) {
+        listing.notes = record.notes ?? null;
+      }
+      if (record.status) {
+        listing.status = record.status;
+      }
+
+      listing.updatedAt = new Date().toISOString();
+      delivered += 1;
+    });
+
+    return res.json({
+      data: {
+        delivered,
+        skipped: failures.length,
+        failures
+      }
+    });
+  });
 }
 
 function registerAdminAddressRoutes(app: ExpressApp, adminAuth: RequestHandler) {
@@ -1418,6 +1508,93 @@ function validateAdminListingPayload(payload: unknown, mode: ListingPayloadMode)
 }
 
 type DirectoryPayloadMode = 'create' | 'update';
+
+type ListingReviewNormalizationResult =
+  | { record: ListingReviewEntry }
+  | { errors: string[] };
+
+function normalizeListingReviewEntry(
+  entry: unknown,
+  index: number
+): ListingReviewNormalizationResult {
+  if (!isPlainObject(entry)) {
+    return { errors: [`listings[${index}] must be an object`] };
+  }
+
+  const errors: string[] = [];
+  const id = parseIdParam(entry.id);
+  if (!id) {
+    errors.push(`listings[${index}].id must be a positive integer`);
+  }
+
+  let businessName: string | undefined;
+  if (entry.businessName !== undefined) {
+    const normalized = sanitizeNullableString(entry.businessName);
+    if (!normalized) {
+      errors.push(`listings[${index}].businessName must be a non-empty string`);
+    } else {
+      businessName = normalized;
+    }
+  }
+
+  let website: NullableString | undefined;
+  if (entry.website !== undefined || entry.websiteUrl !== undefined) {
+    const source = entry.website !== undefined ? entry.website : entry.websiteUrl;
+    if (source === null) {
+      website = null;
+    } else if (typeof source === 'string') {
+      const trimmed = source.trim();
+      website = trimmed ? trimmed : null;
+    } else {
+      errors.push(`listings[${index}].website must be a string`);
+    }
+  }
+
+  let notes: NullableString | undefined;
+  if (entry.notes !== undefined) {
+    if (entry.notes === null) {
+      notes = null;
+    } else if (typeof entry.notes === 'string') {
+      notes = entry.notes.trim() ? entry.notes.trim() : null;
+    } else {
+      errors.push(`listings[${index}].notes must be a string`);
+    }
+  }
+
+  let status: ListingStatus | undefined;
+  if (entry.status !== undefined) {
+    const normalizedStatus = sanitizeListingStatus(entry.status);
+    if (!normalizedStatus) {
+      errors.push(`listings[${index}].status is invalid`);
+    } else {
+      status = normalizedStatus;
+    }
+  }
+
+  if (errors.length > 0) {
+    return { errors };
+  }
+
+  const record: ListingReviewEntry = {
+    index,
+    id: id!
+  };
+
+  if (businessName !== undefined) {
+    record.businessName = businessName;
+  }
+  if (website !== undefined) {
+    record.website = website;
+  }
+  if (notes !== undefined) {
+    record.notes = notes;
+  }
+  if (status !== undefined) {
+    record.status = status;
+  }
+
+  return { record };
+}
 
 interface DirectoryPayloadSuccess {
   valid: true;

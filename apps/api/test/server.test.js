@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const jwt = require('jsonwebtoken');
 const { createServer } = require('..');
+const directoryCatalog = require('@mega-directory/directory-data');
 
 const baseConfig = Object.freeze({
   adminJwtSecret: 'test-admin-secret',
@@ -179,6 +180,33 @@ test('health endpoint reports monitoring metadata', async () => {
   assert.ok(typeof res.body.uptime === 'number');
   assert.ok(res.body.timestamp);
   assert.ok(res.body.startedAt);
+});
+
+test('public directory endpoints expose shared catalog data', async () => {
+  const app = createServer(baseConfig);
+
+  const listRoute = findRoute(app, 'get', '/v1/directories');
+  const listRes = await runRoute(listRoute, createRequest(), createResponse());
+
+  assert.strictEqual(listRes.statusCode, 200);
+  assert.ok(Array.isArray(listRes.body.data));
+  assert.ok(listRes.body.data.length > 0);
+
+  const sampleSlug = listRes.body.data[0]?.slug || directoryCatalog[0]?.slug;
+  assert.ok(sampleSlug, 'expected catalog slug');
+
+  const lookupRoute = findRoute(app, 'get', '/v1/directories/:slug');
+  const lookupReq = createRequest();
+  lookupReq.params = { slug: sampleSlug };
+  const lookupRes = await runRoute(lookupRoute, lookupReq, createResponse());
+
+  assert.strictEqual(lookupRes.statusCode, 200);
+  assert.strictEqual(lookupRes.body.data.slug, sampleSlug);
+
+  const missingReq = createRequest();
+  missingReq.params = { slug: 'missing-directory' };
+  const missingRes = await runRoute(lookupRoute, missingReq, createResponse());
+  assert.strictEqual(missingRes.statusCode, 404);
 });
 
 test('admin ping rejects missing token', async () => {
@@ -713,6 +741,83 @@ test('admin listings support nested addresses and propagate to addresses endpoin
     createResponse()
   );
   assert.ok(!addressesAfterDelete.body.data.some((addr) => addr.listingId === createRes.body.data.id));
+});
+
+test('admin listing review endpoint accepts batched updates', async () => {
+  const app = createServer(baseConfig);
+  const token = createAdminToken(baseConfig);
+
+  const listRoute = findRoute(app, 'get', '/v1/admin/listings');
+  const listRes = await runRoute(
+    listRoute,
+    createRequest({ headers: { Authorization: `Bearer ${token}` } }),
+    createResponse()
+  );
+  const target = listRes.body.data[0];
+  assert.ok(target, 'expected at least one seeded listing');
+
+  const reviewRoute = findRoute(app, 'post', '/v1/admin/listings/review');
+  const reviewRes = await runRoute(
+    reviewRoute,
+    createRequest({
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: {
+        listings: [
+          {
+            id: target.id,
+            businessName: 'Nova Electric Co. (Approved)',
+            website: 'https://novaelectric.example.com',
+            notes: 'Looks great',
+            status: 'APPROVED'
+          }
+        ]
+      }
+    }),
+    createResponse()
+  );
+
+  assert.strictEqual(reviewRes.statusCode, 200);
+  assert.strictEqual(reviewRes.body.data.delivered, 1);
+  assert.strictEqual(reviewRes.body.data.skipped, 0);
+  assert.deepStrictEqual(reviewRes.body.data.failures, []);
+
+  const getRoute = findRoute(app, 'get', '/v1/admin/listings/:listingId');
+  const refreshed = await runRoute(
+    getRoute,
+    (() => {
+      const req = createRequest({ headers: { Authorization: `Bearer ${token}` } });
+      req.params = { listingId: String(target.id) };
+      return req;
+    })(),
+    createResponse()
+  );
+
+  assert.strictEqual(refreshed.statusCode, 200);
+  assert.strictEqual(refreshed.body.data.status, 'APPROVED');
+  assert.strictEqual(refreshed.body.data.title, 'Nova Electric Co. (Approved)');
+  assert.strictEqual(refreshed.body.data.websiteUrl, 'https://novaelectric.example.com');
+  assert.strictEqual(refreshed.body.data.notes, 'Looks great');
+});
+
+test('admin listing review endpoint validates payload shape', async () => {
+  const app = createServer(baseConfig);
+  const token = createAdminToken(baseConfig);
+
+  const reviewRoute = findRoute(app, 'post', '/v1/admin/listings/review');
+  const res = await runRoute(
+    reviewRoute,
+    createRequest({
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { listings: 'nope' }
+    }),
+    createResponse()
+  );
+
+  assert.strictEqual(res.statusCode, 400);
+  assert.strictEqual(res.body.error, 'Invalid payload');
+  assert.deepStrictEqual(res.body.details, ['listings must be an array']);
 });
 
 test('admin directories support creation and updates with category validation', async () => {

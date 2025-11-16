@@ -1,0 +1,64 @@
+<%
+  const values = draft || {};
+  const formErr = formErrors || {};
+
+  function fieldHasError(errors, key) {
+    if (!errors) return false;
+    return Boolean(errors[key]);
+  }
+
+  function fieldMessage(errors, key) {
+    if (!errors) return null;
+    return errors[key] || null;
+  }
+
+  function formatTimestamp(value) {
+    if (!value) return 'Unknown';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'Unknown';
+    }
+    return date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+%>
+<%- include('../partials/page-start', { title: title || 'Edit Directory', active }) %>
+<section class="panel stack gap-lg directory-admin">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Directory</p>
+      <h2>Edit <%= directory.title %></h2>
+      <p class="muted">ID <strong>#<%= directory.id %></strong> • Last updated <%= formatTimestamp(directory.updatedAt) %></p>
+    </div>
+    <a href="/directory-pages/manage" class="btn secondary">Back to list</a>
+  </header>
+
+  <% if (typeof savedCount === 'number' && savedCount > 0) { %>
+    <div class="alert success">Saved directory changes.</div>
+  <% } %>
+  <% if (formErr.form) { %>
+    <div class="alert error"><%= formErr.form %></div>
+  <% } %>
+
+  <form method="POST" action="/directory-pages/<%= directory.id %>/edit" class="stack gap-lg">
+    <input type="hidden" name="directory[locationAgnostic]" value="0" />
+    <%- include('./partials/form-fields', {
+      prefix: 'directory',
+      values,
+      errors: formErr,
+      categories,
+      locations,
+      statuses,
+      showStatus: true,
+      helpers: { fieldHasError, fieldMessage }
+    }) %>
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Save changes</button>
+      <p class="muted">Updates apply immediately.</p>
+    </div>
+  </form>
+
+  <form method="POST" action="/directory-pages/<%= directory.id %>/delete" onsubmit="return confirm('Delete this directory?');">
+    <button type="submit" class="btn ghost">Delete directory</button>
+  </form>
+</section>
+<%- include('../partials/page-end') %>

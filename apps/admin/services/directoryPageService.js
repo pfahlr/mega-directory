@@ -1,211 +1,187 @@
-const directoryPages = require('../data/directoryPages');
+const apiClient = require('./apiClient');
 const directoryOptions = require('../data/directoryPageOptions');
 
-const STATUSES = {
-  DRAFT: 'DRAFT',
-  ACTIVE: 'ACTIVE',
-  ARCHIVED: 'ARCHIVED'
-};
+const STATUSES = ['DRAFT', 'ACTIVE', 'ARCHIVED'];
 
-function getDirectoryPages() {
-  return directoryPages.map((page) => ({
-    ...page,
-    categoryLabel: resolveCategory(page.categoryId)?.label ?? 'Unknown category',
-    locationLabel: page.locationAgnostic
-      ? 'Location agnostic'
-      : resolveLocation(page.locationId)?.label ?? 'Unknown location'
-  }));
-}
-
-function getDirectoryOptions() {
+async function getDirectoryOptions() {
+  const categories = await apiClient.fetchCategories();
   return {
-    categories: directoryOptions.categories.slice(),
+    categories: categories.map((category) => ({
+      id: category.id,
+      label: category.name || `Category ${category.id}`
+    })),
     locations: directoryOptions.locations.slice(),
-    statuses: Object.values(STATUSES)
+    statuses: STATUSES.slice()
   };
 }
 
-function createDirectoryPage(payload = {}) {
-  const { record, errors } = normalizePayload(payload, { mode: 'create' });
-  if (hasErrors(errors)) {
-    return { errors };
-  }
-
-  const timestamp = new Date().toISOString();
-  const storedRecord = {
-    ...record,
-    id: record.id || generateId(record.title),
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    status: STATUSES.DRAFT,
-    isActive: false
-  };
-
-  directoryPages.push(storedRecord);
-  return { record: storedRecord, errors: null };
+async function getDirectoryPages() {
+  const [directories, options] = await Promise.all([apiClient.fetchDirectories(), getDirectoryOptions()]);
+  return directories.map((entry) => decorateDirectory(entry, options));
 }
 
-function updateDirectoryPages(updates = []) {
-  if (!Array.isArray(updates) || updates.length === 0) {
-    return { updated: 0, errors: null };
-  }
-
-  let updated = 0;
-  const errorBag = {};
-
-  updates.forEach((payload) => {
-    if (!payload?.id) {
-      return;
-    }
-
-    const record = directoryPages.find((entry) => entry.id === payload.id);
-    if (!record) {
-      return;
-    }
-
-    const { record: nextState, errors } = normalizePayload(payload, {
-      mode: 'update',
-      existingRecord: record
-    });
-
-    if (hasErrors(errors)) {
-      errorBag[record.id] = errors;
-      return;
-    }
-
-    Object.assign(record, nextState);
-
-    if (parseCheckbox(payload.deactivate)) {
-      record.status = STATUSES.ARCHIVED;
-      record.isActive = false;
-    } else if (parseCheckbox(payload.save)) {
-      record.status = STATUSES.ACTIVE;
-      record.isActive = true;
-    }
-
-    record.updatedAt = new Date().toISOString();
-    updated += 1;
-  });
-
-  return {
-    updated,
-    errors: Object.keys(errorBag).length ? errorBag : null
-  };
+async function getDirectoryPage(directoryId) {
+  const [record, options] = await Promise.all([apiClient.fetchDirectory(directoryId), getDirectoryOptions()]);
+  return decorateDirectory(record, options);
 }
 
-function normalizePayload(payload = {}, { mode, existingRecord } = {}) {
-  if (mode === 'update' && !existingRecord) {
-    throw new Error('existingRecord is required for update mode');
+async function createDirectoryPage(payload = {}) {
+  const normalized = normalizeDirectoryPayload(payload, { mode: 'create' });
+  if (normalized.errors) {
+    return { errors: normalized.errors, draft: normalized.draft };
   }
+  try {
+    const record = await apiClient.createDirectory(normalized.payload);
+    return { record, errors: null };
+  } catch (error) {
+    if (error instanceof apiClient.ApiClientError && (error.status === 400 || error.code === 'VALIDATION_ERROR')) {
+      return { errors: buildApiErrorBag(error), draft: normalized.draft };
+    }
+    throw error;
+  }
+}
 
-  const baseRecord = existingRecord
-    ? { ...existingRecord }
-    : {
-        id: null,
-        title: '',
-        slug: '',
-        categoryId: '',
-        locationId: null,
-        locationAgnostic: false,
-        subdomain: '',
-        subdirectory: '',
-        heroTitle: '',
-        heroSubtitle: '',
-        introMarkdown: '',
-        metaTitle: '',
-        metaDescription: '',
-        metaKeywords: '',
-        ogImageUrl: '',
-        status: STATUSES.DRAFT,
-        isActive: false,
-        createdAt: null,
-        updatedAt: null
-      };
+async function updateDirectoryPage(directoryId, payload = {}) {
+  const normalized = normalizeDirectoryPayload(payload, { mode: 'update' });
+  if (normalized.errors) {
+    return { errors: normalized.errors, draft: normalized.draft };
+  }
+  try {
+    const record = await apiClient.updateDirectory(directoryId, normalized.payload);
+    return { record, errors: null };
+  } catch (error) {
+    if (error instanceof apiClient.ApiClientError && (error.status === 400 || error.code === 'VALIDATION_ERROR')) {
+      return { errors: buildApiErrorBag(error), draft: normalized.draft };
+    }
+    throw error;
+  }
+}
 
-  const next = { ...baseRecord };
+async function deleteDirectoryPage(directoryId) {
+  await apiClient.deleteDirectory(directoryId);
+}
+
+function normalizeDirectoryPayload(payload = {}, { mode } = {}) {
   const errors = {};
+  const draft = buildDraft(payload);
 
-  assignString(next, payload, 'title');
-  assignString(next, payload, 'heroTitle');
-  assignString(next, payload, 'heroSubtitle');
-  assignString(next, payload, 'introMarkdown');
-  assignString(next, payload, 'metaTitle');
-  assignString(next, payload, 'metaDescription');
-  assignString(next, payload, 'metaKeywords', { collapseWhitespace: true });
-  assignString(next, payload, 'ogImageUrl');
+  const normalized = {
+    title: typeof payload.title === 'string' ? payload.title.trim() : '',
+    slug: '',
+    subdomain: sanitizeSubdomain(payload.subdomain),
+    subdirectory: sanitizeSubdirectory(payload.subdirectory),
+    heroTitle: typeof payload.heroTitle === 'string' ? payload.heroTitle.trim() : '',
+    heroSubtitle: typeof payload.heroSubtitle === 'string' ? payload.heroSubtitle.trim() : '',
+    introMarkdown: typeof payload.introMarkdown === 'string' ? payload.introMarkdown.trim() : '',
+    metaTitle: typeof payload.metaTitle === 'string' ? payload.metaTitle.trim() : '',
+    metaDescription: typeof payload.metaDescription === 'string' ? payload.metaDescription.trim() : '',
+    metaKeywords: collapseSpaces(payload.metaKeywords || ''),
+    ogImageUrl: typeof payload.ogImageUrl === 'string' ? payload.ogImageUrl.trim() : '',
+    status: normalizeStatus(payload.status, mode === 'create' ? 'DRAFT' : undefined),
+    locationAgnostic: parseCheckbox(payload.locationAgnostic),
+    categoryIds: [],
+    locationIds: []
+  };
 
-  if (payload.categoryId !== undefined || mode === 'create') {
-    const value = typeof payload.categoryId === 'string' ? payload.categoryId.trim() : '';
-    next.categoryId = value || '';
+  normalized.slug = normalized.subdirectory ? buildSlug(normalized.subdirectory) : buildSlug(normalized.title);
+
+  const categoryId = parseCategoryId(payload.categoryId);
+  if (!categoryId) {
+    errors.categoryId = 'Select a category';
+  } else {
+    normalized.categoryIds = [categoryId];
   }
 
-  if (payload.locationAgnostic !== undefined || mode === 'create') {
-    next.locationAgnostic = parseCheckbox(payload.locationAgnostic);
+  if (!normalized.locationAgnostic) {
+    const locationId = typeof payload.locationId === 'string' ? payload.locationId.trim() : '';
+    if (!locationId) {
+      errors.locationId = 'Select a location';
+    } else {
+      normalized.locationIds = [locationId];
+    }
   }
 
-  if (payload.locationId !== undefined) {
-    const value = typeof payload.locationId === 'string' ? payload.locationId.trim() : '';
-    next.locationId = value || null;
-  } else if (!existingRecord && next.locationId === undefined) {
-    next.locationId = null;
-  }
-
-  if (next.locationAgnostic) {
-    next.locationId = null;
-  }
-
-  if (payload.subdomain !== undefined || mode === 'create') {
-    next.subdomain = sanitizeSubdomain(payload.subdomain);
-  }
-
-  if (payload.subdirectory !== undefined || mode === 'create') {
-    next.subdirectory = sanitizeSubdirectory(payload.subdirectory);
-    next.slug = buildSlug(next.subdirectory);
-  } else if (!next.slug && next.subdirectory) {
-    next.slug = buildSlug(next.subdirectory);
-  }
-
-  validateRecord(next, errors, { mode, currentId: existingRecord?.id ?? null });
-
-  return { record: next, errors };
-}
-
-function validateRecord(record, errors, { mode, currentId }) {
-  if (!record.title) {
+  if (!normalized.title) {
     errors.title = 'Title is required';
   }
-
-  if (!record.categoryId || !resolveCategory(record.categoryId)) {
-    errors.categoryId = 'Select a valid category';
+  if (!normalized.subdomain) {
+    errors.subdomain = 'Subdomain is required';
   }
-
-  if (!record.metaTitle) {
+  if (!normalized.subdirectory) {
+    errors.subdirectory = 'Subdirectory is required';
+  }
+  if (!normalized.metaTitle) {
     errors.metaTitle = 'Meta title is required';
   }
-
-  if (!record.metaDescription) {
+  if (!normalized.metaDescription) {
     errors.metaDescription = 'Meta description is required';
   }
 
-  if (!record.subdomain) {
-    errors.subdomain = 'Subdomain is required';
-  } else if (!isUnique('subdomain', record.subdomain, currentId)) {
-    errors.subdomain = 'Subdomain is already in use';
+  if (Object.keys(errors).length > 0) {
+    return { errors, draft };
   }
 
-  if (!record.subdirectory) {
-    errors.subdirectory = 'Subdirectory is required';
-  } else if (!isUnique('subdirectory', record.subdirectory, currentId)) {
-    errors.subdirectory = 'Subdirectory is already in use';
-  }
+  return { payload: normalized, errors: null, draft };
+}
 
-  if (!record.locationAgnostic) {
-    if (!record.locationId) {
-      errors.locationId = 'Select a location';
-    } else if (!resolveLocation(record.locationId)) {
-      errors.locationId = 'Select a valid location';
-    }
+function buildDraft(payload = {}) {
+  return {
+    title: typeof payload.title === 'string' ? payload.title.trim() : '',
+    categoryId: typeof payload.categoryId === 'string' ? payload.categoryId.trim() : payload.categoryId || '',
+    locationId: typeof payload.locationId === 'string' ? payload.locationId.trim() : payload.locationId || '',
+    locationAgnostic: parseCheckbox(payload.locationAgnostic),
+    subdomain: typeof payload.subdomain === 'string' ? payload.subdomain.trim() : '',
+    subdirectory: typeof payload.subdirectory === 'string' ? payload.subdirectory.trim() : '',
+    heroTitle: typeof payload.heroTitle === 'string' ? payload.heroTitle.trim() : '',
+    heroSubtitle: typeof payload.heroSubtitle === 'string' ? payload.heroSubtitle.trim() : '',
+    introMarkdown: typeof payload.introMarkdown === 'string' ? payload.introMarkdown.trim() : '',
+    metaTitle: typeof payload.metaTitle === 'string' ? payload.metaTitle.trim() : '',
+    metaDescription: typeof payload.metaDescription === 'string' ? payload.metaDescription.trim() : '',
+    metaKeywords: collapseSpaces(payload.metaKeywords || ''),
+    ogImageUrl: typeof payload.ogImageUrl === 'string' ? payload.ogImageUrl.trim() : '',
+    status: normalizeStatus(payload.status, 'DRAFT')
+  };
+}
+
+function decorateDirectory(record, options) {
+  const categories = options.categories || [];
+  const locations = options.locations || [];
+  const categoryLookup = new Map(categories.map((entry) => [String(entry.id), entry.label]));
+  const locationLookup = new Map(locations.map((entry) => [entry.id, entry.label]));
+  const primaryCategoryId = Array.isArray(record.categoryIds) ? record.categoryIds[0] : null;
+  const categoryLabel = categoryLookup.get(String(primaryCategoryId)) || 'Unknown category';
+  const locationLabels = record.locationAgnostic
+    ? ['Location agnostic']
+    : (Array.isArray(record.locationIds) ? record.locationIds : []).map(
+        (locationId) => locationLookup.get(locationId) || locationId
+      );
+  return {
+    ...record,
+    categoryLabel,
+    locationLabels
+  };
+}
+
+function parseCategoryId(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
   }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+  return Math.trunc(parsed);
+}
+
+function parseCheckbox(value) {
+  if (Array.isArray(value)) {
+    return value.some((entry) => parseCheckbox(entry));
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'on' || normalized === 'yes';
+  }
+  return Boolean(value);
 }
 
 function sanitizeSubdomain(value) {
@@ -228,13 +204,12 @@ function sanitizeSubdirectory(value) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-');
-
   const withoutEdges = trimmed.replace(/^\/+|\/+$/g, '');
   return withoutEdges.replace(/\/+/g, '/');
 }
 
-function buildSlug(subdirectory = '') {
-  const normalized = sanitizeSubdirectory(subdirectory);
+function buildSlug(value = '') {
+  const normalized = sanitizeSubdirectory(value);
   if (!normalized) {
     return '';
   }
@@ -245,85 +220,35 @@ function buildSlug(subdirectory = '') {
     .replace(/^-|-$/g, '');
 }
 
-function assignString(target, payload, field, { collapseWhitespace = false } = {}) {
-  if (payload[field] === undefined) {
-    return;
-  }
-
-  if (typeof payload[field] !== 'string') {
-    target[field] = '';
-    return;
-  }
-
-  const value = collapseWhitespace
-    ? collapseSpaces(payload[field])
-    : payload[field].trim();
-  target[field] = value;
-}
-
 function collapseSpaces(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
   return value.trim().replace(/\s+/g, ' ');
 }
 
-function resolveCategory(id) {
-  return directoryOptions.categories.find((entry) => entry.id === id) || null;
-}
-
-function resolveLocation(id) {
-  if (!id) {
-    return null;
+function normalizeStatus(value, fallback = 'DRAFT') {
+  if (typeof value !== 'string') {
+    return fallback || 'DRAFT';
   }
-  return directoryOptions.locations.find((entry) => entry.id === id) || null;
+  const upper = value.trim().toUpperCase();
+  return STATUSES.includes(upper) ? upper : fallback || STATUSES[0];
 }
 
-function isUnique(field, value, currentId = null) {
-  if (!value) {
-    return true;
-  }
-
-  const normalized = value.toLowerCase();
-  return !directoryPages.some((entry) => {
-    if (!entry[field]) {
-      return false;
-    }
-    if (currentId && entry.id === currentId) {
-      return false;
-    }
-    return entry[field].toLowerCase() === normalized;
-  });
-}
-
-function parseCheckbox(value) {
-  if (Array.isArray(value)) {
-    return value.some((entry) => parseCheckbox(entry));
-  }
-
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    return normalized === '1' || normalized === 'true' || normalized === 'on' || normalized === 'yes';
-  }
-
-  return Boolean(value);
-}
-
-function generateId(title = 'directory_page') {
-  const suffix = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 32) || 'entry';
-  return `dir_${suffix}_${Date.now()}`;
-}
-
-function hasErrors(errors) {
-  return errors && Object.keys(errors).length > 0;
+function buildApiErrorBag(error) {
+  const payload = error?.payload || {};
+  const summary = Array.isArray(payload.details) ? payload.details.join(' ') : payload.error;
+  return {
+    form: summary || error.message || 'Failed to save directory page'
+  };
 }
 
 module.exports = {
   getDirectoryPages,
   getDirectoryOptions,
+  getDirectoryPage,
   createDirectoryPage,
-  updateDirectoryPages,
+  updateDirectoryPage,
+  deleteDirectoryPage,
   STATUSES
 };

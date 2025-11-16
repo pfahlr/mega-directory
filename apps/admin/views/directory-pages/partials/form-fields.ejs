@@ -1,0 +1,130 @@
+<%
+  const fieldHelpers = typeof helpers === 'object' && helpers ? helpers : {};
+  const fieldHasError = fieldHelpers.fieldHasError || (() => false);
+  const fieldMessage = fieldHelpers.fieldMessage || (() => null);
+%>
+<div class="field-grid">
+  <label class="field-label">Page title
+    <input
+      class="field-control <%= fieldHasError(errors, 'title') ? 'is-invalid' : '' %>"
+      type="text"
+      name="<%= prefix %>[title]"
+      value="<%= values.title || '' %>"
+      placeholder="Best Electricians in Austin" />
+    <% if (fieldHasError(errors, 'title')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'title') %></p>
+    <% } %>
+  </label>
+
+  <label class="field-label">Category
+    <select
+      class="field-control <%= fieldHasError(errors, 'categoryId') ? 'is-invalid' : '' %>"
+      name="<%= prefix %>[categoryId]">
+      <option value="">Select category</option>
+      <% categories.forEach((category) => { %>
+        <option value="<%= category.id %>" <%= String(values.categoryId) === String(category.id) ? 'selected' : '' %>><%= category.label %></option>
+      <% }) %>
+    </select>
+    <% if (fieldHasError(errors, 'categoryId')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'categoryId') %></p>
+    <% } %>
+  </label>
+
+  <label class="field-label">Location (optional when agnostic)
+    <select
+      class="field-control <%= fieldHasError(errors, 'locationId') ? 'is-invalid' : '' %>"
+      name="<%= prefix %>[locationId]">
+      <option value="">Select location</option>
+      <% locations.forEach((location) => { %>
+        <option value="<%= location.id %>" <%= values.locationId === location.id ? 'selected' : '' %>><%= location.label %></option>
+      <% }) %>
+    </select>
+    <% if (fieldHasError(errors, 'locationId')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'locationId') %></p>
+    <% } %>
+  </label>
+
+  <label class="toggle-label">
+    <input type="checkbox" name="<%= prefix %>[locationAgnostic]" value="1" <%= values.locationAgnostic ? 'checked' : '' %> />
+    Location agnostic page
+  </label>
+</div>
+
+<div class="field-grid">
+  <label class="field-label">Subdomain
+    <input
+      class="field-control <%= fieldHasError(errors, 'subdomain') ? 'is-invalid' : '' %>"
+      type="text"
+      name="<%= prefix %>[subdomain]"
+      placeholder="austin-plumbers"
+      value="<%= values.subdomain || '' %>" />
+    <% if (fieldHasError(errors, 'subdomain')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'subdomain') %></p>
+    <% } %>
+  </label>
+
+  <label class="field-label">Subdirectory
+    <input
+      class="field-control <%= fieldHasError(errors, 'subdirectory') ? 'is-invalid' : '' %>"
+      type="text"
+      name="<%= prefix %>[subdirectory]"
+      placeholder="austin-tx/plumbers"
+      value="<%= values.subdirectory || '' %>" />
+    <% if (fieldHasError(errors, 'subdirectory')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'subdirectory') %></p>
+    <% } %>
+  </label>
+</div>
+
+<div class="field-grid">
+  <label class="field-label">Hero title
+    <input class="field-control" type="text" name="<%= prefix %>[heroTitle]" value="<%= values.heroTitle || '' %>" />
+  </label>
+  <label class="field-label">Hero subtitle
+    <input class="field-control" type="text" name="<%= prefix %>[heroSubtitle]" value="<%= values.heroSubtitle || '' %>" />
+  </label>
+</div>
+
+<label class="field-label">Intro markdown
+  <textarea class="field-control" name="<%= prefix %>[introMarkdown]" rows="3"><%= values.introMarkdown || '' %></textarea>
+</label>
+
+<div class="field-grid">
+  <label class="field-label">Meta title
+    <input
+      class="field-control <%= fieldHasError(errors, 'metaTitle') ? 'is-invalid' : '' %>"
+      type="text"
+      name="<%= prefix %>[metaTitle]"
+      value="<%= values.metaTitle || '' %>" />
+    <% if (fieldHasError(errors, 'metaTitle')) { %>
+      <p class="field-error"><%= fieldMessage(errors, 'metaTitle') %></p>
+    <% } %>
+  </label>
+  <label class="field-label">Meta keywords
+    <input class="field-control" type="text" name="<%= prefix %>[metaKeywords]" value="<%= values.metaKeywords || '' %>" />
+  </label>
+</div>
+
+<label class="field-label">Meta description
+  <textarea
+    class="field-control <%= fieldHasError(errors, 'metaDescription') ? 'is-invalid' : '' %>"
+    name="<%= prefix %>[metaDescription]"
+    rows="3"><%= values.metaDescription || '' %></textarea>
+  <% if (fieldHasError(errors, 'metaDescription')) { %>
+    <p class="field-error"><%= fieldMessage(errors, 'metaDescription') %></p>
+  <% } %>
+</label>
+
+<label class="field-label">OG image URL
+  <input class="field-control" type="url" name="<%= prefix %>[ogImageUrl]" value="<%= values.ogImageUrl || '' %>" />
+</label>
+
+<% if (showStatus) { %>
+  <label class="field-label">Status
+    <select class="field-control" name="<%= prefix %>[status]">
+      <% statuses.forEach((status) => { %>
+        <option value="<%= status %>" <%= values.status === status ? 'selected' : '' %>><%= status %></option>
+      <% }) %>
+    </select>
+  </label>
+<% } %>

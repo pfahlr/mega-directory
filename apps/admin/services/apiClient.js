@@ -1,48 +1,140 @@
 const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings/review';
 
+class ApiClientError extends Error {
+  constructor(message, { status = null, payload = null, code = null, cause = null } = {}) {
+    super(message);
+    this.name = 'ApiClientError';
+    this.status = status;
+    this.payload = payload;
+    this.code = code;
+    if (cause) {
+      this.cause = cause;
+    }
+  }
+}
+
 async function submitListingUpdates(updates = []) {
   if (!Array.isArray(updates) || updates.length === 0) {
     return { delivered: 0 };
   }
 
-  const baseUrl = process.env.ADMIN_API_BASE_URL || process.env.API_BASE_URL || null;
-  const token = process.env.ADMIN_API_TOKEN || null;
-
-  if (!baseUrl || !token) {
-    return {
-      delivered: 0,
-      skipped: updates.length,
-      reason: 'Admin API base URL or token is not configured'
-    };
+  try {
+    const result = await callApi(ADMIN_LISTINGS_ENDPOINT, {
+      method: 'POST',
+      body: { listings: updates }
+    });
+    return result ?? { delivered: updates.length };
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      return {
+        delivered: 0,
+        skipped: updates.length,
+        reason: error.message
+      };
+    }
+    throw error;
   }
+}
 
-  if (typeof fetch !== 'function') {
-    return {
-      delivered: 0,
-      skipped: updates.length,
-      reason: 'Fetch API is not available in this version of Node.js'
-    };
+async function fetchDirectories() {
+  const data = await callApi('/v1/admin/directories');
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchDirectory(directoryId) {
+  if (!directoryId) {
+    throw new ApiClientError('directoryId is required', { code: 'VALIDATION_ERROR' });
   }
+  return callApi(`/v1/admin/directories/${directoryId}`);
+}
 
-  const url = new URL(ADMIN_LISTINGS_ENDPOINT, baseUrl);
-  const response = await fetch(url.toString(), {
+async function createDirectory(payload) {
+  return callApi('/v1/admin/directories', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ listings: updates })
+    body: payload
   });
+}
+
+async function updateDirectory(directoryId, payload) {
+  if (!directoryId) {
+    throw new ApiClientError('directoryId is required', { code: 'VALIDATION_ERROR' });
+  }
+  return callApi(`/v1/admin/directories/${directoryId}`, {
+    method: 'PUT',
+    body: payload
+  });
+}
+
+async function deleteDirectory(directoryId) {
+  if (!directoryId) {
+    throw new ApiClientError('directoryId is required', { code: 'VALIDATION_ERROR' });
+  }
+  await callApi(`/v1/admin/directories/${directoryId}`, { method: 'DELETE' });
+}
+
+async function fetchCategories() {
+  const data = await callApi('/v1/admin/categories');
+  return Array.isArray(data) ? data : [];
+}
+
+async function callApi(path, { method = 'GET', body } = {}) {
+  const { baseUrl, token } = resolveConfig();
+  ensureFetchAvailable();
+  const url = new URL(path, baseUrl);
+  const headers = {
+    Authorization: `Bearer ${token}`
+  };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const init = {
+    method,
+    headers
+  };
+  if (body !== undefined) {
+    init.body = JSON.stringify(body);
+  }
+
+  let response;
+  try {
+    response = await fetch(url.toString(), init);
+  } catch (error) {
+    throw new ApiClientError('Failed to reach admin API', { cause: error, code: 'NETWORK_ERROR' });
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
 
   const payload = await safeParseJson(response);
   if (!response.ok) {
-    const error = new Error('Failed to submit listing updates to API');
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
+    throw new ApiClientError('Admin API request failed', {
+      status: response.status,
+      payload
+    });
   }
 
-  return payload ?? { delivered: updates.length };
+  return payload?.data ?? payload ?? null;
+}
+
+function resolveConfig() {
+  const baseUrl = process.env.ADMIN_API_BASE_URL || process.env.API_BASE_URL || null;
+  const token = process.env.ADMIN_API_TOKEN || null;
+  if (!baseUrl || !token) {
+    throw new ApiClientError('Admin API base URL or token is not configured', {
+      code: 'CONFIG_ERROR'
+    });
+  }
+  return { baseUrl, token };
+}
+
+function ensureFetchAvailable() {
+  if (typeof fetch !== 'function') {
+    throw new ApiClientError('Fetch API is not available in this version of Node.js', {
+      code: 'FETCH_UNAVAILABLE'
+    });
+  }
 }
 
 async function safeParseJson(response) {
@@ -54,5 +146,12 @@ async function safeParseJson(response) {
 }
 
 module.exports = {
-  submitListingUpdates
+  ApiClientError,
+  submitListingUpdates,
+  fetchDirectories,
+  fetchDirectory,
+  createDirectory,
+  updateDirectory,
+  deleteDirectory,
+  fetchCategories
 };

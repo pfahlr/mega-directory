@@ -1,4 +1,4 @@
-export const directoryCatalog = [
+const directoryCatalog = [
   {
     slug: 'professional-services-new-york-city',
     subdomain: 'pros-nyc',
@@ -405,3 +405,6 @@ export const directoryCatalog = [
     ],
   },
 ];
+
+module.exports = directoryCatalog;
+module.exports.directoryCatalog = directoryCatalog;

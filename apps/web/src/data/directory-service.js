@@ -1,4 +1,4 @@
-import { directoryCatalog } from './directory-catalog.js';
+import directoryCatalog from '@mega-directory/directory-data';
 import { findDirectoryBySlug } from '../lib/directory-helpers.js';
 
 const API_BASE_URL =
@@ -15,6 +15,8 @@ async function fetchJson(url) {
   }
   return response.json();
 }
+
+export { directoryCatalog };
 
 export async function fetchDirectoryCatalog() {
   if (!API_BASE_URL) {

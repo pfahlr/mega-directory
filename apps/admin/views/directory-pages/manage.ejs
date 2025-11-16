@@ -1,0 +1,91 @@
+<%- include('../partials/page-start', { title: title || 'Directory Pages', active }) %>
+<section class="panel stack gap-lg directory-admin">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Directories</p>
+      <h2>Manage existing pages</h2>
+      <p class="muted">Edit metadata, publish/archvie directories, or remove unused drafts.</p>
+    </div>
+    <a href="/directory-pages" class="btn secondary">Create directory</a>
+  </header>
+
+  <% if (typeof updatedCount === 'number' && updatedCount > 0) { %>
+    <div class="alert success">Saved <strong><%= updatedCount %></strong> director<%= updatedCount === 1 ? 'y' : 'ies' %>.</div>
+  <% } %>
+  <% if (typeof deletedCount === 'number' && deletedCount > 0) { %>
+    <div class="alert success">Deleted <strong><%= deletedCount %></strong> director<%= deletedCount === 1 ? 'y' : 'ies' %>.</div>
+  <% } %>
+
+  <% if (!directories || directories.length === 0) { %>
+    <div class="empty-state">
+      <p class="muted">No directory pages found. <a href="/directory-pages">Create your first page</a>.</p>
+    </div>
+  <% } else { %>
+    <div class="table-scroll">
+      <table class="listing-table">
+        <thead>
+          <tr>
+            <th scope="col">Page</th>
+            <th scope="col">Category</th>
+            <th scope="col">Location</th>
+            <th scope="col">Status</th>
+            <th scope="col">Updated</th>
+            <th scope="col" class="align-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% directories.forEach((directory) => { %>
+            <tr>
+              <td data-label="Page">
+                <div class="listing-card__header">
+                  <p class="eyebrow"><%= directory.subdomain || directory.slug %></p>
+                  <h3><%= directory.title %></h3>
+                </div>
+                <p class="muted"><%= directory.subdirectory || '/' %></p>
+              </td>
+              <td data-label="Category"><%= directory.categoryLabel %></td>
+              <td data-label="Location">
+                <% if (directory.locationLabels && directory.locationLabels.length > 0) { %>
+                  <%= directory.locationLabels.join(', ') %>
+                <% } else { %>
+                  <span class="muted">Unassigned</span>
+                <% } %>
+              </td>
+              <td data-label="Status"><span class="badge badge-<%= directory.status?.toLowerCase() || 'draft' %>"><%= directory.status || 'DRAFT' %></span></td>
+              <td data-label="Updated"><%= directory.updatedAt ? new Date(directory.updatedAt).toLocaleString() : 'Unknown' %></td>
+              <td class="align-right">
+                <div class="btn-group">
+                  <a href="/directory-pages/<%= directory.id %>/edit" class="btn ghost">Edit</a>
+                  <form method="POST" action="/directory-pages/<%= directory.id %>/delete" onsubmit="return confirm('Delete this directory?');">
+                    <button type="submit" class="btn ghost">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <div>
+        <p class="muted">
+          Showing <strong><%= pagination.start %>-<%= pagination.end %></strong> of <strong><%= pagination.totalItems %></strong>
+        </p>
+      </div>
+      <div class="pagination-bar__controls">
+        <% if (pagination.hasPrevious) { %>
+          <a href="/directory-pages/manage?page=<%= pagination.previousPage %>" class="btn ghost">Previous</a>
+        <% } else { %>
+          <button class="btn ghost" disabled>Previous</button>
+        <% } %>
+        <% if (pagination.hasNext) { %>
+          <a href="/directory-pages/manage?page=<%= pagination.nextPage %>" class="btn ghost">Next</a>
+        <% } else { %>
+          <button class="btn ghost" disabled>Next</button>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+</section>
+<%- include('../partials/page-end') %>

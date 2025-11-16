@@ -1,0 +1,52 @@
+<%
+  const creationValues = creationDraft || {};
+  const creationErr = creationErrors || {};
+
+  function fieldHasError(errors, key) {
+    if (!errors) return false;
+    return Boolean(errors[key]);
+  }
+
+  function fieldMessage(errors, key) {
+    if (!errors) return null;
+    return errors[key] || null;
+  }
+%>
+<%- include('../partials/page-start', { title: title || 'Directory Page Builder', active }) %>
+<section class="panel stack gap-lg directory-admin">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Directories</p>
+      <h2>Create a new directory page</h2>
+      <p class="muted">Link a category and location, then publish SEO-friendly content.</p>
+    </div>
+    <a href="/directory-pages/manage" class="btn secondary">Manage directories</a>
+  </header>
+
+  <% if (typeof createdCount === 'number' && createdCount > 0) { %>
+    <div class="alert success">Created <strong><%= createdCount %></strong> new director<%= createdCount === 1 ? 'y' : 'ies' %>.</div>
+  <% } %>
+  <% if (creationErr.form) { %>
+    <div class="alert error"><%= creationErr.form %></div>
+  <% } %>
+
+  <form method="POST" action="/directory-pages" class="stack gap-lg">
+    <input type="hidden" name="newPage[locationAgnostic]" value="0" />
+    <%- include('./partials/form-fields', {
+      prefix: 'newPage',
+      values: creationValues,
+      errors: creationErr,
+      categories,
+      locations,
+      statuses,
+      showStatus: false,
+      helpers: { fieldHasError, fieldMessage }
+    }) %>
+
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Create directory page</button>
+      <p class="muted">New entries start as drafts until you publish.</p>
+    </div>
+  </form>
+</section>
+<%- include('../partials/page-end') %>

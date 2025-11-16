@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body>
+  <%
+    const navActive = typeof active === 'string' ? active : '';
+  %>
   <header class="site-header">
     <div class="container header-inner">
       <div>
@@ -14,10 +17,10 @@
         <h1><%= appName %></h1>
       </div>
       <nav class="site-nav">
-        <a href="/listings" class="nav-link <%= active === 'listings' ? 'is-active' : '' %>">Listings</a>
-        <a href="/category-locations" class="nav-link <%= active === 'category-locations' ? 'is-active' : '' %>">Category Locations</a>
-        <a href="/directory-pages" class="nav-link <%= active === 'directory-pages' ? 'is-active' : '' %>">Directory Pages</a>
-        <a href="/seo" class="nav-link <%= active === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
+        <a href="/listings" class="nav-link <%= navActive === 'listings' ? 'is-active' : '' %>">Listings</a>
+        <a href="/category-locations" class="nav-link <%= navActive === 'category-locations' ? 'is-active' : '' %>">Category Locations</a>
+        <a href="/directory-pages" class="nav-link <%= navActive === 'directory-pages' ? 'is-active' : '' %>">Directory Pages</a>
+        <a href="/seo" class="nav-link <%= navActive === 'seo' ? 'is-active' : '' %>">SEO Fields</a>
       </nav>
     </div>
   </header>

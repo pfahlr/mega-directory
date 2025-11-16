@@ -153,6 +153,21 @@ a:focus {
   font-weight: 600;
 }
 
+.badge.badge-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.badge-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.badge-archived {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
 .alert {
   border-radius: 12px;
   padding: 0.9rem 1rem;
@@ -162,6 +177,11 @@ a:focus {
 .alert.success {
   background: var(--success-bg);
   color: var(--success-text);
+}
+
+.alert.error {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .empty-state {
@@ -393,6 +413,21 @@ a:focus {
   background: #e5e7eb;
 }
 
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border-color);
+}
+
+.btn-group {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-group form {
+  margin: 0;
+}
+
 .btn.is-disabled,
 .btn.disabled,
 .btn[aria-disabled='true'] {
@@ -427,6 +462,14 @@ a:focus {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.align-right {
+  text-align: right;
 }
 
 .section-heading {
