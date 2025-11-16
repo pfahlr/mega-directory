@@ -1,7 +1,7 @@
 const PROJECT_NAME = 'Mega Directory';
 
 const DEFAULT_PORTS = Object.freeze({
-  api: 3001,
+  api: 3030,
   web: 3000,
   admin: 4000
 });

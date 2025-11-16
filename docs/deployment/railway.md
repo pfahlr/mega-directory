@@ -36,14 +36,14 @@ _No Dockerfile is required for this step because Railway manages the database co
 | --- | --- |
 | Build context | `./apps/api` |
 | Dockerfile | `apps/api/Dockerfile` |
-| Default port | `3001` (Railway sets `PORT`, so no manual mapping needed) |
+| Default port | `3030` (Railway sets `PORT`, so no manual mapping needed) |
 | Health check | `GET /health` |
 
 ### Required environment variables
 
 | Variable | Description |
 | --- | --- |
-| `PORT` | Railway injects this automatically. Keep the default `3001` locally. |
+| `PORT` | Railway injects this automatically. Keep the default `3030` locally. |
 | `DATABASE_URL` | Set to `${{postgres.DATABASE_URL}}` (from the database service). |
 | `ADMIN_JWT_SECRET` | Secret used to sign admin tokens. |
 | `ADMIN_JWT_ISSUER` | Optional, defaults to `mega-directory`. |

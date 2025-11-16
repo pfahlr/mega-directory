@@ -102,7 +102,7 @@ When you need the entire stack (API + web + Admin + crawler) running locally, us
 
 It launches:
 
-- the Express API on `http://localhost:3001` with sensible JWT/crawler secrets,
+- the Express API on `http://localhost:3030` with sensible JWT/crawler secrets,
 - the Astro frontend on `http://localhost:3000`,
 - the Admin UI on `http://localhost:4000`, and
 - a demo crawler loop that replays sample listings into the API every 45 seconds so you always have fresh data to review.

@@ -3,7 +3,7 @@
   "api_targets": [
     {
       "name": "dev",
-      "endpoint": "http://localhost:3001/v1/crawler/listings",
+      "endpoint": "http://localhost:3030/v1/crawler/listings",
       "token": "dev-token"
     },
     {

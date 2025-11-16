@@ -121,8 +121,8 @@ def parse_args() -> argparse.Namespace:
         "--api-endpoint",
         default=os.getenv("CRAWLER_API_ENDPOINT")
         or os.getenv("CRAWLER_DEV_API_ENDPOINT")
-        or "http://localhost:3001/v1/crawler/listings",
-        help="Crawler ingestion endpoint (defaults to http://localhost:3001/v1/crawler/listings).",
+        or "http://localhost:3030/v1/crawler/listings",
+        help="Crawler ingestion endpoint (defaults to http://localhost:3030/v1/crawler/listings).",
     )
     parser.add_argument(
         "--api-token",
