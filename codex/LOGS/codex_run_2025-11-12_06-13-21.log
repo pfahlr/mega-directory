@@ -148,3 +148,27 @@ Tasks: 24_setup_project_scaffolding_and_configuration 25a_initialize_astro_front
 ⚠️  No new or modified files detected for commit (excluding logs).
 -------------------------------------------
 🟡 Executing task: 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes
+✅ Task 36_create_text-based_data_import_script_with_llm_and_html_parsing_modes completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🟡 Executing task: 37_generate_admin_interface_for_reviewing_imported_json_listing_data
+✅ Task 37_generate_admin_interface_for_reviewing_imported_json_listing_data completed successfully.
+📝 Committing files for 37_generate_admin_interface_for_reviewing_imported_json_listing_data...
+[main d833f47] Codex Task: 37_generate_admin_interface_for_reviewing_imported_json_listing_data
+ 6 files changed, 230 insertions(+), 99 deletions(-)
+📝 Commit created: d833f47fddc868c38840da46a83c124a051b31cc
+🧯 Rollback with: git reset --soft d833f47fddc868c38840da46a83c124a051b31cc^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 39_render_canonical_meta_tags_from_directory_configuration
+✅ Task 39_render_canonical_meta_tags_from_directory_configuration completed successfully.
+📝 Committing files for 39_render_canonical_meta_tags_from_directory_configuration...
+[main f7fdb4c] Codex Task: 39_render_canonical_meta_tags_from_directory_configuration
+ 5 files changed, 126 insertions(+), 16 deletions(-)
+📝 Commit created: f7fdb4cc6f541cd4951b46ceaeacf6bfebaf9244
+🧯 Rollback with: git reset --soft f7fdb4cc6f541cd4951b46ceaeacf6bfebaf9244^ && git restore --staged .
+-------------------------------------------
+🟡 Executing task: 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc
+✅ Task 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc completed successfully.
+⚠️  No new or modified files detected for commit (excluding logs).
+-------------------------------------------
+🎉 All tasks completed successfully.

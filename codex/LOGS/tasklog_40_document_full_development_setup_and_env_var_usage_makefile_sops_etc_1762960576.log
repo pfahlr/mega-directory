@@ -1,0 +1,2213 @@
+OpenAI Codex v0.57.0 (research preview)
+--------
+workdir: /var/home/rick/Development/mega-directory
+model: gpt-5-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: auto
+session id: 019a78a3-9153-76d3-8476-66e1d51266e3
+--------
+user
+Implement the functionality described in codex/TASKS/40_document_full_development_setup_and_env_var_usage_makefile_sops_etc.yaml, then verify with any available tests.
+ERROR: MCP client for `vibe-check-mcp-server` failed to start: handshaking with MCP server failed: connection closed: initialize response
+ERROR: MCP client for `mcp` failed to start: handshaking with MCP server failed: connection closed: initialize response
+ERROR: MCP client for `exa` timed out after 10 seconds. Add or adjust `startup_timeout_sec` in your config.toml:
+[mcp_servers.exa]
+startup_timeout_sec = XX
+
+thinking
+**Checking for instructions file**
+exec
+bash -lc pwd in /var/home/rick/Development/mega-directory succeeded in 41ms:
+/home/rick/Development/mega-directory
+
+thinking
+**Listing files to understand structure**
+exec
+bash -lc ls in /var/home/rick/Development/mega-directory succeeded in 40ms:
+AGENTS.md
+apps
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+env.json
+Makefile
+package.json
+packages
+README.md
+scripts
+tests
+tsconfig.json
+
+thinking
+**Requesting task instructions**
+exec
+bash -lc 'ls codex/TASKS' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+00_prepare_repository.yaml
+01_initialize_astro_frontend.yaml
+02_setup_api_server_with_express_and_jwt_auth.yaml
+03_design_postgresql_schema.yaml
+04_implement_listing_ingestion_api_endpoint.yaml
+05_admin_auth_route_and_middleware.yaml
+06_frontend_directory_page_rendering.yaml
+07_frontend_subcategory_ui_and_layout.yaml
+08_setup_featured_listings_logic.yaml
+09_add_category_meta_and_seo_controls.yaml
+10_scaffold_python_crawler_agent.yaml
+11_llm_field_generation_via_jinja2.yaml
+12_post_listings_from_crawler_to_api_server.yaml
+13_create_json_crawler_configuration_schema.yaml
+14_scaffold_admin_ui_application.yaml
+15_admin_ui:_listing_review_table.yaml
+16_admin_ui:_category_location_approval.yaml
+17_admin_ui:_seo_field_editor.yaml
+18_deploy_web_+_api_to_railway.yaml
+19_setup_logging,_healthchecks_and_monitoring.yaml
+
+thinking
+**Opening task file**
+exec
+bash -lc 'cat codex/TASKS/40_document_full_development_setup_and_env_var_usage_makefile_sops_etc.yaml' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+id: 40
+filename: 40_document_full_development_setup_and_env_var_usage_makefile_sops_etc.yaml
+title: Document Full Development Setup and Env Var Usage (Makefile, SOPS, etc.)
+description: >
+Write detailed docs for environment setup:
+- Project structure and local dev flow
+- Use of Makefile + env.json
+- SOPS encryption/decryption
+- API key setup and secrets injection
+- additional information regarding entire development project this task is part of can be referenced in `codex/TASKS/codex_phase_1b_2.yaml`
+dependencies: []
+
+thinking
+**Checking for codex_phase**
+exec
+bash -lc 'cat codex/TASKS/codex_phase_1b_2.yaml' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+project: mega-directory
+version: 1.0
+phases:
+  - phase: 1
+    description: Core system buildout — listings pipeline, directory structure, admin tools, crawler, API, and frontend delivery
+
+    components:
+      api_server:
+        language: TypeScript
+        framework: Node/Express
+        deployment: Railway
+        endpoints:
+          - listings: [GET, POST, PUT, DELETE]
+          - addresses: [GET, POST, PUT, DELETE]
+          - categories: [GET, POST, PUT, DELETE]
+          - directory_pages: [GET, POST, PUT, DELETE]
+          - directory_metadata: [GET, PUT]
+        notes:
+          - Postal, city, state/province, and country tables are loaded from external datasets.
+          - Listings reference postal_code_id or city_id depending on geography.
+
+thinking
+**Preparing documentation plan**
+exec
+bash -lc 'ls docs' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+AGENTS.md
+codex_tasks_bundle.zip
+codex_tasks_detailed_final.zip
+deployment
+development_phase_1b_final.pdf
+development_phase_1b.md
+development_phase_1b_tasks.pdf
+monitoring.md
+
+thinking
+**Checking README for environment info**
+exec
+bash -lc "sed -n '1,160p' README.md" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+# Mega Directory
+
+Mega Directory is a server-rendered directory listing platform built with Astro, Express, and Prisma. It supports dynamic subdomains, AI-generated content enrichment, and moderation workflows.
+
+## Features
+
+- 🛰️ Subdomain-based regional directories (e.g. electricians.nyc.example.com)
+- ⚡ Express API with JWT-based auth
+- 🧠 AI agents for crawling, enrichment, and moderation (via OpenRouter)
+- 🧩 Admin dashboard for approving or rejecting listings
+- 💅 Tailwind CSS and minimal JavaScript for accessibility and performance
+- 🐳 Dockerized and deployable behind Cloudflare with SSR
+
+## Tech Stack
+
+- Astro (SSR)
+- Express.js
+- Prisma + PostgreSQL
+- Tailwind CSS
+- OpenRouter (AI Agents)
+
+thinking
+**Preparing development setup documentation**
+exec
+bash -lc 'cat Makefile' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+.PHONY: sops-encryptkeys sops-updatekeys sops-decrypt sops-env-export
+
+
+sops-encryptkeys:
+	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+        if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
+        if [ ! -f "$$file" ]; then echo "File not found: $$file"; exit 1; fi; \
+        sops -e "$$file" > "$$file.tmp" && mv "$$file.tmp" "$$file"
+
+## Rewrap SOPS file with new recipients from .sops.yaml
+## Usage: make sops-updatekeys [FILE=env.json]
+sops-updatekeys:
+	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+        if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
+        if [ ! -f "$$file" ]; then echo "File not found: $$file"; exit 1; fi; \
+        sops updatekeys "$$file"
+
+## Decrypt a SOPS file to stdout (or redirect to a file)
+## Usage: make sops-decrypt [FILE=env.json]
+sops-decrypt:
+
+thinking
+**Checking for env.json**
+exec
+bash -lc 'cat env.json' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+{
+	"DATABASE_URL": "ENC[AES256_GCM,data:chuovh1RpCeNutpiFztYhUF9nl2hFvBRcyNv8P/n6GHbeHr4eUR/b51vJODqP36rscQBNtUIAQwSy3Uc,iv:A4jzrcnCx2/VbsdZJAupXItAFM4R8BmJvzHCTjg20fo=,tag:iQBqOR9NyQb/0eMN7knctA==,type:str]",
+	"API_TOKEN": "ENC[AES256_GCM,data:OW546UW/6hdoO6Aczt381VTFC3loLBK4,iv:HTeo6Y3ztO3HLGwaaU7PyF9H+PF+L1tx+bc0nX4Xboo=,tag:aH+BybYmkO4gj3Ng3BO7CQ==,type:str]",
+	"OPENAI_API_KEY": "ENC[AES256_GCM,data:vAyqhD35SgeTea3+vTLj54WoN1l/2bFW94IRbZtOoasSpEgB4CV6BzTqfWUbADjn4Z76blWn0iMHxtE8yVRax5PoeZoe87VaVp9QiDr40O2ELvkf8x4QnBwBL3ndI6XqCSz2GMwvtej3R9KXQnuMALO/vH2dPucCvS7kD+zcwzAdnkUjtdFiuuceNfJH+sLno/THc51l0IDue88J3WlIgaAI3xC1,iv:FsekFV+qk+2V//ZnZWtpd9679UyDsqQq3Jgb6CA3tPs=,tag:C1LiLnFJegUuns60d2AJEQ==,type:str]",
+	"OPENROUTER_API_KEY": "ENC[AES256_GCM,data:F8w4tXiETEaR/NVPGpBKUhn5sc7ym8J2yhKLdSWRDtMCgj1Pk/vqswKVJRYe80PKBPMpxa3VLvw5UoRLBMRxDmX36q7cNwVlCQ==,iv:Afczs1giWNdPK+xoMsZ8JBSYyBMrBNuHB588hKSeREo=,tag:lAwTxpqc3WpVswCU9d1KtA==,type:str]",
+	"GEMINI_API_KEY": "ENC[AES256_GCM,data:sxDsohaOCOLpWfKL2jPrxvoxSh3ruaUBecHxATrNhtls3sYuRXM0EQ==,iv:vsfv2wxlZFq6CtqJ+qdz8LHVwrxd3HD9wx3CdMameWM=,tag:6mxTE2lU64uwCAWp2qcK7w==,type:str]",
+	"ADMIN_JWT_SECRET": "ENC[AES256_GCM,data:KXXxFv5oO5Ta3E7YShpq5qq+O+meQpLdJvN2xpploxnsUpMzB1PCRSzxq28=,iv:qZs9QOcXIPjkjYT5Xgt5eaWlgN3IBpsfhpJ+VKld7A4=,tag:/oUrahK94CvhkB6JKWjUzg==,type:str]",
+	"ADMIN_LOGIN_EMAIL_unencrypted": "admin@absurditiesmedia.com",
+	"ADMIN_LOGIN_PASSCODE": "ENC[AES256_GCM,data:vggKwrLyMTwCona/MDrxnOMcpUc12TSO,iv:fgSjomu6a7jo1172gHBWGGPtBycKiP5pBTvebYgPs2Q=,tag:mw53eEBWv4uN9omTuRJmJg==,type:str]",
+	"CRAWLER_BEARER_TOKEN": "ENC[AES256_GCM,data:ajE00PElWrMcG9kkuFvh2Z2Dku2J2jcKp77nvUNsvSPN1HEM7BkyC5spCg==,iv:nyyVMDMN5QCPAwzNECh6CVTTPAgfEFYzQavSc3w9M6k=,tag:ctMMzYhySnJUl4cWDZV38w==,type:str]",
+	"ADMIN_API_TOKEN": "ENC[AES256_GCM,data:JhSKazJk30CudIPkCm94,iv:75ughWs+I2XibpI1cM0lZtwZKA/TRpBCDypujANuDXY=,tag:LasUkSPltyUA0v5BOv+6UA==,type:str]",
+	"ADMIN_JWT_ISSUER_unencrypted": "mega-directory",
+	"ADMIN_JWT_AUDIENCE_unencrypted": "admin",
+	"ADMIN_TOKEN_TTL_SECONDS_unencrypted": "900",
+	"PORT_unencrypted": "3001",
+	"GEOCODEMAPS_API_KEY": "ENC[AES256_GCM,data:hKPTn+85XwDimpK05BNdzo5MLuUlBacJs354ELHEGw==,iv:cTpc1H9e/ZWBt1TRK1z0pM/lHmsWspe6r+ZdCuqp9zA=,tag:vWGHhgjQCdPMd1F4JAI2SQ==,type:str]",
+	"GOOGLEMAPS_API_KEY": "ENC[AES256_GCM,data:yF6CwVPZNPoLoN0S+f/UVv9ZvtNSmfj+9kyU6ILP8wuS1Ws2gx8q,iv:JnCPr/WxGJOPsVeDIp2ztXiulXBxyOs4WvHVvnq2638=,tag:d/Vcmbnu1RVNp0/fRVrasg==,type:str]",
+	"sops": {
+		"lastmodified": "2025-11-12T05:10:30Z",
+		"mac": "ENC[AES256_GCM,data:17a0JcVuhPAOx5Q2mFm2mfUcb89USSGAv0aUNRKBS0OHuBS1N7e0GVyKJoBDEbv0CQoeX2DwL8S/rjIM5u0QIQse55SnfMrNi31F4w3WuIA+kxQP/LMMinjDA/W/jCBsdRC/1bU9p24NkjXSgXfVIoQF9Iwh/WZwF1MHHarRefk=,iv:tX9R7JZKSXWMCNuC7BfGfSLrRtF/Av2LXF2r15u1lOY=,tag:Bf/iRUBWBMFY0y8t4zmDRQ==,type:str]",
+
+thinking
+**Checking for SOPS configuration**
+exec
+bash -lc 'ls -a' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+.
+..
+AGENTS.md
+apps
+codex
+codex.toml
+codex.yaml
+db
+docker-compose.yml
+docs
+.editorconfig
+.env
+.env.example
+env.json
+.git
+.gitignore
+Makefile
+package.json
+packages
+.pytest_cache
+
+thinking
+**Inspecting .sops files**
+exec
+bash -lc 'cat .sops.yaml' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+creation_rules:
+  # Example: prefer KMS for env.json in cloud, while keeping PGP for local
+  # Uncomment and replace ARNs/resource_ids to enable
+  # - path_regex: env\.json$
+  #   kms:
+  #     - arn: arn:aws:kms:us-east-1:123456789012:key/your-key-id
+  #   gcp_kms:
+  #     projects/your-proj/locations/global/keyRings/sops/cryptoKeys/rag-writer
+  #   pgp: 'CB3B963C0AB97B34BAF22D68F9D46501F1146F9F'
+  #   encrypted_regex: '^(.*)$'
+
+  # Default: PGP recipient for all files (kept for local development)
+  - path_regex: ./*
+    unencrypted_suffix: "_unencrypted"
+    #gcp_kms:
+    #  projects/second-form-471412-c5/locations/global/keyRings/newlit-keyring/cryptoKeys/newlit-sops-key
+    pgp: 'CB3B963C0AB97B34BAF22D68F9D46501F1146F9F'
+
+
+thinking
+**Preparing documentation plan**
+Plan update
+  → Review repository tooling (Makefile, env.json, SOPS config, docs) to outline required content for setup guide.
+  • Create comprehensive development setup documentation covering workflow, env vars, Makefile usage, and SOPS secrets handling.
+  • Run relevant tests/linters to validate repo remains healthy.
+
+thinking
+**Reviewing setup and scripts**
+exec
+bash -lc 'ls scripts' in /var/home/rick/Development/mega-directory succeeded in 52ms:
+dev-bootstrap.sh
+dev_bootstrap.sh
+
+thinking
+**Opening script to inspect environment variables**
+exec
+bash -lc "sed -n '1,200p' scripts/dev-bootstrap.sh" in /var/home/rick/Development/mega-directory succeeded in 39ms:
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+PYTHON_REQUIREMENTS_FILE="${ROOT_DIR}/apps/crawler/requirements-dev.txt"
+
+require_command() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "[dev-bootstrap] Missing required command '$1'." >&2
+    exit 1
+  fi
+}
+
+require_command npm
+require_command "$PYTHON_BIN"
+
+install_node_dependencies() {
+  local dir="$1"
+
+thinking
+**Checking documentation locations for environment info**
+exec
+bash -lc 'ls docs/deployment' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+railway.md
+
+thinking
+**Checking for development setup docs**
+exec
+bash -lc 'rg -n "development setup" -n' in /var/home/rick/Development/mega-directory succeeded in 48ms:
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:152:**Preparing development setup documentation**
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:253:  • Create comprehensive development setup documentation covering workflow, env vars, Makefile usage, and SOPS secrets handling.
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:295:**Checking for development setup docs**
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:297:bash -lc 'rg -n "development setup" -n' in /var/home/rick/Development/mega-directory
+codex/LOGS/tasklog_20_verify_dev_environment_bootstraps_cleanly_1762862496.log:188:**Checking development setup scripts**
+codex/LOGS/tasklog_20_verify_dev_environment_bootstraps_cleanly_1762862496.log:933:**Planning offline development setup**
+
+thinking
+**Checking logs and environment files**
+exec
+bash -lc 'cat .env.example' in /var/home/rick/Development/mega-directory succeeded in 38ms:
+DATABASE_URL=postgresql://postgres:password@localhost:5432/mega_directory
+API_TOKEN=changeme
+OPENAI_API_KEY=ysk-proj-i4JEKl44AdpD-1_Xx-TxG9DMscFwqLxeXsTXADItas6-9aXFdb22gGui6kd-U4EdlAnfzU4x3DT3BlbkFJpIUC98KuBj7D87lcfy7CMGKFBi7yuVFNrynQJcWV0M0E0Uk5zlJo6ciuVWiM3NG8COJ-oFu2oA
+OPENROUTER_API_KEY=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
+GEMINI_API_KEY=yAIzaSyDa2zEHW9GGD5zVfSNDH0lUXWvrB_8EJvQ
+ADMIN_JWT_SECRET=mHtAWbWqbgrU5EYk1YmpgRSu9LLESTrq40LzhcvjG1w=
+ADMIN_LOGIN_EMAIL=admin@example.com
+ADMIN_LOGIN_PASSCODE=localpass
+CRAWLER_BEARER_TOKEN=VdgeXgbnfw-F5W6Kl5hv3Fz_6Ku1NQ4vA9R4QHyt0VA
+ADMIN_API_TOKEN=admin-dev-token
+
+thinking
+**Checking environment configuration and usage**
+exec
+bash -lc 'rg -n "env.json" -n' in /var/home/rick/Development/mega-directory succeeded in 48ms:
+Makefile:5:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+Makefile:11:## Usage: make sops-updatekeys [FILE=env.json]
+Makefile:13:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+Makefile:19:## Usage: make sops-decrypt [FILE=env.json]
+Makefile:21:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+Makefile:26:## Print export lines for env.json
+Makefile:27:## Usage: make sops-env-export [FILE=env.json]
+Makefile:29:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+docs/development_phase_1b.md:105:  I've created entries for environment variables as GEOCODEMAPS_API_KEY, and GOOGLEMAPS_API_KEY in env.json which just needs to have the Makefile operations run on it to generate the encrypted version and the sops command to load a shell with all the values from that file converted to environment variables. have a look at the Makefile I created it will make sense how that all works and how to get the secrets into environment variables. 
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:38:env.json
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:82:- Use of Makefile + env.json
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:159:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:165:## Usage: make sops-updatekeys [FILE=env.json]
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:167:	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:173:## Usage: make sops-decrypt [FILE=env.json]
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:177:**Checking for env.json**
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:179:bash -lc 'cat env.json' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:218:env.json
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:231:  # Example: prefer KMS for env.json in cloud, while keeping PGP for local
+codex/LOGS/tasklog_40_document_full_development_setup_and_env_var_usage_makefile_sops_etc_1762960576.log:252:  → Review repository tooling (Makefile, env.json, SOPS config, docs) to outline required content for setup guide.
+
+thinking
+**Evaluating documentation needs**
+exec
+bash -lc "sed -n '1,200p' docs/development_phase_1b.md" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+# Development Phase 1 part B
+
+The initial 20 codex tasks have been completed, and this has provided a solid base for the project. However, the project still falls short of a fully functioning application with all of the necessary moving parts. I'm sure this is because I failed to flesh out all of the details regarding the various workflows as I was particulary focused on the architecture. No problem, because this architecture is exactly what will make all of the remaining added functionality possible. 
+
+We need to plan out some further development additions and refinements. It appears the api is missing a number of operations, but it seems the important base functionality is there so it shouldn't be a huge problem. I wanted to rethink some of the ways things work. Let's first of all think about the structure of the data. 
+
+## Directory Pages
+
+Rather than automatically generating directories from categories and locations, which could get messy if we try to have the system create all the permutations, furthermore, there will be significant SEO infomation that must be provided when creating a single directory page. So, we'll need a table to represent the individual directory pages. This way we can create directories that perhaps present more than one category or more than one postal code or city when these groupings represent very small amounts of listings or for whatever reason it makes sense to group or not group these together. The directory page can have its own title to concatenate with the site name to generate the content for the <title> tag and meta title, it can have an editable field for meta keywords, a field where the admin can specify the specific subdomain and the subdirectory used to represent the directory (based on the site configuration either the subdomain will 301 redirect to the subdirectory or the subdirectory to the subdomain, either way it should be possible for the admin to supply independent values for each of these), further meta tag values should include the description, og:image, etc. While the main site configuration should provide default values for these, it is important that it be possible to override them on individual directories.
+
+It should also be a configuration option of the directory page whether the directory page should be location agnostic or not. If the directory page is NOT location agnostic, it should be relatively easy to provide a map widget displaying pins for each of the listings on the page. The user interface for this type of page could also include a pin icon at the end of the listing title that when clicked will cause the map widget to center on that listing. 
+
+## Listing Locations and other Geographic Data
+
+### Listing and physical_address tables
+
+While we will be collecting a bunch of listings which are associated with various categories and locations. For some listings it may actually make sense to associate them with more than one category. It may even make sense to associate some listings with multiple addresses, but addresses should be associated only with a single listing (1234 some st. suite 1 and 1234 some st. suite 2 are separate addresses) So the *physical_address* table should have a foreign key on the *listing* table while listings and categories should be related via a join table.
+
+
+### Country -> State/Province -> City -> Postal Data Structure
+
+thinking
+**Outlining new development setup documentation**
+
+I'm planning to create a detailed doc about the full development setup and environment variables, covering project structure, local dev flow, Makefile and env.json usage, SOPS encryption, API key setup, and secrets injection, deciding the best location under docs/development/setup.md while checking existing doc structure and relevant files like apps/api/.env.example.
+exec
+bash -lc 'ls apps/api' in /var/home/rick/Development/mega-directory succeeded in 41ms:
+dist
+Dockerfile
+node_modules
+package.json
+package-lock.json
+src
+test
+tsconfig.json
+types
+
+thinking
+**Searching for environment variable usage**
+exec
+bash -lc "rg -n \"process\\.env\" apps/api/src" in /var/home/rick/Development/mega-directory succeeded in 44ms:
+apps/api/src/logger.ts:39:  const fallback: LogLevel = process.env.NODE_ENV === 'production' ? 'info' : 'debug';
+apps/api/src/server.ts:185:  const parsedPort = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : undefined;
+apps/api/src/server.ts:189:    (process.env.ADMIN_TOKEN_TTL_SECONDS
+apps/api/src/server.ts:190:      ? Number.parseInt(process.env.ADMIN_TOKEN_TTL_SECONDS, 10)
+apps/api/src/server.ts:195:    adminJwtSecret: overrides.adminJwtSecret ?? process.env.ADMIN_JWT_SECRET ?? '',
+apps/api/src/server.ts:196:    adminJwtIssuer: overrides.adminJwtIssuer ?? process.env.ADMIN_JWT_ISSUER ?? PROJECT_NAME,
+apps/api/src/server.ts:197:    adminJwtAudience: overrides.adminJwtAudience ?? process.env.ADMIN_JWT_AUDIENCE ?? 'admin',
+apps/api/src/server.ts:198:    crawlerBearerToken: overrides.crawlerBearerToken ?? process.env.CRAWLER_BEARER_TOKEN ?? '',
+apps/api/src/server.ts:201:      process.env.ADMIN_LOGIN_EMAIL ??
+apps/api/src/server.ts:202:      process.env.ADMIN_EMAIL ??
+apps/api/src/server.ts:206:      process.env.ADMIN_LOGIN_PASSCODE ??
+apps/api/src/server.ts:207:      process.env.ADMIN_PASSCODE ??
+apps/api/src/server.ts:213:    geocodeMapsApiKey: overrides.geocodeMapsApiKey ?? process.env.GEOCODEMAPS_API_KEY ?? '',
+apps/api/src/server.ts:214:    googleGeocodeApiKey: overrides.googleGeocodeApiKey ?? process.env.GOOGLEMAPS_API_KEY ?? ''
+apps/api/src/server.ts:270:      environment: process.env.NODE_ENV || 'development'
+apps/api/src/server.ts:296:      { event: 'api.start', port, environment: process.env.NODE_ENV || 'development' },
+
+thinking
+**Checking environment variables usage**
+exec
+bash -lc 'rg -n "import.meta.env" -n apps/web/src' in /var/home/rick/Development/mega-directory succeeded in 46ms:
+apps/web/src/data/directory-service.js:6:    ? import.meta.env.PUBLIC_API_BASE_URL
+
+thinking
+**Opening a file**
+exec
+bash -lc "sed -n '1,160p' apps/web/src/data/directory-service.js" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+import { directoryCatalog } from './directory-catalog.js';
+import { findDirectoryBySlug } from '../lib/directory-helpers.js';
+
+const API_BASE_URL =
+  typeof import.meta?.env?.PUBLIC_API_BASE_URL === 'string'
+    ? import.meta.env.PUBLIC_API_BASE_URL
+    : typeof process !== 'undefined'
+      ? process.env.PUBLIC_API_BASE_URL
+      : undefined;
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed request ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchDirectoryCatalog() {
+  if (!API_BASE_URL) {
+
+thinking
+**Checking environment variable usage**
+exec
+bash -lc "rg -n \"process\\.env\" -n apps/admin" in /var/home/rick/Development/mega-directory succeeded in 46ms:
+apps/admin/services/apiClient.js:8:  const baseUrl = process.env.ADMIN_API_BASE_URL || process.env.API_BASE_URL || null;
+apps/admin/services/apiClient.js:9:  const token = process.env.ADMIN_API_TOKEN || null;
+apps/admin/index.js:10:const port = process.env.PORT || 4000;
+
+thinking
+**Opening file for more context**
+exec
+bash -lc "sed -n '1,160p' apps/admin/services/apiClient.js" in /var/home/rick/Development/mega-directory succeeded in 40ms:
+const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings/review';
+
+async function submitListingUpdates(updates = []) {
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return { delivered: 0 };
+  }
+
+  const baseUrl = process.env.ADMIN_API_BASE_URL || process.env.API_BASE_URL || null;
+  const token = process.env.ADMIN_API_TOKEN || null;
+
+  if (!baseUrl || !token) {
+    return {
+      delivered: 0,
+      skipped: updates.length,
+      reason: 'Admin API base URL or token is not configured'
+    };
+  }
+
+  if (typeof fetch !== 'function') {
+    return {
+
+thinking
+**Checking environment setup in admin index**
+exec
+bash -lc "sed -n '1,200p' apps/admin/index.js" in /var/home/rick/Development/mega-directory succeeded in 41ms:
+const path = require('path');
+const express = require('express');
+
+const listingsRouter = require('./routes/listings');
+const seoRouter = require('./routes/seo');
+const categoryLocationsRouter = require('./routes/categoryLocations');
+const directoryPagesRouter = require('./routes/directoryPages');
+
+const app = express();
+const port = process.env.PORT || 4000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.locals.appName = 'Mega Directory Admin';
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.get('/', (req, res) => {
+
+thinking
+**Inspecting environment usage in crawler**
+exec
+bash -lc "rg -n \"os\\.environ\" -n apps/crawler" in /var/home/rick/Development/mega-directory exited 1 in 45ms:
+
+
+thinking
+**Searching for usage of os.getenv**
+exec
+bash -lc "rg -n \"os\\.getenv\" -n apps/crawler" in /var/home/rick/Development/mega-directory succeeded in 43ms:
+apps/crawler/text_import.py:542:        model = args.llm_model or os.getenv("TEXT_IMPORT_LLM_MODEL") or "gpt-4o-mini"
+apps/crawler/text_import.py:543:        template = args.text_prompt_template or os.getenv("TEXT_IMPORT_PROMPT_TEMPLATE") or DEFAULT_TEXT_PROMPT
+apps/crawler/text_import.py:573:        or os.getenv("TEXT_IMPORT_LLM_API_KEY")
+apps/crawler/text_import.py:574:        or os.getenv("OPENROUTER_API_KEY")
+apps/crawler/text_import.py:575:        or os.getenv("OPENAI_API_KEY")
+apps/crawler/text_import.py:577:    provider = args.llm_provider or os.getenv("TEXT_IMPORT_LLM_PROVIDER")
+apps/crawler/text_import.py:578:    base_url = args.llm_base_url or os.getenv("TEXT_IMPORT_LLM_BASE_URL")
+apps/crawler/text_import.py:579:    timeout = args.llm_timeout or float(os.getenv("TEXT_IMPORT_LLM_TIMEOUT", "30"))
+apps/crawler/text_import.py:580:    system_prompt = args.llm_system_prompt or os.getenv("TEXT_IMPORT_LLM_SYSTEM_PROMPT")
+apps/crawler/dev_runner.py:122:        default=os.getenv("CRAWLER_API_ENDPOINT")
+apps/crawler/dev_runner.py:123:        or os.getenv("CRAWLER_DEV_API_ENDPOINT")
+apps/crawler/dev_runner.py:129:        default=os.getenv("CRAWLER_API_TOKEN")
+apps/crawler/dev_runner.py:130:        or os.getenv("CRAWLER_BEARER_TOKEN")
+apps/crawler/dev_runner.py:137:        default=float(os.getenv("CRAWLER_DEV_INTERVAL", "45")),
+apps/crawler/crawler.py:996:        os.getenv("CRAWLER_LOG_LEVEL")
+apps/crawler/crawler.py:997:        or os.getenv("LOG_LEVEL")
+apps/crawler/crawler.py:998:        or ("INFO" if os.getenv("NODE_ENV") == "production" else "DEBUG")
+
+thinking
+**Preparing documentation for setup**
+exec
+bash -lc 'cat package.json' in /var/home/rick/Development/mega-directory succeeded in 40ms:
+{
+  "name": "mega-directory",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test:root && npm run test:workspaces",
+    "test:root": "node --test tests/**/*.test.js",
+    "test:workspaces": "npm run test --workspaces --if-present"
+  }
+}
+
+thinking
+**Outlining comprehensive environment documentation**
+
+I’m planning a detailed doc on development setup covering prerequisites, repo structure, local flow, secrets management with SOPS and env.json, env var breakdown per component, and tooling like Makefile and dev-bootstrap scripts. I want to document env var usage, SOPS encryption details, Docker interplay, and testing next steps, aiming to create a clear, structured guide under docs/development/setup.md.
+exec
+bash -lc 'cat docker-compose.yml' in /var/home/rick/Development/mega-directory succeeded in 39ms:
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./apps/api
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:password@db:5432/mega_directory
+      ADMIN_JWT_SECRET: local-dev-secret
+      ADMIN_LOGIN_EMAIL: admin@example.com
+      ADMIN_LOGIN_PASSCODE: localpass
+      CRAWLER_BEARER_TOKEN: crawler-dev-token
+      ADMIN_TOKEN_TTL_SECONDS: 900
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+
+thinking
+**Considering environment setup documentation**
+exec
+bash -lc 'cat .env' in /var/home/rick/Development/mega-directory succeeded in 42ms:
+DATABASE_URL=postgresql://postgres:password@localhost:5432/mega_directory
+API_TOKEN=Z3B8n6doWuOpAEviHrki4Kpk
+OPENAI_API_KEY=ysk-proj-i4JEKl44AdpD-1_Xx-TxG9DMscFwqLxeXsTXADItas6-9aXFdb22gGui6kd-U4EdlAnfzU4x3DT3BlbkFJpIUC98KuBj7D87lcfy7CMGKFBi7yuVFNrynQJcWV0M0E0Uk5zlJo6ciuVWiM3NG8COJ-oFu2oA
+OPENROUTER_API_KEY=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
+GEMINI_API_KEY=yAIzaSyDa2zEHW9GGD5zVfSNDH0lUXWvrB_8EJvQ
+ADMIN_JWT_SECRET=mHtAWbWqbgrU5EYk1YmpgRSu9LLESTrq40LzhcvjG1w=
+ADMIN_LOGIN_EMAIL=admin@absurditiesmedia.com
+ADMIN_LOGIN_PASSCODE=lXFruu8gsrufBTpQnkFxTyZq
+CRAWLER_BEARER_TOKEN=VdgeXgbnfw-F5W6Kl5hv3Fz_6Ku1NQ4vA9R4QHyt0VA
+ADMIN_API_TOKEN=admin-dev-token
+
+ADMIN_JWT_ISSUER="mega-directory"
+ADMIN_JWT_AUDIENCE="admin"
+ADMIN_TOKEN_TTL_SECONDS="900"  # 15 minutes
+PORT="3001"
+
+
+thinking
+**Updating documentation for environment and secrets**
+
+I'll clarify that the `.env` file is mostly for convenience, but the real secret sharing should use `env.json` with SOPS. I'll explain how the `Makefile` target `sops-env-export` helps convert between them, and highlight important keys like `GEOCODEMAPS_API_KEY`. Since this relates to step 1 in the plan, I'll also update the plan accordingly.
+Plan update
+Reviewed README, Makefile, env.json, .sops.yaml, scripts/dev-bootstrap.sh, docker-compose.yml, and environment variable usage across apps to gather required context.
+  ✓ Review repository tooling (Makefile, env.json, SOPS config, docs) to outline required content for setup guide.
+  → Create comprehensive development setup documentation covering workflow, env vars, Makefile usage, and SOPS secrets handling.
+  • Run relevant tests/linters to validate repo remains healthy.
+
+thinking
+**Preparing detailed development setup documentation**
+
+I'll create a new markdown doc at `docs/development/setup.md` outlining prerequisites, repo layout, secrets management with SOPS, environment variables by component, local development flow, Docker Compose usage, and troubleshooting. The doc will also reference Makefile commands and explain env file patterns; once done, I’ll add the file via an apply_patch "Add File" commit.
+file update
+A /var/home/rick/Development/mega-directory/docs/development/setup.md
+# Mega Directory Development Setup Guide
+
+This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
+
+## 1. Prerequisites
+
+Install the following tools before running anything from the repo:
+
+- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
+- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
+- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
+- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
+- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
+- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
+- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
+
+## 2. Repository Layout and Tooling
+
+| Path | Purpose | Dev commands | Default port(s) |
+| --- | --- | --- | --- |
+| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
+| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
+| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
+| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
+| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
+| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
+| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
+| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
+
+> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
+
+## 3. Secrets and Environment Management
+
+### 3.1 Source of truth files
+
+- `.env.example` – human-readable defaults; copy values when creating new secrets.
+- `.env` – optional local overrides (ignored by git); **do not commit**.
+- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
+- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
+
+### 3.2 Makefile helpers (`Makefile`)
+
+| Target | What it does | Example |
+| --- | --- | --- |
+| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
+| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
+| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
+| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
+
+### 3.3 Typical workflow
+
+1. **Decrypt for editing**  
+   ```bash
+   make sops-decrypt > env.local.json
+   ```
+   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
+
+2. **Re-encrypt and replace**  
+   ```bash
+   mv env.local.json env.json
+   make sops-encryptkeys
+   ```
+
+3. **Load values into your shell**  
+   ```bash
+   # One-off shell session
+   eval "$(make sops-env-export)"
+
+   # or write an .env file
+   make sops-decrypt > .env && direnv allow
+   ```
+
+4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
+
+> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
+
+### 3.4 Secrets you need
+
+| Service | Variables | Notes |
+| --- | --- | --- |
+| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
+| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
+| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
+| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
+| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
+| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
+
+## 4. Environment Variables by Component
+
+### 4.1 Shared / global
+
+- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
+- `PORT` – consumed by whichever service you launch in the current directory.
+
+### 4.2 API server (`apps/api`)
+
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | HTTP port (default 3001). |
+| `DATABASE_URL` | Prisma/Postgres connection string. |
+| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
+| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
+| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
+| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
+| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
+
+### 4.3 Web frontend (`apps/web`)
+
+- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
+
+### 4.4 Admin interface (`apps/admin`)
+
+- `PORT` (default 4000).
+- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
+- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
+
+### 4.5 Python crawler & text importer (`apps/crawler`)
+
+| Variable | Purpose |
+| --- | --- |
+| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
+| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
+| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
+| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
+| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
+
+### 4.6 Tooling helpers
+
+`./scripts/dev-bootstrap.sh` honors:
+
+- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
+- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
+- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
+- `SKIP_CRAWLER=1` – keep the demo crawler offline.
+- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
+- `PYTHON_BIN` – choose a non-default Python interpreter.
+
+Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
+
+## 5. Running the Stack
+
+### 5.1 Quick bootstrap (recommended for day-to-day work)
+
+```bash
+eval "$(make sops-env-export)"   # load secrets into your shell
+./scripts/dev-bootstrap.sh
+```
+
+The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
+
+### 5.2 Manual startup
+
+1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
+2. Start Postgres (local server or `docker compose up db`).
+3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
+4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
+
+### 5.3 Database seeding
+
+- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
+- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
+
+### 5.4 Docker Compose option
+
+For an API + web + Postgres demo backed by Docker:
+
+```bash
+eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
+docker compose up --build
+```
+
+The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
+
+## 6. Troubleshooting and Tips
+
+- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
+- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
+- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
+- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
+- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
+
+Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+apply_patch(auto_approved=true) exited 0 in 7ms:
+Success. Updated the following files:
+A docs/development/setup.md
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+
+thinking
+**Verifying documentation accessibility**
+Plan update
+Added docs/development/setup.md describing prerequisites, repo layout, secret management (env.json + SOPS + Makefile), component-specific environment variables, and local dev workflows per task requirements.
+  ✓ Review repository tooling (Makefile, env.json, SOPS config, docs) to outline required content for setup guide.
+  ✓ Create comprehensive development setup documentation covering workflow, env vars, Makefile usage, and SOPS secrets handling.
+  → Run relevant tests/linters to validate repo remains healthy.
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+
+thinking
+**Running root-level tests**
+exec
+bash -lc 'npm test' in /var/home/rick/Development/mega-directory succeeded in 3.91s:
+
+> mega-directory@0.1.0 test
+> npm run test:root && npm run test:workspaces
+
+
+> mega-directory@0.1.0 test:root
+> node --test tests/**/*.test.js
+
+TAP version 13
+# Subtest: tests/directory_pages_schema.test.js
+ok 1 - tests/directory_pages_schema.test.js
+  ---
+  duration_ms: 151.414789
+  type: 'test'
+  ...
+# Subtest: tests/listings_table_enhancements.test.js
+ok 2 - tests/listings_table_enhancements.test.js
+  ---
+  duration_ms: 147.940345
+  type: 'test'
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+
+thinking
+**Updating plan progress**
+Plan update
+Executed `npm test` at repo root; all workspace test suites passed.
+  ✓ Review repository tooling (Makefile, env.json, SOPS config, docs) to outline required content for setup guide.
+  ✓ Create comprehensive development setup documentation covering workflow, env vars, Makefile usage, and SOPS secrets handling.
+  ✓ Run relevant tests/linters to validate repo remains healthy.
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+
+thinking
+**Preparing final response with line references**
+exec
+bash -lc "nl -ba docs/development/setup.md | sed -n '1,200p'" in /var/home/rick/Development/mega-directory succeeded in 42ms:
+     1	# Mega Directory Development Setup Guide
+     2	
+     3	This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
+     4	
+     5	## 1. Prerequisites
+     6	
+     7	Install the following tools before running anything from the repo:
+     8	
+     9	- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
+    10	- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
+    11	- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
+    12	- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
+    13	- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
+    14	- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
+    15	- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
+    16	
+    17	## 2. Repository Layout and Tooling
+    18	
+    19	| Path | Purpose | Dev commands | Default port(s) |
+    20	| --- | --- | --- | --- |
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+
+thinking
+**Summarizing documentation addition and tests**
+
+I’m putting together a final summary highlighting the new development setup doc at `docs/development/setup.md:1`, covering prerequisites, repo layout, SOPS secrets management, environment variable breakdown, and local dev stack instructions. I’ll include testing info showing `npm test` passed, and suggest possible next steps like linking this doc from the README for team visibility. Breaking down key line sections for references will help clarify which parts cover SOPS workflow, env vars, and stack commands. This should neatly wrap up the changes and offer a clear path forward.
+codex
+**Changes**
+- Added a comprehensive development setup guide (`docs/development/setup.md:1`) covering prerequisites, monorepo layout, and day-to-day tooling expectations.
+- Documented the SOPS + `env.json` workflow, Makefile helpers, and key secrets/APIs so teammates can rotate credentials safely (`docs/development/setup.md:34-138`).
+- Captured component-specific environment variables along with bootstrap, manual, and Docker Compose runbooks plus DB seeding tips to complete the onboarding story (`docs/development/setup.md:77-173`).
+
+**Tests**
+- `npm test` (pass)
+
+Next steps: 1) Link the new guide from `README.md` so newcomers see it immediately, 2) Decide whether additional automation (e.g., direnv template) should source `make sops-env-export` by default.
+file update:
+diff --git a/docs/development/setup.md b/docs/development/setup.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06cbb745c25159181369a5fd8c901979c66973b
+--- /dev/null
++++ b/docs/development/setup.md
+@@ -0,0 +1,182 @@
++# Mega Directory Development Setup Guide
++
++This guide explains how to configure a workstation for Mega Directory, how the monorepo is organized, and how to manage secrets with `env.json`, SOPS, and the provided Makefile targets. Keep this document close when onboarding new developers or rotating API keys.
++
++## 1. Prerequisites
++
++Install the following tools before running anything from the repo:
++
++- **Node.js 20+ and npm** – workspaces are classic `npm` projects.
++- **Python 3.10+** – used by the crawler, text importer, and dev bootstrapper.
++- **PostgreSQL 15+ or Docker** – API needs a Postgres instance; Docker Compose can start one for you.
++- **SOPS** (`sops` CLI) – encrypts/decrypts `env.json`.
++- **GnuPG** – import the team PGP key with fingerprint `CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`.
++- **jq** – used by `make sops-env-export` to transform JSON into `export` statements.
++- Optional: `direnv`, Docker Desktop/Podman, Railway CLI.
++
++## 2. Repository Layout and Tooling
++
++| Path | Purpose | Dev commands | Default port(s) |
++| --- | --- | --- | --- |
++| `apps/api` | Express + Prisma API server (listings, admin routes, geocoding) | `npm run dev`, `npm test` | 3001 |
++| `apps/web` | Astro SSR frontend | `npm run dev`, `npm run build` | 3000 |
++| `apps/admin` | Express + EJS admin console | `npm run dev` | 4000 |
++| `apps/crawler` | Python crawler, enrichment tooling, text importer | `python main.py`, `python dev_runner.py` | n/a |
++| `packages/shared-config` | Shared constants for ports, labels, API routes | consumed via npm workspaces | n/a |
++| `db` | Prisma schema, migration helpers, `seedGeography.ts` | `npx ts-node db/scripts/seedGeography.ts` | n/a |
++| `scripts/dev-bootstrap.sh` | Spins up API + web + admin (+ optional crawler) with sensible defaults | `./scripts/dev-bootstrap.sh` | 3000–4000 |
++| `docker-compose.yml` | API + web + Postgres for quick demos | `docker compose up --build` | Same as above |
++
++> Tip: `npm install` at the repo root installs workspace dependencies for all JavaScript packages. The dev bootstrap script also installs missing dependencies automatically when `node_modules` is absent.
++
++## 3. Secrets and Environment Management
++
++### 3.1 Source of truth files
++
++- `.env.example` – human-readable defaults; copy values when creating new secrets.
++- `.env` – optional local overrides (ignored by git); **do not commit**.
++- `env.json` – canonical secrets store, encrypted with SOPS. Values without `_unencrypted` or `_pt` suffixes are encrypted at rest.
++- `.sops.yaml` – enforces encryption rules and recipients. By default every file is encrypted for the shared PGP key and fields ending in `_unencrypted` remain plaintext.
++
++### 3.2 Makefile helpers (`Makefile`)
++
++| Target | What it does | Example |
++| --- | --- | --- |
++| `make sops-encryptkeys [FILE=env.json]` | Encrypts/rewrites a JSON secrets file. Run after editing decrypted content. | `make sops-encryptkeys` |
++| `make sops-updatekeys [FILE=env.json]` | Re-wraps the file using recipients from `.sops.yaml` (useful when adding new PGP keys). | `make sops-updatekeys FILE=config/other.json` |
++| `make sops-decrypt [FILE=env.json]` | Prints decrypted JSON to stdout (redirect to a temporary file if needed). | `make sops-decrypt > env.local.json` |
++| `make sops-env-export [FILE=env.json]` | Decrypts JSON, strips `_pt`/`_unencrypted` suffixes, and outputs `export KEY=value` lines ready to `eval`/`source`. Requires `jq`. | `eval "$(make sops-env-export)"` |
++
++### 3.3 Typical workflow
++
++1. **Decrypt for editing**  
++   ```bash
++   make sops-decrypt > env.local.json
++   ```
++   Edit `env.local.json`, keeping sensitive values without `_unencrypted` suffixes.
++
++2. **Re-encrypt and replace**  
++   ```bash
++   mv env.local.json env.json
++   make sops-encryptkeys
++   ```
++
++3. **Load values into your shell**  
++   ```bash
++   # One-off shell session
++   eval "$(make sops-env-export)"
++
++   # or write an .env file
++   make sops-decrypt > .env && direnv allow
++   ```
++
++4. **Add/rotate keys** – append new entries (e.g., `GEOCODEMAPS_API_KEY`) to `env.json`, encrypt, and share the updated file. Remember to update `.sops.yaml` if you add more PGP recipients or cloud KMS keys.
++
++> `_unencrypted` suffix: SOPS leaves these values as plaintext (useful for innocuous defaults like `"PORT_unencrypted": "3001"`). `sops-env-export` automatically removes the suffix so `PORT` lands in your shell with the plaintext value.
++
++### 3.4 Secrets you need
++
++| Service | Variables | Notes |
++| --- | --- | --- |
++| Postgres | `DATABASE_URL` | Format: `postgresql://user:pass@host:port/db`. Used by API and scripts. |
++| Authentication | `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | Power admin login/session tokens. |
++| Admin bootstrap creds | `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` | Seed user for `/v1/admin/auth/login`. Rotate post-onboarding. |
++| API tokens | `CRAWLER_BEARER_TOKEN`, `ADMIN_API_TOKEN`, `API_TOKEN` | Tokens used by crawler, admin UI submissions, or partner ingestion. |
++| Geocoding | `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | API tries Maps.co first, then Google as fallback. |
++| LLM providers | `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Used by crawler enrichment + text importer. Only set the providers you plan to call. |
++
++## 4. Environment Variables by Component
++
++### 4.1 Shared / global
++
++- `NODE_ENV`, `LOG_LEVEL` – toggles logging and dev/prod behavior across services.
++- `PORT` – consumed by whichever service you launch in the current directory.
++
++### 4.2 API server (`apps/api`)
++
++| Variable | Purpose |
++| --- | --- |
++| `PORT` | HTTP port (default 3001). |
++| `DATABASE_URL` | Prisma/Postgres connection string. |
++| `ADMIN_JWT_SECRET`, `ADMIN_JWT_ISSUER`, `ADMIN_JWT_AUDIENCE`, `ADMIN_TOKEN_TTL_SECONDS` | JWT signing + verification settings for the admin dashboard. |
++| `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE` (or `ADMIN_EMAIL`/`ADMIN_PASSCODE`) | Seed credentials for the admin auth endpoint. |
++| `CRAWLER_BEARER_TOKEN` | Token required by `/v1/crawler/listings`. Mirror in crawler config. |
++| `GEOCODEMAPS_API_KEY`, `GOOGLEMAPS_API_KEY` | Primary and fallback geocoding providers. |
++| `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` | Optional – passed to enrichment workers that the API may spin up. |
++
++### 4.3 Web frontend (`apps/web`)
++
++- `PUBLIC_API_BASE_URL` (Astro `PUBLIC_` prefix ensures bundler exposure). Controls which API endpoint directory pages use. The dev bootstrap script injects `http://localhost:3001`.
++
++### 4.4 Admin interface (`apps/admin`)
++
++- `PORT` (default 4000).
++- `ADMIN_API_BASE_URL` (preferred) or `API_BASE_URL` – API origin for moderation endpoints.
++- `ADMIN_API_TOKEN` – bearer token sent with moderation POSTs.
++
++### 4.5 Python crawler & text importer (`apps/crawler`)
++
++| Variable | Purpose |
++| --- | --- |
++| `CRAWLER_API_ENDPOINT` | Target API URL (defaults to `/v1/crawler/listings`). |
++| `CRAWLER_API_TOKEN` / `CRAWLER_BEARER_TOKEN` | Authentication token matching the API server. |
++| `CRAWLER_LOG_LEVEL` | Overrides logging level (`DEBUG`, `INFO`, etc.). |
++| `TEXT_IMPORT_LLM_PROVIDER`, `TEXT_IMPORT_LLM_MODEL`, `TEXT_IMPORT_LLM_API_KEY`, `TEXT_IMPORT_LLM_BASE_URL`, `TEXT_IMPORT_LLM_TIMEOUT`, `TEXT_IMPORT_LLM_SYSTEM_PROMPT`, `TEXT_IMPORT_PROMPT_TEMPLATE` | Optional overrides for the text import pipeline. |
++| `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` | Picked up automatically if specific `TEXT_IMPORT_*` vars are not provided. |
++
++### 4.6 Tooling helpers
++
++`./scripts/dev-bootstrap.sh` honors:
++
++- `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` – override default ports.
++- `API_BASE_URL`, `ADMIN_API_BASE_URL` – force specific origins for frontend/admin when API runs elsewhere.
++- `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, `CRAWLER_API_TOKEN`, `ADMIN_API_TOKEN`, `DATABASE_URL` – override defaults when you want the bootstrapper to mirror real secrets.
++- `SKIP_CRAWLER=1` – keep the demo crawler offline.
++- `DEV_BOOTSTRAP_FORCE_INSTALL=1` – force reinstall of npm/pip dependencies.
++- `PYTHON_BIN` – choose a non-default Python interpreter.
++
++Docker Compose uses the same values baked into `docker-compose.yml` but you can override them by exporting variables before running `docker compose up`.
++
++## 5. Running the Stack
++
++### 5.1 Quick bootstrap (recommended for day-to-day work)
++
++```bash
++eval "$(make sops-env-export)"   # load secrets into your shell
++./scripts/dev-bootstrap.sh
++```
++
++The script installs missing npm/pip deps, launches the API, Astro frontend, admin UI, and (unless `SKIP_CRAWLER=1`) the demo crawler loop. Ports are printed in the terminal, and the script traps Ctrl+C to stop everything cleanly.
++
++### 5.2 Manual startup
++
++1. Install dependencies: `npm install` (repo root) and `python -m pip install -r apps/crawler/requirements-dev.txt`.
++2. Start Postgres (local server or `docker compose up db`).
++3. Export required env vars (see Section 4) – easiest via `make sops-env-export`.
++4. Start each service from its directory (`npm run dev` for `apps/api`, `apps/web`, `apps/admin`; `python apps/crawler/dev_runner.py --run-once` for the crawler).
++
++### 5.3 Database seeding
++
++- Run `npx ts-node db/scripts/seedGeography.ts` to load the sample geography data under `db/geography/sample`. Provide `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` to point at full datasets (see `README.md` and `db/geography/README.md` for details).
++- Prisma migrations live alongside the API code; run `npx prisma migrate dev` from `apps/api` once `DATABASE_URL` points at your target database.
++
++### 5.4 Docker Compose option
++
++For an API + web + Postgres demo backed by Docker:
++
++```bash
++eval "$(make sops-env-export)"   # ensures your shell has matching secrets if you need them
++docker compose up --build
++```
++
++The compose file mounts the local `apps/api` and `apps/web` folders so code changes hot-reload inside the containers.
++
++## 6. Troubleshooting and Tips
++
++- **Missing `sops` or `jq`** – install via Homebrew (`brew install sops jq`) or your distro package manager.
++- **Decrypt errors** – ensure your PGP private key is imported and available (`gpg --list-secret-keys CB3B963C0AB97B34BAF22D68F9D46501F1146F9F`).
++- **Port conflicts** – override `API_PORT`, `ASTRO_PORT`, `ADMIN_PORT` before running the bootstrapper or compose stack.
++- **Crawler auth failures** – verify both the API server and crawler share the same `CRAWLER_BEARER_TOKEN`.
++- **LLM billing** – set only the provider keys you intend to use; the crawler tries `TEXT_IMPORT_LLM_API_KEY` first, then falls back to `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` in that order.
++
++Keep `env.json` as the single source of truth, and lean on the Makefile + SOPS workflow to keep secrets synchronized across the team without leaking plaintext credentials into git.
+
+tokens used
+39,038
+**Changes**
+- Added a comprehensive development setup guide (`docs/development/setup.md:1`) covering prerequisites, monorepo layout, and day-to-day tooling expectations.
+- Documented the SOPS + `env.json` workflow, Makefile helpers, and key secrets/APIs so teammates can rotate credentials safely (`docs/development/setup.md:34-138`).
+- Captured component-specific environment variables along with bootstrap, manual, and Docker Compose runbooks plus DB seeding tips to complete the onboarding story (`docs/development/setup.md:77-173`).
+
+**Tests**
+- `npm test` (pass)
+
+Next steps: 1) Link the new guide from `README.md` so newcomers see it immediately, 2) Decide whether additional automation (e.g., direnv template) should source `make sops-env-export` by default.
