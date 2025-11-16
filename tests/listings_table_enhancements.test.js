@@ -8,7 +8,8 @@ const MIGRATION_FILE = path.resolve(
   '..',
   'db',
   'migrations',
-  '003_listings_table_enhancements.sql'
+  '003_listings_table_enhancements',
+  'migration.sql'
 );
 const PRISMA_SCHEMA = path.resolve(__dirname, '..', 'db', 'schema.prisma');
 

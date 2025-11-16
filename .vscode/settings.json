@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "**/dist": true,
+    "**/node_modules": true
+  },
+  "typescript.tsdk": "apps/api/node_modules/typescript/lib",
+  "files.associations": {
+    "*.astro": "astro"
+  }
+}

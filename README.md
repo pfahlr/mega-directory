@@ -23,7 +23,7 @@ Mega Directory is a server-rendered directory listing platform built with Astro,
 
 ## Setup
 
-Install dependencies for each workspace inside the monorepo:
+### Install workspace dependencies
 
 ```bash
 cd apps/api && npm install
@@ -32,7 +32,31 @@ cd apps/admin && npm install
 python -m pip install -r apps/crawler/requirements-dev.txt
 ```
 
-Database schema and seed scripts live under `/db`. Run Prisma/DB commands from the `apps/api` workspace once the API server has been configured with a connection string (see future Codex tasks for details). Shared constants (ports, labels, etc.) live in `packages/shared-config` and are linked into each app automatically.
+Shared constants (ports, labels, etc.) live in `packages/shared-config` and are linked into each app automatically.
+
+### Secrets and environment variables
+
+All sensitive configuration is stored in `env.json` (encrypted with SOPS). Loading the values into your shell is the easiest way to keep every process in sync:
+
+```bash
+eval "$(make sops-env-export)"  # decrypts env.json and exports DATABASE_URL, JWT secrets, etc.
+```
+
+You can also `make sops-decrypt > .env` and `source .env` if you prefer classic dotenv files. At a minimum you must supply `DATABASE_URL`, `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, and `CRAWLER_BEARER_TOKEN` before running the API or admin services.
+
+### Initialize a brand-new database
+
+Database schema and seed scripts live under `/db`. Run Prisma commands from anywhere in the repo (they default to `db/schema.prisma`):
+
+1. **Provision Postgres** – local server, Docker, or a managed service; note the resulting `DATABASE_URL`.
+2. **Install Prisma tooling (first run only)** – `npm install --save-dev prisma && npm install @prisma/client`.
+3. **Apply the migrations** – `DATABASE_URL=postgresql://... npx prisma migrate deploy --schema db/schema.prisma` (or `migrate dev` while iterating). This executes `db/migrations/001_core_schema/migration.sql` → `002_location_hierarchy/migration.sql` → `003_listings_table_enhancements/migration.sql`.
+4. **Generate the Prisma client** – `DATABASE_URL=postgresql://... npx prisma generate --schema db/schema.prisma` so both scripts and the API can talk to the DB.
+5. **Seed required data**  
+   - `DATABASE_URL=postgresql://... npx ts-node db/scripts/seedGeography.ts` loads the bundled geography sample (`db/geography/sample`) or a full dataset when `GEO_DATASET_DIR`/`GEO_POSTAL_FILE` are set.
+   - `DATABASE_URL=postgresql://... npx ts-node db/seed.ts` creates the demo admin, categories, directories, listings, and featured slots.
+
+You can re-run the seeders safely; they upsert by natural keys.
 
 ### Geographic Seed Data
 
@@ -50,6 +74,26 @@ npx ts-node db/scripts/seedGeography.ts
 See `db/geography/README.md` for the expected file layout, batching controls,
 and notes about countries that do not issue postal codes.
 
+### Local development instance (API + Web + Admin + DB)
+
+There are two supported ways to run the full stack locally:
+
+1. **Bootstrap script (recommended)**  
+   ```bash
+   eval "$(make sops-env-export)"         # loads DATABASE_URL plus JWT/crawler secrets
+   ./scripts/dev-bootstrap.sh             # starts API (3030), web (3000), admin (4000), crawler
+   ```
+   The script installs missing npm/pip deps, forwards the environment variables listed above, and points every service at the same `DATABASE_URL`. Set `SKIP_CRAWLER=1` to leave the crawler offline or override ports/secrets with the documented env vars (`API_PORT`, `ASTRO_PORT`, `ADMIN_PORT`, `ADMIN_JWT_SECRET`, `CRAWLER_API_TOKEN`, etc.).
+
+2. **Manual control**  
+   - Ensure Postgres is running and migrations + seeders have completed.
+   - Start the API: `cd apps/api && DATABASE_URL=... ADMIN_JWT_SECRET=... npm run dev`.
+   - Start the Astro frontend: `cd apps/web && API_BASE_URL=http://localhost:3030 npm run dev`.
+   - Start the Admin UI: `cd apps/admin && API_BASE_URL=http://localhost:3030 ADMIN_API_BASE_URL=http://localhost:3030 ADMIN_API_TOKEN=... npm run dev`.
+   - (Optional) Start the crawler with `python apps/crawler/dev_runner.py --run-once` or `python main.py`.
+
+All services expect the same `DATABASE_URL` and shared secrets so moderation actions, featured slots, and crawler ingestion use the same state.
+
 ## Running with Docker Compose
 
 `docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro-powered `web` frontend. Bring them up together with:
@@ -59,6 +103,34 @@ docker compose up --build
 ```
 
 Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) before running Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
+
+### Production node (Web + API + DB)
+
+Typical production deployments run the Astro SSR frontend and Express API alongside a managed Postgres instance (Railway, Render, Fly.io, bare metal, etc.). The high-level flow matches local setup:
+
+1. Provision Postgres and export `DATABASE_URL`. Run the Prisma migrations and seed steps from the **Initialize a brand-new database** section once per environment (staging, prod, etc.).
+2. Build the API: `cd apps/api && npm run build`. Start it with a process manager (`node dist/server.js`, PM2, systemd, Docker) while providing `DATABASE_URL`, JWT secrets, crawler/admin tokens, and `PORT`.
+3. Build the web frontend: `cd apps/web && npm run build`. Deploy the generated SSR bundle with `npm run start` (Node), `astro build --adapter=node`, Docker, or your preferred platform. Set `API_BASE_URL` so the frontend calls the correct API host.
+4. Front a CDN/proxy (e.g., Cloudflare) to terminate TLS and direct traffic:  
+   - `https://api.example.com` → API service  
+   - `https://www.example.com` (or subdomains) → Astro SSR service
+5. Backups & monitoring: enable automated Postgres snapshots, point your uptime checks at `/health`, and forward structured logs to your stack (Railway, Logtail, etc.).
+
+For fully containerized deployments, reuse the Dockerfiles in `apps/api/Dockerfile` and `apps/web/Dockerfile` or the Compose file as a template.
+
+### Admin node (Admin UI + API)
+
+The admin interface is a lightweight Express app that talks to the same API the public stack uses. You can co-host it with the API or deploy it separately (e.g., behind a company VPN):
+
+1. Install dependencies and build: `cd apps/admin && npm install && npm run build`.
+2. Supply the required env vars when starting the service:
+   - `PORT` – listening port (defaults to 4000 locally).
+   - `API_BASE_URL` – URL that powers the marketing site (used for links).
+   - `ADMIN_API_BASE_URL` – internal/admin API endpoint (often the same as API_BASE_URL).
+   - `ADMIN_API_TOKEN` – bearer token that the admin UI sends to `/v1/admin/**` routes.
+3. Run the admin server: `node dist/server.js` (or wrap it with your process manager / Docker image).
+4. Ensure the target API instance already trusts the admin token (`ADMIN_API_TOKEN`) and that migrations/seeds have run against the shared database.
+5. Optionally host multiple admin nodes (e.g., operations, support) by pointing them at the same API and rotating the token via `env.json`.
 
 ## Logging & Monitoring
 

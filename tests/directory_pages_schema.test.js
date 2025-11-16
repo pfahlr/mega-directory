@@ -4,7 +4,14 @@ const path = require('node:path');
 const test = require('node:test');
 
 function loadCoreSchema() {
-  const schemaPath = path.resolve(__dirname, '..', 'db', 'migrations', '001_core_schema.sql');
+  const schemaPath = path.resolve(
+    __dirname,
+    '..',
+    'db',
+    'migrations',
+    '001_core_schema',
+    'migration.sql'
+  );
   return fs.readFileSync(schemaPath, 'utf8');
 }
 

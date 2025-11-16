@@ -10,5 +10,14 @@
     "test": "npm run test:root && npm run test:workspaces",
     "test:root": "node --test tests/**/*.test.js",
     "test:workspaces": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
   }
 }

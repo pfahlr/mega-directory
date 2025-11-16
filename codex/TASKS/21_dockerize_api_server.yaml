@@ -5,7 +5,7 @@ description: >
   - Use an official Node.js base image (e.g., node:18-slim).
   - Copy source code and install production dependencies.
   - Define proper CMD to start the server.
-  - Expose the correct port (e.g., 3001).
+  - Expose the correct port (e.g., 3030).
   - Include a `.dockerignore` to minimize context.
   - Ensure compatibility with Railway deployment.
 dependencies: []

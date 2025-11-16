@@ -3,7 +3,7 @@ title: "Define Multi-Service Docker Compose for Local Dev"
 description: >
   Create a docker-compose.yaml to orchestrate API server, Astro frontend, and Postgres.
   - Define services for: API (Express), frontend (Astro), Postgres.
-  - Map ports (e.g., 3000 for frontend, 3001 for API).
+  - Map ports (e.g., 3000 for frontend, 3030 for API).
   - Use volumes for Postgres persistence.
   - Include basic healthchecks for services.
   - Make services interoperable for local testing.
