@@ -1,3 +1,4 @@
+import './polyfills/fetch';
 import type { Logger } from './logger';
 
 export interface GeocodingAddress {

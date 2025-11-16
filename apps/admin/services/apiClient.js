@@ -1,3 +1,5 @@
+require('../polyfills/fetch');
+
 const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings/review';
 
 class ApiClientError extends Error {
