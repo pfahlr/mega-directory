@@ -1,0 +1,138 @@
+id: 60
+filename: 60_implement_automated_testing.yaml
+title: Implement Automated Testing
+description: >
+  Set up comprehensive automated testing framework with unit, integration, and E2E tests.
+  Currently the project has no test files despite having npm test configured.
+
+  Critical issue:
+  - No automated tests exist
+  - No test framework configured
+  - No test database setup
+  - Manual testing only (error-prone and time-consuming)
+  - No CI/CD validation possible
+
+  Implementation plan:
+
+  1. Install testing dependencies
+     - npm install --save-dev vitest @vitest/ui @types/supertest supertest
+     - npm install --save-dev testcontainers @testcontainers/postgresql
+     - Update package.json test script
+
+  2. Configure Vitest
+     - Create vitest.config.ts in apps/api/
+     - Configure TypeScript paths
+     - Set up test environment
+     - Configure coverage reporting
+
+  3. Create test database setup
+     - Use Testcontainers for isolated PostgreSQL
+     - Create test fixtures and factories
+     - Implement database reset between tests
+     - Seed minimal test data
+
+  4. Write unit tests (apps/api/test/unit/)
+     - db.test.ts: Test database helpers (getDirectoriesWithData, createListingWithAddress)
+     - geocoding.test.ts: Test geocoding functions
+     - validation.test.ts: Test input validation helpers
+     - utils.test.ts: Test utility functions
+
+  5. Write integration tests (apps/api/test/integration/)
+     - listings.test.ts: Test listings CRUD operations
+       - Create listing with addresses
+       - Update listing status
+       - Delete listing (verify cascade)
+       - Query with includes
+     - auth.test.ts: Test authentication
+       - Valid token succeeds
+       - Invalid token returns 403
+       - Missing token returns 401
+     - persistence.test.ts: Test data persistence
+       - Data survives server restart
+       - Concurrent writes don't conflict
+     - public-api.test.ts: Test public endpoints
+       - Only APPROVED listings visible
+       - Filtering works correctly
+
+  6. Write E2E tests (apps/api/test/e2e/)
+     - import-workflow.test.ts: Test complete import workflow
+       - Extract from HTML
+       - POST to API
+       - Verify in database
+       - Approve in admin
+       - Verify visible publicly
+
+  7. Add test utilities
+     - test/helpers/factories.ts: Data factories for creating test objects
+     - test/helpers/database.ts: Database setup/teardown helpers
+     - test/helpers/api.ts: API request helpers with auth
+
+  8. Configure CI test running
+     - Add test:unit script (fast unit tests only)
+     - Add test:integration script (with database)
+     - Add test:coverage script (generate reports)
+     - Add test:watch script (for development)
+
+  Files to create:
+  - apps/api/vitest.config.ts (test configuration)
+  - apps/api/test/setup.ts (global test setup)
+  - apps/api/test/helpers/ (test utilities)
+  - apps/api/test/unit/ (unit tests)
+  - apps/api/test/integration/ (integration tests)
+  - apps/api/test/e2e/ (end-to-end tests)
+
+  Files to modify:
+  - apps/api/package.json (update test scripts, add dependencies)
+  - apps/api/tsconfig.json (add test paths)
+
+  Example test structure:
+
+  # test/integration/listings.test.ts
+  import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+  import { setupTestDatabase, teardownTestDatabase } from '../helpers/database';
+  import { createTestListing } from '../helpers/factories';
+  import { prisma } from '../../src/db';
+
+  describe('Listings CRUD', () => {
+    beforeAll(async () => {
+      await setupTestDatabase();
+    });
+
+    afterAll(async () => {
+      await teardownTestDatabase();
+    });
+
+    it('should create listing with addresses', async () => {
+      const listing = await createTestListing({
+        title: 'Test Business',
+        addresses: [
+          { addressLine1: '123 Test St', city: 'Test City', region: 'TC', country: 'US' }
+        ]
+      });
+
+      expect(listing.id).toBeDefined();
+      expect(listing.addresses).toHaveLength(1);
+    });
+
+    it('should delete listing and cascade addresses', async () => {
+      const listing = await createTestListing();
+      await prisma.listing.delete({ where: { id: listing.id } });
+
+      const addresses = await prisma.listingAddress.findMany({
+        where: { listingId: listing.id }
+      });
+      expect(addresses).toHaveLength(0);
+    });
+  });
+
+  Success criteria:
+  - Test framework configured and running
+  - At least 80% code coverage for critical paths
+  - Unit tests for all helper functions
+  - Integration tests for all endpoints
+  - Tests run in CI/CD pipeline
+  - Tests use isolated test database
+  - All tests pass reliably
+  - Test documentation in README
+
+dependencies: []

@@ -1,0 +1,63 @@
+id: 66
+filename: 66_add_caching_layer_with_redis.yaml
+title: Add Caching Layer with Redis
+description: >
+  Implement Redis caching for frequently accessed data to improve response times
+  and reduce database load. Focus on caching public directory endpoints and
+  read-heavy operations.
+
+  Benefits:
+  - Faster response times for public endpoints
+  - Reduced database load
+  - Better scalability
+  - Cost savings
+
+  Implementation:
+  - Install ioredis
+  - Create cache service module
+  - Cache public directories endpoint
+  - Cache directory by slug endpoint
+  - Invalidate cache on data updates
+  - Add cache TTL configuration
+  - Support cache warming
+
+  Example:
+  npm install ioredis
+
+  # cache.ts
+  import Redis from 'ioredis';
+  const redis = new Redis(process.env.REDIS_URL);
+
+  export async function cacheGet<T>(key: string): Promise<T | null> {
+    const data = await redis.get(key);
+    return data ? JSON.parse(data) : null;
+  }
+
+  export async function cacheSet(key: string, value: any, ttl = 300) {
+    await redis.setex(key, ttl, JSON.stringify(value));
+  }
+
+  export async function cacheDel(pattern: string) {
+    const keys = await redis.keys(pattern);
+    if (keys.length) await redis.del(...keys);
+  }
+
+  # Usage:
+  app.get('/v1/directories', async (req, res) => {
+    const cacheKey = 'directories:all';
+    let directories = await cacheGet(cacheKey);
+    if (!directories) {
+      directories = await getDirectoriesWithData();
+      await cacheSet(cacheKey, directories, 600);
+    }
+    res.json({ data: directories });
+  });
+
+  # Invalidation:
+  app.post('/v1/admin/directories', async (req, res) => {
+    const directory = await prisma.directory.create({ data: req.body });
+    await cacheDel('directories:*');
+    res.status(201).json({ data: directory });
+  });
+
+dependencies: []

@@ -30,7 +30,7 @@ export const createListingSchema = z.object({
   summary: z.string().max(1000).optional().nullable(),
   description: z.string().max(5000).optional().nullable(),
   status: z.enum(['PENDING', 'APPROVED', 'REJECTED'], {
-    message: 'Status must be PENDING, APPROVED, or REJECTED'
+    errorMap: () => ({ message: 'Status must be PENDING, APPROVED, or REJECTED' })
   }).optional().default('PENDING'),
   addresses: z.array(addressSchema)
     .min(1, 'At least one address is required')
@@ -92,7 +92,7 @@ export const bulkReviewSchema = z.object({
     .min(1, 'At least one listing ID is required')
     .max(100, 'Maximum 100 listings can be reviewed at once'),
   action: z.enum(['APPROVE', 'REJECT'], {
-    message: 'Action must be APPROVE or REJECT'
+    errorMap: () => ({ message: 'Action must be APPROVE or REJECT' })
   })
 });
 

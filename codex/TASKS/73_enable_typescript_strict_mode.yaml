@@ -1,0 +1,51 @@
+id: 73
+filename: 73_enable_typescript_strict_mode.yaml
+title: Enable TypeScript Strict Mode
+description: >
+  Enable TypeScript strict mode for better type safety and catch more bugs
+  at compile time.
+
+  Benefits:
+  - Catch more bugs at compile time
+  - Better IDE autocomplete
+  - Self-documenting code
+  - Easier refactoring
+  - No implicit any types
+
+  Implementation:
+  - Update tsconfig.json with strict compiler options
+  - Fix all type errors that arise
+  - Add explicit return types to functions
+  - Handle null/undefined cases explicitly
+  - Remove any implicit any types
+
+  Configuration:
+  # apps/api/tsconfig.json
+  {
+    "compilerOptions": {
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictBindCallApply": true,
+      "strictPropertyInitialization": true,
+      "noImplicitThis": true,
+      "alwaysStrict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true
+    }
+  }
+
+  Migration strategy:
+  1. Enable one strict flag at a time
+  2. Fix errors for that flag
+  3. Test thoroughly
+  4. Move to next flag
+  5. Order: noImplicitAny → strictNullChecks → other flags
+
+dependencies: []

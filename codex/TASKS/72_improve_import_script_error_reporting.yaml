@@ -1,0 +1,74 @@
+id: 72
+filename: 72_improve_import_script_error_reporting.yaml
+title: Improve Import Script Error Reporting
+description: >
+  Enhance text_import.py error reporting with detailed error tracking,
+  warnings, and comprehensive import reports.
+
+  Implementation:
+  - Create ImportResult class to track success/failure
+  - Add detailed error messages with line numbers
+  - Generate import summary report
+  - Log warnings for data quality issues
+  - Export import report to JSON
+  - Add dry-run mode to validate without importing
+
+  Example:
+  # apps/crawler/import_result.py
+  class ImportResult:
+      def __init__(self):
+          self.successful = []
+          self.failed = []
+          self.warnings = []
+
+      def add_error(self, listing, error, line_number=None):
+          self.failed.append({
+              'listing': listing,
+              'error': str(error),
+              'line': line_number,
+              'timestamp': datetime.now().isoformat()
+          })
+
+      def add_warning(self, listing, warning):
+          self.warnings.append({
+              'listing': listing['title'],
+              'warning': warning
+          })
+
+      def to_json(self):
+          return {
+              'summary': {
+                  'total': len(self.successful) + len(self.failed),
+                  'successful': len(self.successful),
+                  'failed': len(self.failed),
+                  'warnings': len(self.warnings)
+              },
+              'successful_listings': self.successful,
+              'failed_listings': self.failed,
+              'warnings': self.warnings
+          }
+
+  # Usage:
+  result = ImportResult()
+
+  for listing in listings:
+      try:
+          if not listing.get('title'):
+              result.add_error(listing, 'Missing required field: title')
+              continue
+          if not listing.get('address'):
+              result.add_warning(listing, 'Missing address information')
+          result.successful.append(listing)
+      except Exception as e:
+          result.add_error(listing, str(e))
+
+  # Output report
+  with open('import-report.json', 'w') as f:
+      json.dump(result.to_json(), f, indent=2)
+
+  print(f"\nImport Summary:")
+  print(f"  Successful: {len(result.successful)}")
+  print(f"  Failed: {len(result.failed)}")
+  print(f"  Warnings: {len(result.warnings)}")
+
+dependencies: []

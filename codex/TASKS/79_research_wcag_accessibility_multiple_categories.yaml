@@ -1,0 +1,640 @@
+id: 79
+filename: 79_research_wcag_accessibility_multiple_categories.yaml
+title: Research WCAG Accessibility for Multiple Disability Categories
+priority: 🟡 Important
+impact: High
+effort: Medium
+dependencies: []
+
+description: >
+  Research and document WCAG accessibility requirements for diverse disability
+  categories including: age-related impairments, multiple disabilities, health
+  conditions, changing abilities, temporary impairments, situational limitations,
+  cognitive disabilities, auditory disabilities, and speech disabilities.
+
+  Goal: Ensure our directory templates are accessible to the widest possible
+  audience, accounting for intersectional disabilities and varied use cases.
+
+  Context: The mega-directory has 2 main public templates used for 99% of pages.
+  Comprehensive accessibility will serve diverse users and create competitive
+  advantage.
+
+reference_urls:
+  - https://www.w3.org/WAI/people-use-web/abilities-barriers/cognitive/
+  - https://www.w3.org/WAI/people-use-web/abilities-barriers/auditory/
+  - https://www.w3.org/WAI/people-use-web/abilities-barriers/speech/
+  - https://www.w3.org/WAI/standards-guidelines/wcag/
+  - https://www.w3.org/WAI/WCAG21/Understanding/
+  - https://webaim.org/articles/cognitive/
+
+research_objectives:
+  - Understand needs of people with cognitive disabilities
+  - Document requirements for users with auditory disabilities
+  - Identify considerations for speech disability users
+  - Research age-related impairment accommodations
+  - Study needs of people with multiple disabilities
+  - Address temporary and situational limitations
+  - Create comprehensive accessibility guidelines
+  - Ensure nothing is overlooked
+
+disability_categories:
+
+  cognitive_disabilities:
+    overview: >
+      Cognitive disabilities affect memory, attention, problem-solving, reading,
+      linguistic, and verbal comprehension, math comprehension, and visual
+      comprehension. Wide range from learning disabilities to intellectual
+      disabilities to mental health conditions.
+
+    types:
+      attention_deficit:
+        conditions: ADHD, attention disorders
+        challenges:
+          - Difficulty focusing on lengthy content
+          - Distracted by animations/movement
+          - Hard to filter relevant information
+          - Difficulty completing multi-step processes
+        needs:
+          - Clear, simple layouts
+          - Minimal distractions
+          - Ability to pause animations
+          - Step-by-step instructions
+          - Progress indicators
+          - Reduce cognitive load
+
+      memory_impairments:
+        conditions: Short-term memory loss, working memory deficits
+        challenges:
+          - Forgetting information from previous pages
+          - Difficulty remembering instructions
+          - Can't recall complex navigation paths
+          - Session timeouts problematic
+        needs:
+          - Consistent navigation
+          - Visible breadcrumbs
+          - Reminder of current task
+          - Save progress functionality
+          - Clear help text
+          - Tolerant error handling
+
+      learning_disabilities:
+        conditions: Dyslexia, dyscalculia, processing disorders
+        challenges:
+          - Difficulty reading complex text
+          - Trouble with small or stylized fonts
+          - Confusion with complex layouts
+          - Math or number comprehension issues
+          - Processing speed limitations
+        needs:
+          - Simple, clear language
+          - Readable fonts
+          - Good spacing and layout
+          - Alternative formats
+          - Supplementary visuals
+          - Adequate time
+
+      intellectual_disabilities:
+        conditions: Down syndrome, developmental disabilities
+        challenges:
+          - Complex language difficult
+          - Abstract concepts challenging
+          - Multi-step processes confusing
+          - Technical jargon incomprehensible
+        needs:
+          - Plain language
+          - Simple sentences
+          - Clear headings
+          - Visual supports
+          - Consistent patterns
+          - Familiar conventions
+
+      mental_health_conditions:
+        conditions: Anxiety, depression, PTSD, autism spectrum
+        challenges:
+          - Overwhelming interfaces cause stress
+          - Sensory sensitivities
+          - Difficulty with social interaction metaphors
+          - Unpredictable behavior causes anxiety
+          - Time pressure triggers anxiety
+        needs:
+          - Predictable, consistent interface
+          - Control over experience
+          - No sudden changes
+          - No time limits
+          - Quiet, calm design
+          - Clear expectations
+
+  auditory_disabilities:
+    overview: >
+      Auditory disabilities range from mild hearing loss to complete deafness.
+      While directory sites may have less audio content, accessibility is still
+      important for any video, audio, or multimedia elements.
+
+    types:
+      hard_of_hearing:
+        description: Some hearing loss but may benefit from amplification
+        needs:
+          - Captions for all audio/video
+          - Volume controls
+          - Visual alternatives to audio alerts
+          - No audio-only content
+
+      deafness:
+        description: Little or no hearing
+        needs:
+          - Captions for all audio/video
+          - Transcripts available
+          - Sign language interpretation (for video)
+          - Visual indicators for all audio cues
+          - No audio-only information
+
+    considerations_for_directories:
+      - If directory has business videos, provide captions
+      - Phone numbers should be supplemented with text/email
+      - No audio-only announcements
+      - Visual feedback for all actions
+      - Consider relay service numbers if providing phone support
+
+  speech_disabilities:
+    overview: >
+      Speech disabilities affect verbal communication. While less common in
+      web interface accessibility, important for voice control users and
+      emerging voice search interfaces.
+
+    types:
+      - Articulation disorders
+      - Fluency disorders (stuttering)
+      - Voice disorders
+      - Aphasia (language disorder after stroke)
+
+    needs:
+      - Don't require voice input
+      - Provide alternatives to voice control
+      - Allow extended time for voice input
+      - Support for communication devices
+      - Text-based alternatives
+
+    considerations_for_directories:
+      - Don't require phone calls (provide text contact)
+      - If voice search offered, provide text search
+      - Contact forms as alternative to phone
+      - Email/chat options for communication
+
+  age_related_impairments:
+    overview: >
+      Older adults often experience multiple mild impairments that don't rise
+      to the level of disability individually but compound to create challenges.
+      May also have less familiarity with technology.
+
+    common_challenges:
+      - Declining vision (presbyopia, reduced contrast sensitivity)
+      - Reduced fine motor control
+      - Slower information processing
+      - Memory decline
+      - Hearing loss
+      - Less technology experience
+      - Cognitive slowing
+
+    needs:
+      - Large, readable text
+      - High contrast
+      - Simple, clear layouts
+      - Larger click targets
+      - Consistent, predictable navigation
+      - Clear instructions
+      - Forgiving error handling
+      - Help readily available
+      - Familiar patterns over novel designs
+      - Adequate time for interactions
+
+  multiple_disabilities:
+    overview: >
+      Many people have combinations of disabilities. Accessibility solutions
+      must not conflict with each other.
+
+    examples:
+      deaf_blind:
+        needs:
+          - Braille display support
+          - Text-based interface
+          - Keyboard navigation
+          - Semantic HTML for assistive tech
+        considerations:
+          - Cannot use audio OR visual-only content
+          - Rely on touch and text output
+
+      deaf_low_vision:
+        needs:
+          - Captions with adjustable size/color
+          - High contrast captions
+          - Screen reader compatible captions
+        considerations:
+          - Captions must be accessible to screen readers
+
+      cognitive_motor:
+        needs:
+          - Simple keyboard navigation
+          - Clear focus indicators
+          - Simple, predictable interactions
+          - Large click targets
+          - Step-by-step guidance
+        considerations:
+          - Compound effect requires extra care
+
+  health_conditions:
+    overview: >
+      Some people have health conditions that impact their computer use
+      through fatigue, pain, concentration issues, or medication side effects.
+
+    examples:
+      - Chronic fatigue syndrome
+      - Fibromyalgia
+      - Multiple sclerosis
+      - Arthritis
+      - Migraines
+      - Epilepsy (photosensitivity)
+
+    needs:
+      - Efficient interactions (minimize clicks/typing)
+      - No flashing content (seizure risk)
+      - Ability to pause and resume
+      - Save progress
+      - Simple, non-fatiguing interactions
+      - Adjustable timing
+      - Tolerant error recovery
+
+  changing_abilities:
+    overview: >
+      Some people have conditions that fluctuate, requiring different
+      accommodations at different times.
+
+    examples:
+      - Multiple sclerosis (relapsing-remitting)
+      - Migraine sufferers
+      - Mental health conditions with episodes
+      - Chronic pain with flare-ups
+
+    needs:
+      - Flexible accessibility settings
+      - Multiple ways to accomplish tasks
+      - Ability to customize interface
+      - Saved preferences
+      - Graceful degradation
+      - Progressive enhancement
+
+  temporary_impairments:
+    overview: >
+      Temporary impairments from injury, surgery, or medication can create
+      short-term accessibility needs.
+
+    examples:
+      - Broken arm (can't use mouse)
+      - Eye surgery (light sensitivity)
+      - Medication causing drowsiness
+      - Concussion (cognitive effects)
+
+    needs:
+      - All permanent accessibility features
+      - May not know about assistive technologies
+      - May not have specialized tools
+      - Need built-in accessibility
+      - Graceful keyboard-only navigation
+      - High contrast modes
+
+  situational_limitations:
+    overview: >
+      Environmental or contextual factors can create accessibility needs
+      for anyone, not just people with disabilities.
+
+    examples:
+      bright_sunlight:
+        challenge: Can't see screen
+        needs: High contrast, large text, simple visuals
+
+      loud_environment:
+        challenge: Can't hear audio
+        needs: Captions, visual indicators
+
+      quiet_environment:
+        challenge: Can't play audio
+        needs: Captions, transcripts
+
+      mobile_device:
+        challenge: Small screen, touch only
+        needs: Responsive design, touch targets
+
+      slow_connection:
+        challenge: Content loads slowly
+        needs: Lightweight pages, progressive loading
+
+      unfamiliar_language:
+        challenge: Not fluent in site language
+        needs: Simple language, visual cues
+
+wcag_requirements_cognitive_focus:
+
+  level_a_critical:
+    success_criteria:
+      - 2.2.1: Timing Adjustable
+      - 2.2.2: Pause, Stop, Hide
+      - 2.3.1: Three Flashes or Below Threshold
+      - 3.1.1: Language of Page
+      - 3.2.1: On Focus (no unexpected behavior)
+      - 3.2.2: On Input (no unexpected behavior)
+      - 3.3.1: Error Identification
+      - 3.3.2: Labels or Instructions
+
+  level_aa_recommended:
+    success_criteria:
+      - 1.4.12: Text Spacing (user can adjust)
+      - 1.4.13: Content on Hover or Focus (dismissible, hoverable, persistent)
+      - 2.4.5: Multiple Ways (to find content)
+      - 2.4.6: Headings and Labels (descriptive)
+      - 3.1.2: Language of Parts
+      - 3.2.3: Consistent Navigation
+      - 3.2.4: Consistent Identification
+      - 3.3.3: Error Suggestion
+      - 3.3.4: Error Prevention
+
+  level_aaa_aspirational:
+    success_criteria:
+      - 2.2.3: No Timing (no time limits)
+      - 2.2.4: Interruptions (can be postponed)
+      - 2.2.5: Re-authenticating (no data loss)
+      - 2.2.6: Timeouts (warned of inactivity timeout)
+      - 2.3.2: Three Flashes (no flashing)
+      - 2.3.3: Animation from Interactions (can be disabled)
+      - 3.1.3: Unusual Words (definitions available)
+      - 3.1.4: Abbreviations (expansions available)
+      - 3.1.5: Reading Level (lower secondary education level)
+      - 3.1.6: Pronunciation (available for ambiguous words)
+      - 3.2.5: Change on Request (no automatic changes)
+      - 3.3.5: Help (context-sensitive)
+      - 3.3.6: Error Prevention (All) (confirmation required)
+
+wcag_requirements_auditory_focus:
+
+  level_a_critical:
+    success_criteria:
+      - 1.2.1: Audio-only and Video-only (alternatives provided)
+      - 1.2.2: Captions (Prerecorded)
+      - 1.2.3: Audio Description or Media Alternative
+
+  level_aa_recommended:
+    success_criteria:
+      - 1.2.4: Captions (Live)
+      - 1.2.5: Audio Description (Prerecorded)
+
+  level_aaa_aspirational:
+    success_criteria:
+      - 1.2.6: Sign Language (Prerecorded)
+      - 1.2.7: Extended Audio Description
+      - 1.2.8: Media Alternative (Prerecorded)
+      - 1.2.9: Audio-only (Live)
+
+cognitive_accessibility_principles:
+
+  simplicity:
+    guidelines:
+      - Use simple, clear language
+      - Short sentences and paragraphs
+      - Active voice preferred
+      - Avoid jargon and technical terms
+      - Define complex terms when necessary
+      - Use common words
+
+  clarity:
+    guidelines:
+      - Clear headings that describe content
+      - Obvious navigation labels
+      - Descriptive button text
+      - Clear error messages
+      - Explicit instructions
+      - Visual hierarchy
+
+  consistency:
+    guidelines:
+      - Same navigation on every page
+      - Same elements in same locations
+      - Consistent terminology
+      - Predictable behavior
+      - Familiar patterns
+      - Stable layout
+
+  structure:
+    guidelines:
+      - Logical heading hierarchy
+      - Clear page structure
+      - Meaningful groupings
+      - Visual separation of sections
+      - Breadcrumb navigation
+      - Progress indicators
+
+  support:
+    guidelines:
+      - Help text readily available
+      - Examples provided
+      - Tooltips for complex fields
+      - Inline hints
+      - Error prevention
+      - Forgiving error recovery
+
+  reduce_cognitive_load:
+    guidelines:
+      - One primary action per page
+      - Minimize distractions
+      - Limit choices (Hick's Law)
+      - Progressive disclosure
+      - Chunking information
+      - White space for breathing room
+
+directory_specific_considerations:
+
+  cognitive_accessibility:
+    listing_display:
+      - Simple card layouts
+      - Clear business name (prominent heading)
+      - Essential information only (address, phone, rating)
+      - Consistent card structure
+      - Icons with text labels
+      - Avoid information overload
+
+    search_and_filters:
+      - Simple search interface
+      - Clear filter labels
+      - Visual indication of active filters
+      - Easy way to clear filters
+      - Predictable results
+      - Clear "X results found" message
+
+    navigation:
+      - Consistent header/footer
+      - Clear breadcrumbs
+      - Obvious "back" options
+      - Persistent navigation
+      - Clear current location indicator
+
+  auditory_accessibility:
+    media_content:
+      - Caption all videos (business tours, etc.)
+      - Transcripts for audio content
+      - Visual alerts instead of sound effects
+      - No audio-only information
+
+    contact_information:
+      - Provide email alongside phone
+      - Contact forms as alternative
+      - TTY numbers if phone support offered
+      - Chat options considered
+
+  multiple_disabilities:
+    flexible_solutions:
+      - Captions work with screen readers
+      - Large text works with keyboard navigation
+      - High contrast works with magnification
+      - Test combinations of accessibility features
+
+implementation_guidelines:
+
+  plain_language:
+    principles:
+      - Write for 8th grade reading level
+      - Short sentences (average 20 words or less)
+      - Short paragraphs (3-4 sentences)
+      - Active voice
+      - Conversational tone
+      - Common words
+      - Define technical terms
+
+    example_improvements:
+      - Before: "Utilize the filter functionality to refine your query parameters"
+      - After: "Use filters to narrow your search"
+      - Before: "Submit your inquiry via our contact form"
+      - After: "Send us a message using this form"
+
+  error_handling:
+    principles:
+      - Prevent errors when possible
+      - Identify errors clearly
+      - Describe errors in plain language
+      - Suggest how to fix errors
+      - Preserve user input
+      - Allow easy correction
+
+    example:
+      - Bad: "Error: Invalid input"
+      - Good: "Please enter a valid phone number in this format: (555) 123-4567"
+
+  time_limits:
+    principles:
+      - Avoid time limits if possible
+      - If necessary, warn user before timeout
+      - Allow extending time easily
+      - Save progress automatically
+      - At least 20 seconds to read alerts
+
+  animations:
+    principles:
+      - Respect prefers-reduced-motion
+      - Provide pause controls
+      - No auto-playing videos
+      - No flashing content
+      - Limit parallax effects
+
+  captions:
+    requirements:
+      - All spoken words
+      - Speaker identification
+      - Sound effects [applause]
+      - Music description [upbeat music]
+      - Synchronized with audio
+      - Readable (adequate size/contrast)
+      - Proper punctuation
+
+research_methodology:
+
+  documentation_review:
+    - WCAG 2.1/2.2 Cognitive Accessibility guidelines
+    - W3C Cognitive and Learning Disabilities Accessibility Task Force
+    - WebAIM Cognitive Disabilities guide
+    - Making Content Usable for People with Cognitive and Learning Disabilities
+    - Plain Language guidelines (plainlanguage.gov)
+    - Autism-friendly web design guidelines
+    - Deque Cognitive Accessibility resources
+
+  user_research:
+    - Cognitive accessibility case studies
+    - User testing with diverse populations
+    - Personas for cognitive disabilities
+    - Personas for age-related impairments
+    - Personas for multiple disabilities
+
+deliverables:
+
+  primary_document:
+    filename: docs/research/ACCESSIBILITY_MULTIPLE_CATEGORIES.md
+    sections:
+      - Executive Summary
+      - Cognitive Disabilities Overview
+      - Auditory Disabilities Overview
+      - Speech Disabilities Overview
+      - Age-Related Impairments
+      - Multiple Disabilities Considerations
+      - Health Conditions
+      - Changing Abilities
+      - Temporary Impairments
+      - Situational Limitations
+      - WCAG Requirements Summary
+      - Cognitive Accessibility Principles
+      - Plain Language Guidelines
+      - Error Handling Best Practices
+      - Timing Considerations
+      - Animation Guidelines
+      - Directory-Specific Recommendations
+      - Implementation Checklist
+      - Testing Approaches
+
+  supplementary_resources:
+    - Plain language writing guide
+    - Error message templates
+    - Caption format guidelines
+    - Cognitive accessibility checklist
+    - Age-friendly design checklist
+
+success_criteria:
+  - Comprehensive research covering all disability categories
+  - WCAG cognitive/auditory requirements documented
+  - Plain language guidelines established
+  - Error handling best practices defined
+  - Directory-specific recommendations provided
+  - Implementation guidance ready
+  - Findings ready to inform Task 80
+
+timeline:
+  estimated_time: 2-3 days
+  breakdown:
+    - Day 1: Cognitive disabilities research
+    - Day 2: Auditory, speech, and age-related research
+    - Day 3: Multiple categories, synthesis, and documentation
+
+next_steps:
+  - Complete this research
+  - Combine with findings from Tasks 76, 77, 78
+  - Synthesize all research in Task 80
+  - Generate implementation tasks (81-8x) based on findings
+
+related_tasks:
+  - Task 76: Cutting Edge SEO Recommendations
+  - Task 77: WCAG Accessibility for Low Vision
+  - Task 78: WCAG Accessibility for Limited Motor/Mobility
+  - Task 80: Generate Implementation Plan from Research
+
+notes:
+  - Cognitive accessibility often most overlooked
+  - Plain language benefits everyone, not just people with disabilities
+  - Age-related impairments affect growing population
+  - Multiple disabilities require careful testing of feature interactions
+  - Situational limitations show accessibility benefits all users
+  - Simple, clear design is foundation of cognitive accessibility
+  - Consistency and predictability are critical
+  - Perfect accessibility on 2 templates = perfect on thousands of pages

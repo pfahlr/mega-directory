@@ -10,7 +10,13 @@
     "dev:watch": "tsc -p tsconfig.json --watch",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "test": "npm run build && node --test test/**/*.test.js"
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:e2e": "vitest run test/e2e",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@mega-directory/config": "file:../../packages/shared-config",
@@ -22,7 +28,16 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.25",
+    "@testcontainers/postgresql": "^11.8.1",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.0",
-    "typescript": "^5.9.3"
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^4.0.9",
+    "@vitest/ui": "^4.0.9",
+    "supertest": "^7.1.4",
+    "testcontainers": "^11.8.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.9"
   }
 }
