@@ -1,0 +1,112 @@
+id: 51
+filename: 51_integrate_prisma_client_into_api_server.yaml
+title: Integrate Prisma Client into API Server
+description: >
+  Replace in-memory data structures with Prisma ORM to enable database persistence.
+  Currently the API server uses JavaScript arrays that lose all data on restart.
+
+  Critical issue:
+  - API server (apps/api/src/server.ts) uses in-memory AdminStore
+  - All listings, categories, directories stored in RAM
+  - Data lost on every API restart
+  - Admin changes never persist
+  - Crawler submissions disappear
+
+  Implementation plan:
+
+  1. Install Prisma Client dependencies
+     - Add @prisma/client to apps/api/package.json
+     - Run npx prisma generate --schema=../../db/schema.prisma
+     - Import PrismaClient in server.ts
+
+  2. Create database service module (apps/api/src/db.ts)
+     - export const prisma = new PrismaClient()
+     - Add connection error handling
+     - Export typed helper functions for common queries
+     - Add graceful shutdown hook (prisma.$disconnect)
+
+  3. Replace in-memory stores with Prisma queries
+     - Categories: prisma.category.findMany(), create(), update(), delete()
+     - Directories: prisma.directory.findMany() with includes
+     - Listings: prisma.listing.findMany() with addresses, categories
+     - Addresses: prisma.listingAddress CRUD operations
+     - FeaturedSlots: prisma.featuredSlot CRUD operations
+
+  4. Update admin endpoints (/v1/admin/**)
+     - GET /v1/admin/listings -> prisma.listing.findMany({include: {addresses, categories}})
+     - POST /v1/admin/listings -> prisma.listing.create({data: {...}})
+     - PUT /v1/admin/listings/:id -> prisma.listing.update({where: {id}, data: {...}})
+     - DELETE /v1/admin/listings/:id -> prisma.listing.delete({where: {id}})
+     - Apply same pattern to categories, directories, addresses
+
+  5. Update crawler ingestion endpoint (/v1/crawler/listings)
+     - Parse incoming listing payload
+     - Use prisma.listing.create() with nested address creation
+     - Handle category assignment via prisma.listingCategory.create()
+     - Set status to PENDING by default
+
+  6. Update public endpoints (/v1/directories, /v1/directories/:slug)
+     - Fetch from database with proper includes
+     - Include related listings, categories, locations
+     - Apply filtering for ACTIVE/APPROVED status
+
+  Files to modify:
+  - apps/api/package.json (add @prisma/client dependency)
+  - apps/api/src/db.ts (NEW FILE - database service)
+  - apps/api/src/server.ts (replace in-memory stores)
+  - apps/api/src/types.ts (NEW FILE - extract type definitions)
+
+  Functions to implement:
+
+  # apps/api/src/db.ts
+  - initializePrisma(): Initialize and test database connection
+  - disconnectPrisma(): Graceful shutdown cleanup
+  - getListingsWithRelations(filters): Fetch listings with addresses and categories
+  - getDirectoriesWithData(): Fetch all directories with nested data
+  - createListingWithAddress(data): Atomic listing + address creation
+
+  # apps/api/src/server.ts (modifications)
+  - createListingIngestionHandler(): Replace in-memory insert with prisma.listing.create
+  - createAdminListingHandler(): Replace array operations with Prisma queries
+  - getDirectoriesHandler(): Query database instead of returning empty array
+  - getDirectoryBySlugHandler(): Query with proper includes and filtering
+
+  Testing approach:
+  - Write integration tests that verify data persists across API restarts
+  - Test listings CRUD operations via admin endpoints
+  - Test crawler ingestion creates database records
+  - Verify nested relations (listings with addresses/categories)
+  - Test filtering by status (PENDING, APPROVED, etc.)
+
+  Test files to create:
+  - apps/api/test/integration/listings.test.ts
+  - apps/api/test/integration/directories.test.ts
+  - apps/api/test/integration/persistence.test.ts
+
+  Tests to write:
+
+  # test/integration/listings.test.ts
+  - test_create_listing_persists_after_restart: Create listing, restart API, verify still exists
+  - test_listing_with_multiple_addresses: Create listing with 3 addresses, verify all stored
+  - test_listing_category_assignment: Assign listing to multiple categories, verify relations
+  - test_update_listing_status: Change status from PENDING to APPROVED, verify persisted
+  - test_delete_listing_cascades_addresses: Delete listing, verify addresses also deleted
+
+  # test/integration/directories.test.ts
+  - test_directory_includes_approved_listings: Only APPROVED listings appear in directory
+  - test_directory_location_filtering: Listings filtered by directory location
+  - test_featured_slots_ordered_correctly: HERO before PREMIUM, position ordering
+
+  # test/integration/persistence.test.ts
+  - test_data_survives_api_restart: Create data, kill API process, restart, verify data exists
+  - test_concurrent_writes: Multiple simultaneous listing creations don't conflict
+
+  Success criteria:
+  - All in-memory stores removed from server.ts
+  - Prisma Client successfully queries database
+  - Admin changes persist across API restarts
+  - Crawler submissions stored in database
+  - All tests passing
+  - API startup logs show successful database connection
+
+dependencies: []

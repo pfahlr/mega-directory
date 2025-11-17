@@ -1,0 +1,39 @@
+id: 50
+filename: 50_fix_environment_variables_and_configuration.yaml
+title: Fix Environment Variables and Configuration
+description: >
+  Resolve critical environment variable issues preventing admin-API authentication and frontend-API communication.
+  This task addresses the root cause of admin UI not being able to communicate with the API server.
+
+  Critical fixes:
+  - Fix ADMIN_API_TOKEN in .env (missing final 'A' character causes auth failure)
+  - Add PUBLIC_API_BASE_URL for Astro frontend to discover API server
+  - Add API_BASE_URL fallback for dev-bootstrap.sh script
+  - Verify all services can authenticate and communicate
+  - Document required environment variables in README
+
+  Files to modify:
+  - .env (fix ADMIN_API_TOKEN, add PUBLIC_API_BASE_URL, add API_BASE_URL)
+  - .env.example (update template with all required variables)
+  - README.md (document environment variables section)
+  - apps/web/astro.config.mjs (ensure PUBLIC_API_BASE_URL is exposed)
+
+  Implementation details:
+  - ADMIN_API_TOKEN must match CRAWLER_BEARER_TOKEN exactly
+  - PUBLIC_API_BASE_URL needs 'PUBLIC_' prefix for Astro client-side access
+  - API_BASE_URL used by dev-bootstrap.sh and server-side code
+  - Verify token matching by comparing character-by-character
+
+  Testing:
+  - Verify admin UI can authenticate against API
+  - Verify frontend can fetch directories from API
+  - Test dev-bootstrap.sh can start all services
+  - Curl test all endpoints with proper tokens
+
+  Success criteria:
+  - Admin UI successfully fetches listings from API (returns 200, not 401/403)
+  - Astro frontend can call /v1/directories endpoint
+  - All authentication tokens validated
+  - Documentation updated with required variables
+
+dependencies: []

@@ -1,0 +1,124 @@
+id: 52
+filename: 52_seed_database_with_test_data.yaml
+title: Seed Database with Test Data
+description: >
+  Populate the database with sample data to enable testing of the API server,
+  admin UI, and web frontend. The seeder script (db/seed.ts) exists but needs
+  to be executed and verified.
+
+  Purpose:
+  - Create sample categories, locations, directories, and listings
+  - Enable end-to-end testing of data flow
+  - Verify Prisma relationships work correctly
+  - Provide realistic test data for frontend display
+
+  Prerequisites:
+  - Task 50 completed (environment variables fixed)
+  - Task 51 completed (Prisma integrated into API)
+  - Database migrations applied (already done)
+  - API server can connect to database
+
+  Implementation plan:
+
+  1. Review existing seed script
+     - Read db/seed.ts to understand what data it creates
+     - Verify it uses Prisma Client correctly
+     - Check if it creates all necessary relationships
+     - Identify any missing data (e.g., Users table)
+
+  2. Install dependencies for seed script
+     - Ensure @prisma/client is installed in db/ workspace
+     - Install any other dependencies (e.g., @faker-js/faker if used)
+     - Run npx prisma generate --schema=./db/schema.prisma
+
+  3. Execute seed script
+     - Run: cd db && npx tsx seed.ts
+     - Watch for errors or constraint violations
+     - Verify output confirms data creation
+     - Handle any unique constraint conflicts
+
+  4. Verify seeded data via SQL
+     - Query categories: SELECT * FROM "Category";
+     - Query locations: SELECT * FROM "Country", "StateProvince", "City";
+     - Query directories: SELECT * FROM "Directory";
+     - Query listings: SELECT * FROM "Listing" LIMIT 10;
+     - Verify relationships: JOIN queries for listings with addresses
+
+  5. Verify data via API endpoints
+     - GET /v1/directories (should return seeded directories)
+     - GET /v1/admin/categories (should return categories)
+     - GET /v1/admin/listings (should return listings)
+     - Check response includes nested relations (addresses, categories)
+
+  6. Add additional seed data if needed
+     - Create User records for admin authentication
+     - Add more diverse listings (different statuses, locations)
+     - Create featured slot assignments
+     - Populate postal codes for address validation
+
+  Files to work with:
+  - db/seed.ts (existing seeder script)
+  - db/schema.prisma (reference for relationships)
+  - db/package.json (may need to add dependencies)
+
+  Sample seed data structure:
+
+  Categories:
+  - Professional Services (slug: professional-services)
+  - Employment & Jobs (slug: jobs)
+  - Healthcare (slug: healthcare)
+  - Education (slug: education)
+
+  Locations:
+  - Country: United States (code: US)
+    - StateProvince: New York (code: NY)
+      - City: New York City (slug: new-york-city)
+    - StateProvince: California (code: CA)
+      - City: San Francisco (slug: san-francisco)
+    - StateProvince: Colorado (code: CO)
+      - City: Denver (slug: denver)
+
+  Directories:
+  - NYC Professional Services
+    - Category: Professional Services
+    - Location: New York City
+    - Subdomain: pros-nyc
+    - Subdirectory: professional-services/new-york-city
+    - Status: PUBLISHED
+
+  - Denver Employment
+    - Category: Employment & Jobs
+    - Location: Denver
+    - Subdomain: jobs-denver
+    - Subdirectory: jobs/denver
+    - Status: PUBLISHED
+
+  Listings (10-20 sample listings):
+  - Mix of PENDING, APPROVED, REJECTED statuses
+  - At least 2-3 addresses per listing
+  - Multiple category assignments
+  - Some with featured slot assignments (HERO, PREMIUM, STANDARD)
+  - Realistic business data (phone, website, email)
+
+  Testing approach:
+  - Run seed script multiple times (should be idempotent or handle conflicts)
+  - Verify data integrity with SQL queries
+  - Test API endpoints return seeded data
+  - Verify admin UI displays seeded listings
+  - Test frontend shows directories with listings
+
+  Success criteria:
+  - Seed script runs without errors
+  - Database contains at least:
+    - 5+ categories
+    - 3+ countries
+    - 5+ state/provinces
+    - 10+ cities
+    - 4+ directories (matching static data)
+    - 15+ listings with addresses
+  - API endpoints return seeded data
+  - Admin UI displays listings
+  - Frontend shows directories
+  - Data persists across API restarts
+
+dependencies: [50, 51]

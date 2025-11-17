@@ -1,0 +1,236 @@
+id: 53
+filename: 53_test_and_verify_admin_api_integration.yaml
+title: Test and Verify Admin-API Integration
+description: >
+  Comprehensive end-to-end testing to verify the admin UI successfully
+  communicates with the API server, which in turn persists data to the
+  PostgreSQL database via Prisma.
+
+  This task validates the complete data flow:
+  Admin UI → API Server → Prisma → PostgreSQL → API Response → Admin UI Display
+
+  Prerequisites:
+  - Task 50 completed (environment variables fixed)
+  - Task 51 completed (Prisma integrated into API)
+  - Task 52 completed (database seeded with test data)
+  - All services running (db, api, admin)
+
+  Critical validations:
+
+  1. Authentication and Authorization
+     - Admin UI uses correct ADMIN_API_TOKEN
+     - API server validates bearer token
+     - Health check endpoint returns 200 OK
+     - Unauthorized requests return 401/403
+
+  2. Listings Management (CRUD Operations)
+     - GET /v1/admin/listings returns database listings
+     - POST creates new listing in database
+     - PUT updates existing listing in database
+     - DELETE removes listing from database
+     - Changes persist across API restarts
+
+  3. Categories Management
+     - GET /v1/admin/categories returns all categories
+     - POST creates new category
+     - PUT updates category name/slug
+     - DELETE removes unused category
+     - Category assignments work for listings
+
+  4. Directories Management
+     - GET /v1/admin/directories returns all directories
+     - POST creates new directory with location/category
+     - PUT updates directory metadata
+     - DELETE removes directory
+     - Directory-listing relationships work
+
+  5. Data Persistence Verification
+     - Create listing via admin UI
+     - Restart API server
+     - Verify listing still exists
+     - Update listing status
+     - Verify change persisted
+
+  Implementation plan:
+
+  1. Start all services in correct order
+     - Start database: docker compose up -d db
+     - Verify db running: docker compose ps
+     - Start API server: cd apps/api && npm run dev
+     - Wait for "API server listening on http://localhost:3030"
+     - Verify database connection in API logs
+     - Start admin UI: cd apps/admin && npm run dev
+     - Wait for "Admin app listening at http://localhost:4000"
+
+  2. Test service connectivity
+     - curl http://localhost:3030/health (should return 200)
+     - curl -H "Authorization: Bearer [TOKEN]" http://localhost:3030/v1/admin/listings
+     - Open browser: http://localhost:4000
+     - Verify admin UI loads without errors
+     - Check browser console for API errors
+
+  3. Test listings CRUD via admin UI
+     - Navigate to /listings page
+     - Verify existing listings display (from seed data)
+     - Click "Add New Listing" button
+     - Fill out form:
+       - Title: "Test Listing - Integration Check"
+       - Website: "https://example.com"
+       - Phone: "+1-555-0123"
+       - Email: "test@example.com"
+       - Status: PENDING
+       - Add 2 addresses with different cities
+       - Assign 2 categories
+     - Submit form
+     - Verify success message
+     - Verify listing appears in list
+
+  4. Test data persistence
+     - Note the ID of created test listing
+     - Stop API server (Ctrl+C)
+     - Wait 5 seconds
+     - Restart API server
+     - Refresh admin UI listings page
+     - Verify test listing still exists with same ID
+     - Verify addresses and categories preserved
+
+  5. Test listing updates
+     - Click edit on test listing
+     - Change title to "Updated Test Listing"
+     - Change status to APPROVED
+     - Add third address
+     - Save changes
+     - Verify updated data displays
+     - Query database directly:
+       psql "postgresql://postgres:password@localhost:5432/mega_directory" \
+         -c "SELECT * FROM \"Listing\" WHERE title LIKE '%Updated Test%';"
+     - Verify database shows updated values
+
+  6. Test listing deletion
+     - Create another test listing "Delete Me"
+     - Note its ID
+     - Click delete button
+     - Confirm deletion
+     - Verify listing removed from UI
+     - Query database:
+       psql "postgresql://postgres:password@localhost:5432/mega_directory" \
+         -c "SELECT * FROM \"Listing\" WHERE id = [ID];"
+     - Verify returns 0 rows
+
+  7. Test categories management
+     - Navigate to categories page (if exists)
+     - Or use API directly:
+       curl -H "Authorization: Bearer [TOKEN]" \
+            http://localhost:3030/v1/admin/categories
+     - Verify returns seeded categories
+     - Test creating new category via API:
+       curl -X POST \
+            -H "Authorization: Bearer [TOKEN]" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"Test Category","slug":"test-category"}' \
+            http://localhost:3030/v1/admin/categories
+
+  8. Test directories management
+     - GET /v1/admin/directories
+     - Verify seeded directories appear
+     - Test creating directory:
+       curl -X POST \
+            -H "Authorization: Bearer [TOKEN]" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"Test Directory","slug":"test-dir","subdomain":"test","subdirectory":"test","categoryId":1,"status":"DRAFT"}' \
+            http://localhost:3030/v1/admin/directories
+
+  9. Test error handling
+     - Try creating listing with duplicate slug
+     - Try updating non-existent listing
+     - Try deleting listing with foreign key constraints
+     - Verify appropriate error messages
+     - Verify errors don't crash API server
+
+  10. Test concurrent operations
+      - Open admin UI in 2 browser tabs
+      - Create listing in tab 1
+      - Immediately refresh tab 2
+      - Verify new listing appears
+      - Update listing in tab 1
+      - Refresh tab 2
+      - Verify updates appear
+
+  Testing checklist:
+
+  # Service Startup
+  - [ ] Database container running
+  - [ ] API server starts without errors
+  - [ ] API logs show "Database connection successful"
+  - [ ] Admin UI starts without errors
+  - [ ] Admin UI logs show "Admin API health check passed"
+
+  # Authentication
+  - [ ] /health endpoint returns 200
+  - [ ] Requests with valid token succeed
+  - [ ] Requests without token return 401
+  - [ ] Requests with invalid token return 403
+
+  # Listings CRUD
+  - [ ] GET /v1/admin/listings returns array
+  - [ ] POST /v1/admin/listings creates new record
+  - [ ] PUT /v1/admin/listings/:id updates record
+  - [ ] DELETE /v1/admin/listings/:id removes record
+  - [ ] Listings include nested addresses
+  - [ ] Listings include nested categories
+
+  # Data Persistence
+  - [ ] Created listings survive API restart
+  - [ ] Updated listings persist changes
+  - [ ] Deleted listings stay deleted
+  - [ ] Relationships (addresses, categories) persist
+
+  # Admin UI Integration
+  - [ ] Listings page loads and displays data
+  - [ ] Create listing form works
+  - [ ] Edit listing form works
+  - [ ] Delete listing button works
+  - [ ] Success/error messages display correctly
+  - [ ] Browser console shows no errors
+
+  # Database Verification
+  - [ ] psql queries confirm data matches API responses
+  - [ ] Foreign key relationships intact
+  - [ ] Unique constraints enforced
+  - [ ] Cascade deletes work correctly
+
+  Test files to create:
+
+  # apps/api/test/integration/admin-listings.test.ts
+  - test_get_all_listings_returns_array
+  - test_create_listing_with_addresses
+  - test_update_listing_status
+  - test_delete_listing_cascades_addresses
+  - test_listing_includes_categories
+
+  # apps/api/test/integration/admin-auth.test.ts
+  - test_valid_token_allows_access
+  - test_invalid_token_returns_403
+  - test_missing_token_returns_401
+
+  # apps/api/test/integration/data-persistence.test.ts
+  - test_data_survives_server_restart
+  - test_concurrent_writes_dont_conflict
+
+  Success criteria:
+  - All manual tests in checklist pass
+  - Admin UI can create/read/update/delete listings
+  - Data persists across API server restarts
+  - Database queries confirm API responses are accurate
+  - No authentication errors in logs
+  - No Prisma query errors in logs
+  - Browser console shows no errors
+  - All automated tests pass (if implemented)
+
+  Documentation to create:
+  - Document testing procedures in README.md
+  - Create TESTING.md with step-by-step integration test guide
+  - Document common issues and troubleshooting steps
+  - Add environment variable validation script
+
+dependencies: [50, 51, 52]

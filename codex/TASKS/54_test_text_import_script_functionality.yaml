@@ -1,0 +1,293 @@
+id: 54
+filename: 54_test_text_import_script_functionality.yaml
+title: Test Text Import Script Functionality
+description: >
+  Verify the text_import.py script works correctly for importing listings from
+  various sources (HTML, plain text via LLM, CSV). This script has been fully
+  implemented but never tested.
+
+  The script supports three extraction modes:
+  1. HTML mode: Parse structured HTML with BeautifulSoup
+  2. LLM mode: Extract structured data from plain text using AI
+  3. CSV mode: Import from CSV files with column mapping
+
+  Purpose:
+  - Validate text_import.py can extract listings from real data
+  - Test all three extraction modes
+  - Verify output JSON matches expected schema
+  - Test POST to API ingestion endpoint
+  - Document usage patterns for future imports
+
+  Prerequisites:
+  - API server running with Prisma integration (Task 51)
+  - Database seeded with categories and locations (Task 52)
+  - OPENROUTER_API_KEY or OPENAI_API_KEY in .env for LLM mode
+  - Sample data files prepared for testing
+
+  Implementation plan:
+
+  1. Review text_import.py capabilities
+     - Read apps/crawler/text_import.py (lines 1-300)
+     - Understand TextHTMLExtractor implementation
+     - Understand TextLLMExtractor implementation
+     - Understand TextCSVExtractor implementation
+     - Review command-line argument parser
+     - Identify required dependencies
+
+  2. Prepare test data files
+     - Create sample HTML file (test-data/sample-listings.html)
+       - 3-5 business listings with structured markup
+       - Include name, description, website, phone, address
+       - Use article tags or data-listing attributes
+
+     - Create plain text file (test-data/sample-listings.txt)
+       - 3-5 business listings in natural language
+       - Mix of formatted and unformatted text
+       - Include varied information (some with phone, some without)
+
+     - Create CSV file (test-data/sample-listings.csv)
+       - Headers: title,website,phone,email,description,address,city,state,zip
+       - 5-10 rows of sample business data
+       - Include some blank fields
+
+  3. Test HTML extraction mode
+     - Run: python apps/crawler/text_import.py \
+              --input test-data/sample-listings.html \
+              --mode html \
+              --output test-output-html.json
+     - Verify no errors during execution
+     - Verify output file created
+     - Validate JSON structure:
+       {
+         "listings": [
+           {
+             "title": "...",
+             "summary": "...",
+             "websiteUrl": "...",
+             "contactPhone": "...",
+             "contactEmail": "...",
+             "location": {
+               "addressLine1": "...",
+               "city": "...",
+               "region": "...",
+               "postalCode": "...",
+               "country": "..."
+             }
+           }
+         ]
+       }
+     - Verify all expected listings extracted
+
+  4. Test LLM extraction mode
+     - Verify API key available:
+       echo $OPENROUTER_API_KEY || echo $OPENAI_API_KEY
+     - Run: python apps/crawler/text_import.py \
+              --input test-data/sample-listings.txt \
+              --mode llm \
+              --llm-provider openrouter \
+              --llm-model anthropic/claude-3.5-sonnet \
+              --output test-output-llm.json
+     - Verify LLM API called successfully
+     - Check for API errors or rate limits
+     - Validate output JSON structure
+     - Verify LLM extracted structured data from unstructured text
+     - Compare accuracy vs HTML extraction
+
+  5. Test CSV extraction mode
+     - Run: python apps/crawler/text_import.py \
+              --input test-data/sample-listings.csv \
+              --mode csv \
+              --output test-output-csv.json
+     - Verify CSV parsing works
+     - Verify column mapping correct
+     - Validate output JSON structure
+     - Check handling of blank/missing fields
+     - Verify location fields parsed correctly
+
+  6. Test post-processing and validation
+     - Review post_processing.py implementation
+     - Verify ListingPostProcessor applied to extracted data
+     - Check slug generation for listings
+     - Verify required fields validated
+     - Test with invalid data (missing required fields)
+     - Verify error handling and reporting
+
+  7. Test API ingestion endpoint
+     - Start API server if not running
+     - Read extracted JSON:
+       cat test-output-html.json
+     - POST to API ingestion endpoint:
+       curl -X POST \
+            -H "Authorization: Bearer $CRAWLER_BEARER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d @test-output-html.json \
+            http://localhost:3030/v1/crawler/listings
+     - Verify 200 or 201 response
+     - Check API logs for processing messages
+     - Query database to verify listings created:
+       psql "postgresql://postgres:password@localhost:5432/mega_directory" \
+         -c "SELECT id, title, status FROM \"Listing\" ORDER BY id DESC LIMIT 10;"
+
+  8. Test end-to-end workflow
+     - Find real business directory website
+     - Save HTML source to file
+     - Extract listings using HTML mode
+     - Review extracted JSON for accuracy
+     - Fix any extraction issues (CSS selectors)
+     - POST to API ingestion endpoint
+     - Verify listings appear in admin UI
+     - Update statuses from PENDING to APPROVED
+     - Verify listings appear on frontend
+
+  9. Test error handling and edge cases
+     - Empty input file
+     - Invalid HTML structure
+     - LLM returns invalid JSON
+     - CSV with wrong column headers
+     - Network errors during LLM API calls
+     - Network errors during POST to API
+     - Duplicate listings (same slug)
+     - Invalid location data
+
+  10. Document usage patterns
+      - Create IMPORT_GUIDE.md
+      - Document all command-line options
+      - Provide examples for each mode
+      - Document CSS selector customization
+      - Document LLM prompt customization
+      - Document CSV column mapping
+      - Add troubleshooting section
+
+  Test files to create:
+
+  # test-data/sample-listings.html
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <article data-listing>
+      <h2 class="listing-title">Acme Professional Services</h2>
+      <p class="listing-description">Expert consulting for small businesses</p>
+      <a href="https://acmepros.example.com">Visit Website</a>
+      <p class="contact">Phone: (555) 123-4567</p>
+      <p class="address">123 Main St, New York, NY 10001</p>
+    </article>
+    <!-- Add 2-3 more similar listings -->
+  </body>
+  </html>
+
+  # test-data/sample-listings.txt
+  Acme Professional Services - Expert consulting for small businesses.
+  Located at 123 Main St, New York, NY 10001. Call (555) 123-4567.
+  Website: https://acmepros.example.com
+
+  Denver Tech Solutions provides IT support and managed services.
+  Contact: info@denvertech.example.com | Phone: (303) 555-9876
+  Office: 456 Tech Blvd, Denver, CO 80202
+
+  # test-data/sample-listings.csv
+  title,website,phone,email,description,address,city,state,zip
+  Acme Professional Services,https://acmepros.example.com,(555) 123-4567,info@acme.example.com,Expert consulting,123 Main St,New York,NY,10001
+  Denver Tech Solutions,https://denvertech.example.com,(303) 555-9876,contact@denvertech.example.com,IT support,456 Tech Blvd,Denver,CO,80202
+
+  Command-line usage examples:
+
+  # HTML extraction with custom selectors
+  python apps/crawler/text_import.py \
+    --input scraped-data.html \
+    --mode html \
+    --html-listing-selector ".business-card" \
+    --html-title-selector "h3.name" \
+    --html-link-selector "a.website" \
+    --output extracted.json
+
+  # LLM extraction with OpenAI
+  python apps/crawler/text_import.py \
+    --input raw-text.txt \
+    --mode llm \
+    --llm-provider openai \
+    --llm-model gpt-4o \
+    --output extracted.json
+
+  # LLM extraction with custom prompt
+  python apps/crawler/text_import.py \
+    --input business-descriptions.txt \
+    --mode llm \
+    --llm-provider openrouter \
+    --llm-model anthropic/claude-3.5-sonnet \
+    --llm-prompt-file custom-extraction-prompt.txt \
+    --output extracted.json
+
+  # CSV import with POST to API
+  python apps/crawler/text_import.py \
+    --input businesses.csv \
+    --mode csv \
+    --output extracted.json \
+    --api-endpoint http://localhost:3030/v1/crawler/listings \
+    --api-token "$CRAWLER_BEARER_TOKEN"
+
+  Testing checklist:
+
+  # Setup
+  - [ ] Python dependencies installed (bs4, requests, jinja2)
+  - [ ] LLM API keys configured in .env
+  - [ ] API server running and accepting /v1/crawler/listings
+  - [ ] Test data files created
+
+  # HTML Mode
+  - [ ] Parses valid HTML file
+  - [ ] Extracts all expected listings
+  - [ ] Handles missing fields gracefully
+  - [ ] Custom CSS selectors work
+  - [ ] Outputs valid JSON
+
+  # LLM Mode
+  - [ ] Connects to OpenRouter/OpenAI successfully
+  - [ ] Extracts structured data from plain text
+  - [ ] Handles unstructured/messy input
+  - [ ] Custom prompts work
+  - [ ] Error messages for invalid API keys
+
+  # CSV Mode
+  - [ ] Parses CSV with headers
+  - [ ] Maps columns correctly
+  - [ ] Handles blank/missing values
+  - [ ] Handles quoted fields with commas
+  - [ ] Outputs valid JSON
+
+  # Post-Processing
+  - [ ] Generates slugs for listings
+  - [ ] Validates required fields
+  - [ ] Normalizes location data
+  - [ ] Rejects invalid records
+
+  # API Integration
+  - [ ] Successfully POSTs to /v1/crawler/listings
+  - [ ] Handles authentication correctly
+  - [ ] Creates listings in database
+  - [ ] Reports errors from API
+  - [ ] Handles rate limiting/retries
+
+  # End-to-End
+  - [ ] Import from real website works
+  - [ ] Listings appear in admin UI
+  - [ ] Listings can be approved
+  - [ ] Listings appear on frontend
+
+  Success criteria:
+  - All three extraction modes work without errors
+  - Output JSON matches expected schema
+  - Successfully POST extracted data to API
+  - Listings created in database via API
+  - Listings appear in admin UI
+  - Documentation complete with examples
+  - All edge cases handled gracefully
+  - Error messages are clear and actionable
+
+  Documentation to create:
+  - apps/crawler/IMPORT_GUIDE.md (comprehensive usage guide)
+  - Add text_import.py section to main README.md
+  - Create sample data files in test-data/ directory
+  - Document common issues and solutions
+  - Add example prompts for LLM mode
+
+dependencies: [51, 52]
