@@ -288,24 +288,79 @@ export function createServer(options: CreateServerOptions = {}): Express {
 
   app.post('/v1/crawler/listings', crawlerAuth, createListingIngestionHandler(app));
 
-  app.get('/v1/directories', (_req, res) => {
-    res.json({ data: directoryCatalog });
+  app.get('/v1/directories', async (_req, res) => {
+    try {
+      const directories = await getDirectoriesWithData();
+      res.json({ data: directories });
+    } catch (error) {
+      console.error('[public] Failed to fetch directories:', error);
+      res.status(500).json({ error: 'Failed to fetch directories' });
+    }
   });
 
-  app.get('/v1/directories/:slug', (req, res) => {
-    const slugParam = sanitizeNullableString(req.params?.slug);
-    if (!slugParam) {
-      return res.status(404).json({ error: 'Directory not found' });
+  app.get('/v1/directories/:slug', async (req, res) => {
+    try {
+      const { slug } = req.params;
+
+      const directory = await prisma.directory.findUnique({
+        where: { slug },
+        include: {
+          category: true,
+          location: {
+            include: {
+              cityRecord: {
+                include: {
+                  state: {
+                    include: {
+                      country: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          listings: {
+            where: {
+              status: PrismaListingStatus.APPROVED,
+            },
+            include: {
+              addresses: true,
+              categories: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+          featuredSlots: {
+            include: {
+              listing: {
+                include: {
+                  addresses: true,
+                },
+              },
+            },
+            orderBy: [
+              { tier: 'asc' },
+              { position: 'asc' },
+            ],
+          },
+        },
+      });
+
+      if (!directory) {
+        return res.status(404).json({ error: 'Directory not found' });
+      }
+
+      if (directory.status !== PrismaDirectoryStatus.ACTIVE) {
+        return res.status(404).json({ error: 'Directory not found' });
+      }
+
+      res.json({ data: directory });
+    } catch (error) {
+      console.error('[public] Failed to fetch directory:', error);
+      res.status(500).json({ error: 'Failed to fetch directory' });
     }
-    const normalized = slugify(slugParam);
-    const entry =
-      directoryCatalog.find(
-        (record: { slug?: string }) => slugify(record?.slug ?? '') === normalized
-      ) ?? null;
-    if (!entry) {
-      return res.status(404).json({ error: 'Directory not found' });
-    }
-    return res.json({ data: entry });
   });
 
   registerAdminRoutes(app, adminAuth);
