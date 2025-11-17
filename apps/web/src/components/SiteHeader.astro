@@ -14,7 +14,7 @@ const defaultNav: NavItem[] = [
 const { navItems = defaultNav } = Astro.props;
 ---
 
-<header class="relative border-b border-white/10 bg-slate-950/80 text-white shadow-lg shadow-black/20 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
+<header role="banner" class="relative border-b border-white/10 bg-slate-950/80 text-white shadow-lg shadow-black/20 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
     <a
       href="/"
@@ -26,7 +26,7 @@ const { navItems = defaultNav } = Astro.props;
       <span aria-hidden="true">Mega Directory</span>
       <span class="sr-only">Mega Directory home</span>
     </a>
-    <nav aria-label="Primary navigation" class="hidden md:flex">
+    <nav role="navigation" aria-label="Primary navigation" class="hidden md:flex">
       <ul class="flex items-center gap-6 text-sm font-semibold text-slate-200">
         {navItems.map((item) => (
           <li>
@@ -62,6 +62,7 @@ const { navItems = defaultNav } = Astro.props;
           </svg>
         </summary>
         <nav
+          role="navigation"
           aria-label="Mobile navigation"
           class="glass-panel absolute right-0 z-20 mt-3 w-48 border border-white/20 p-3 text-sm shadow-2xl"
         >

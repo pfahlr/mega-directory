@@ -88,7 +88,7 @@ const noindex = seo.noindex === true;
     <a class="skip-link" href="#main-content">Skip to main content</a>
     {showHeader && <SiteHeader navItems={resolvedNavItems} />}
     <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-      <main id="main-content" class="flex-1 space-y-14 pb-10 pt-4">
+      <main id="main-content" role="main" class="flex-1 space-y-14 pb-10 pt-4">
         <slot />
       </main>
       {showFooter && <SiteFooter />}
