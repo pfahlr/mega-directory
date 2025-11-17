@@ -286,7 +286,59 @@ export function createServer(options: CreateServerOptions = {}): Express {
     res.json({ status: 'crawler-ok' });
   });
 
-  app.post('/v1/crawler/listings', crawlerAuth, createListingIngestionHandler(app));
+  app.post('/v1/crawler/listings', crawlerAuth, async (req, res) => {
+    try {
+      const { listings } = req.body;
+
+      if (!Array.isArray(listings)) {
+        return res.status(400).json({ error: 'listings must be an array' });
+      }
+
+      const created = [];
+      const errors = [];
+
+      for (const listingData of listings) {
+        try {
+          const { title, slug, websiteUrl, summary, addresses, categoryIds } = listingData;
+
+          if (!title || !slug) {
+            errors.push({ listing: listingData, error: 'title and slug are required' });
+            continue;
+          }
+
+          const listing = await createListingWithAddress({
+            title,
+            slug,
+            websiteUrl,
+            summary,
+            addresses: addresses || [],
+            categoryIds,
+            status: 'PENDING', // Crawler submissions start as PENDING
+          });
+
+          created.push(listing);
+        } catch (error: any) {
+          console.error('[crawler] Failed to create listing:', error);
+          errors.push({
+            listing: listingData,
+            error: error.code === 'P2002' ? 'Duplicate slug' : 'Creation failed',
+          });
+        }
+      }
+
+      res.status(201).json({
+        data: {
+          created: created.length,
+          errors: errors.length,
+          listings: created,
+          failedListings: errors,
+        },
+      });
+    } catch (error) {
+      console.error('[crawler] Failed to process listings:', error);
+      res.status(500).json({ error: 'Failed to process listings' });
+    }
+  });
 
   app.get('/v1/directories', async (_req, res) => {
     try {
@@ -321,7 +373,7 @@ export function createServer(options: CreateServerOptions = {}): Express {
           },
           listings: {
             where: {
-              status: PrismaListingStatus.APPROVED,
+              status: 'APPROVED',
             },
             include: {
               addresses: true,
@@ -352,7 +404,7 @@ export function createServer(options: CreateServerOptions = {}): Express {
         return res.status(404).json({ error: 'Directory not found' });
       }
 
-      if (directory.status !== PrismaDirectoryStatus.ACTIVE) {
+      if (directory.status !== 'ACTIVE') {
         return res.status(404).json({ error: 'Directory not found' });
       }
 
