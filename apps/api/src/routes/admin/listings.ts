@@ -8,8 +8,33 @@ import { BadRequestError } from '../../errors';
 const router = express.Router();
 
 /**
- * GET /v1/admin/listings
- * Get all listings
+ * @openapi
+ * /v1/admin/listings:
+ *   get:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Get all listings
+ *     description: Retrieve all listings with their addresses and categories
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Listing'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/',
@@ -20,8 +45,44 @@ router.get(
 );
 
 /**
- * GET /v1/admin/listings/:id
- * Get listing by ID
+ * @openapi
+ * /v1/admin/listings/{id}:
+ *   get:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Get listing by ID
+ *     description: Retrieve a single listing with all its addresses and categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Listing ID
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Listing'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Listing not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/:id',
@@ -33,8 +94,98 @@ router.get(
 );
 
 /**
- * POST /v1/admin/listings
- * Create new listing
+ * @openapi
+ * /v1/admin/listings:
+ *   post:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Create new listing
+ *     description: Create a new business listing with addresses and category associations
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - slug
+ *               - addresses
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 maxLength: 200
+ *                 example: Acme Professional Services
+ *               slug:
+ *                 type: string
+ *                 pattern: ^[a-z0-9-]+$
+ *                 maxLength: 80
+ *                 example: acme-professional-services
+ *               websiteUrl:
+ *                 type: string
+ *                 format: uri
+ *                 nullable: true
+ *               contactEmail:
+ *                 type: string
+ *                 format: email
+ *                 nullable: true
+ *               contactPhone:
+ *                 type: string
+ *                 maxLength: 50
+ *                 nullable: true
+ *               summary:
+ *                 type: string
+ *                 maxLength: 1000
+ *                 nullable: true
+ *               description:
+ *                 type: string
+ *                 maxLength: 5000
+ *                 nullable: true
+ *               status:
+ *                 type: string
+ *                 enum: [PENDING, APPROVED, REJECTED]
+ *                 default: PENDING
+ *               addresses:
+ *                 type: array
+ *                 minItems: 1
+ *                 maxItems: 10
+ *                 items:
+ *                   $ref: '#/components/schemas/Address'
+ *               categoryIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 default: []
+ *     responses:
+ *       201:
+ *         description: Listing created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Listing'
+ *       400:
+ *         description: Bad request - validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Conflict - slug already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/',
@@ -46,8 +197,103 @@ router.post(
 );
 
 /**
- * PUT /v1/admin/listings/:id
- * Update listing
+ * @openapi
+ * /v1/admin/listings/{id}:
+ *   put:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Update listing
+ *     description: Update an existing listing's details, addresses, and categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Listing ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 maxLength: 200
+ *               slug:
+ *                 type: string
+ *                 pattern: ^[a-z0-9-]+$
+ *                 maxLength: 80
+ *               websiteUrl:
+ *                 type: string
+ *                 format: uri
+ *                 nullable: true
+ *               contactEmail:
+ *                 type: string
+ *                 format: email
+ *                 nullable: true
+ *               contactPhone:
+ *                 type: string
+ *                 maxLength: 50
+ *                 nullable: true
+ *               summary:
+ *                 type: string
+ *                 maxLength: 1000
+ *                 nullable: true
+ *               description:
+ *                 type: string
+ *                 maxLength: 5000
+ *                 nullable: true
+ *               status:
+ *                 type: string
+ *                 enum: [PENDING, APPROVED, REJECTED]
+ *               addresses:
+ *                 type: array
+ *                 minItems: 1
+ *                 maxItems: 10
+ *                 items:
+ *                   $ref: '#/components/schemas/Address'
+ *               categoryIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Listing updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Listing'
+ *       400:
+ *         description: Bad request - validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Listing not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Conflict - slug already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.put(
   '/:id',
@@ -60,8 +306,37 @@ router.put(
 );
 
 /**
- * DELETE /v1/admin/listings/:id
- * Delete listing
+ * @openapi
+ * /v1/admin/listings/{id}:
+ *   delete:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Delete listing
+ *     description: Permanently delete a listing and all its associated data
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Listing ID
+ *     responses:
+ *       204:
+ *         description: Listing deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Listing not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.delete(
   '/:id',
@@ -73,8 +348,93 @@ router.delete(
 );
 
 /**
- * POST /v1/admin/listings/review
- * Batch update listings
+ * @openapi
+ * /v1/admin/listings/review:
+ *   post:
+ *     tags:
+ *       - Admin - Listings
+ *     summary: Batch update listings
+ *     description: Update multiple listings in a single request, useful for batch review operations
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - listings
+ *             properties:
+ *               listings:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: Listing ID
+ *                     status:
+ *                       type: string
+ *                       enum: [PENDING, APPROVED, REJECTED]
+ *                     title:
+ *                       type: string
+ *                       maxLength: 200
+ *                     businessName:
+ *                       type: string
+ *                       maxLength: 200
+ *                       description: Alternative to title field
+ *                     websiteUrl:
+ *                       type: string
+ *                       format: uri
+ *                       nullable: true
+ *                     website:
+ *                       type: string
+ *                       format: uri
+ *                       nullable: true
+ *                       description: Alternative to websiteUrl field
+ *                     notes:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Batch update completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     delivered:
+ *                       type: integer
+ *                       description: Number of successfully updated listings
+ *                     skipped:
+ *                       type: integer
+ *                       description: Number of failed updates
+ *                     failures:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           reason:
+ *                             type: string
+ *       400:
+ *         description: Bad request - listings must be an array
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/review',

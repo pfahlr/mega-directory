@@ -5,8 +5,25 @@ import * as directoryService from '../../services/directoryService';
 const router = express.Router();
 
 /**
- * GET /v1/directories
- * Get all active directories
+ * @openapi
+ * /v1/directories:
+ *   get:
+ *     tags:
+ *       - Public
+ *     summary: Get all active directories
+ *     description: Retrieve all published directories for public browsing
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Directory'
  */
 router.get(
   '/',
@@ -17,8 +34,37 @@ router.get(
 );
 
 /**
- * GET /v1/directories/:slug
- * Get directory by slug with listings
+ * @openapi
+ * /v1/directories/{slug}:
+ *   get:
+ *     tags:
+ *       - Public
+ *     summary: Get directory by slug
+ *     description: Retrieve a directory by its slug with all associated listings
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Directory slug
+ *         example: nyc-professional-services
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Directory'
+ *       404:
+ *         description: Directory not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/:slug',

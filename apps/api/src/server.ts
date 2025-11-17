@@ -7,6 +7,8 @@ import { createAdminRouter } from './routes/admin';
 import { createPublicRouter } from './routes/public';
 import { createCrawlerRouter } from './routes/crawler';
 import type { AuthConfig } from './middleware/auth';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger';
 
 const DEFAULT_PORT = DEFAULT_PORTS.api;
 const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
@@ -115,6 +117,15 @@ export function createServer(options: CreateServerOptions = {}): Express {
   // Global middleware
   app.use(createRequestLogger(logger));
   app.use(express.json());
+
+  // API Documentation
+  if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_API_DOCS === 'true') {
+    app.use('/api-docs', ...swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Mega Directory API Docs',
+    }));
+    logger.info('API documentation available at /api-docs');
+  }
 
   // Health check
   app.get('/health', (_req, res) => {
