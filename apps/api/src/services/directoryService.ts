@@ -1,6 +1,12 @@
 import { prisma } from '../db';
 import { NotFoundError, ConflictError, BadRequestError } from '../errors';
 import type { Directory, DirectoryStatus } from '@prisma/client';
+import {
+  normalizePaginationParams,
+  createPaginatedResponse,
+  type PaginationParams,
+  type PaginatedResponse,
+} from '../utils/pagination';
 
 export interface CreateDirectoryDto {
   title: string;
@@ -55,8 +61,42 @@ export interface DirectoryWithRelations extends Directory {
 }
 
 /**
- * Get all directories with relations
+ * Get all directories with relations (paginated)
  */
+export async function getAllDirectories(
+  params?: PaginationParams
+): Promise<PaginatedResponse<DirectoryWithRelations>> {
+  const { page, limit, skip, take } = normalizePaginationParams(params || {});
+
+  const include = {
+    category: true,
+    location: {
+      include: {
+        cityRecord: {
+          include: {
+            stateRecord: {
+              include: {
+                country: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const [data, totalCount] = await Promise.all([
+    prisma.directory.findMany({
+      include,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.directory.count(),
+  ]);
+
+  return createPaginatedResponse(data, page, limit, totalCount);
+=======
 export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
   return await prisma.directory.findMany({
     include: {
@@ -80,8 +120,43 @@ export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
 }
 
 /**
- * Get active directories for public API
+ * Get active directories for public API (paginated)
  */
+export async function getActiveDirectories(
+  params?: PaginationParams
+): Promise<PaginatedResponse<DirectoryWithRelations>> {
+  const { page, limit, skip, take } = normalizePaginationParams(params || {});
+
+  const include = {
+    category: true,
+    location: {
+      include: {
+        cityRecord: {
+          include: {
+            stateRecord: {
+              include: {
+                country: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const [data, totalCount] = await Promise.all([
+    prisma.directory.findMany({
+      where: { status: 'ACTIVE' },
+      include,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.directory.count({ where: { status: 'ACTIVE' } }),
+  ]);
+
+  return createPaginatedResponse(data, page, limit, totalCount);
+
 export async function getActiveDirectories(): Promise<DirectoryWithRelations[]> {
   return await prisma.directory.findMany({
     where: { status: 'ACTIVE' },

@@ -1,6 +1,12 @@
 import { prisma } from '../db';
 import { NotFoundError, ConflictError } from '../errors';
 import type { Category } from '@prisma/client';
+import {
+  normalizePaginationParams,
+  createPaginatedResponse,
+  type PaginationParams,
+  type PaginatedResponse,
+} from '../utils/pagination';
 
 export interface CreateCategoryDto {
   name: string;
@@ -21,12 +27,23 @@ export interface UpdateCategoryDto {
 }
 
 /**
- * Get all categories
+ * Get all categories (paginated)
  */
-export async function getAllCategories(): Promise<Category[]> {
-  return await prisma.category.findMany({
-    orderBy: { name: 'asc' },
-  });
+export async function getAllCategories(
+  params?: PaginationParams
+): Promise<PaginatedResponse<Category>> {
+  const { page, limit, skip, take } = normalizePaginationParams(params || {});
+
+  const [data, totalCount] = await Promise.all([
+    prisma.category.findMany({
+      orderBy: { name: 'asc' },
+      skip,
+      take,
+    }),
+    prisma.category.count(),
+  ]);
+
+  return createPaginatedResponse(data, page, limit, totalCount);
 }
 
 /**

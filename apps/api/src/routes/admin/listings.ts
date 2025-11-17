@@ -8,6 +8,9 @@ import { BadRequestError } from '../../errors';
 const router = express.Router();
 
 /**
+ * GET /v1/admin/listings
+ * Get all listings (paginated)
+
  * @openapi
  * /v1/admin/listings:
  *   get:
@@ -39,8 +42,10 @@ const router = express.Router();
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const listings = await listingService.getAllListings();
-    res.json({ data: listings });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+    const result = await listingService.getAllListings({ page, limit });
+    res.json(result);
   })
 );
 

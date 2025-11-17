@@ -1,6 +1,12 @@
 import { prisma } from '../db';
 import { NotFoundError, ConflictError, BadRequestError } from '../errors';
 import type { Listing, ListingAddress, ListingStatus } from '@prisma/client';
+import {
+  normalizePaginationParams,
+  createPaginatedResponse,
+  type PaginationParams,
+  type PaginatedResponse,
+} from '../utils/pagination';
 
 export interface CreateListingDto {
   title: string;
@@ -64,20 +70,33 @@ export interface ListingWithRelations extends Listing {
 }
 
 /**
- * Get all listings with their relations
+ * Get all listings with their relations (paginated)
  */
-export async function getAllListings(): Promise<ListingWithRelations[]> {
-  return await prisma.listing.findMany({
-    include: {
-      addresses: true,
-      categories: {
-        include: {
-          category: true,
-        },
+export async function getAllListings(
+  params?: PaginationParams
+): Promise<PaginatedResponse<ListingWithRelations>> {
+  const { page, limit, skip, take } = normalizePaginationParams(params || {});
+
+  const include = {
+    addresses: true,
+    categories: {
+      include: {
+        category: true,
       },
     },
-    orderBy: { createdAt: 'desc' },
-  });
+  };
+
+  const [data, totalCount] = await Promise.all([
+    prisma.listing.findMany({
+      include,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.listing.count(),
+  ]);
+
+  return createPaginatedResponse(data, page, limit, totalCount);
 }
 
 /**
@@ -320,12 +339,23 @@ export async function batchUpdateListings(
 // Address-specific operations
 
 /**
- * Get all addresses
+ * Get all addresses (paginated)
  */
-export async function getAllAddresses(): Promise<ListingAddress[]> {
-  return await prisma.listingAddress.findMany({
-    orderBy: { createdAt: 'desc' },
-  });
+export async function getAllAddresses(
+  params?: PaginationParams
+): Promise<PaginatedResponse<ListingAddress>> {
+  const { page, limit, skip, take } = normalizePaginationParams(params || {});
+
+  const [data, totalCount] = await Promise.all([
+    prisma.listingAddress.findMany({
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.listingAddress.count(),
+  ]);
+
+  return createPaginatedResponse(data, page, limit, totalCount);
 }
 
 /**

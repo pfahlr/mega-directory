@@ -7,6 +7,9 @@ import * as directoryService from '../../services/directoryService';
 const router = express.Router();
 
 /**
+ * GET /v1/admin/directories
+ * Get all directories (paginated)
+
  * @openapi
  * /v1/admin/directories:
  *   get:
@@ -38,8 +41,10 @@ const router = express.Router();
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const directories = await directoryService.getAllDirectories();
-    res.json({ data: directories });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+    const result = await directoryService.getAllDirectories({ page, limit });
+    res.json(result);
   })
 );
 
