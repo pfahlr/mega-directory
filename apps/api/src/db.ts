@@ -1,8 +1,13 @@
-import { PrismaClient, ListingStatus } from '@prisma/client';
+import { PrismaClient, ListingStatus, DirectoryStatus, Prisma } from '@prisma/client';
 
-// Initialize Prisma Client
+// Initialize Prisma Client with connection pooling configuration
 export const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
 });
 
 /**
@@ -14,7 +19,10 @@ export async function initializePrisma(): Promise<void> {
     console.log('[db] Database connection successful');
   } catch (error) {
     console.error('[db] Database connection failed:', error);
-    throw new Error('Failed to connect to database');
+    if (error instanceof Error) {
+      error.message = `Failed to connect to database: ${error.message}`;
+    }
+    throw error;
   }
 }
 
@@ -27,6 +35,9 @@ export async function disconnectPrisma(): Promise<void> {
     console.log('[db] Database connection closed');
   } catch (error) {
     console.error('[db] Error disconnecting from database:', error);
+    if (error instanceof Error) {
+      console.error('[db] Error details:', error.message);
+    }
   }
 }
 
@@ -34,10 +45,10 @@ export async function disconnectPrisma(): Promise<void> {
  * Get listings with full relations (addresses and categories)
  */
 export async function getListingsWithRelations(filters: {
-  status?: string;
+  status?: ListingStatus;
   directoryId?: number;
 } = {}) {
-  const where: any = {};
+  const where: Prisma.ListingWhereInput = {};
 
   if (filters.status) {
     where.status = filters.status;
@@ -86,7 +97,7 @@ export async function getDirectoriesWithData() {
       },
       listings: {
         where: {
-          status: 'APPROVED',
+          status: ListingStatus.APPROVED,
         },
         include: {
           addresses: true,
@@ -108,7 +119,7 @@ export async function getDirectoriesWithData() {
       },
     },
     where: {
-      status: 'ACTIVE',
+      status: DirectoryStatus.ACTIVE,
     },
   });
 }
