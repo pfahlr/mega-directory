@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express, { Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { validateBody } from '../../middleware/validation';
 import { createDirectorySchema, updateDirectorySchema } from '../../validation/schemas/directory';
@@ -67,7 +67,7 @@ router.delete(
   asyncHandler(async (req, res) => {
     const id = parseInt(req.params.id, 10);
     await directoryService.deleteDirectory(id);
-    res.status(204).end();
+    res.status(204).json({});
   })
 );
 

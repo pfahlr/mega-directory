@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express, { type Router, type Request, type Response } from 'express';
 import { requireAdminAuth, type AuthConfig } from '../../middleware/auth';
 import { createAuthRouter } from './auth';
 import categoriesRouter from './categories';
@@ -23,7 +23,7 @@ export function createAdminRouter(config: AuthConfig): Router {
   router.use('/directories', adminAuth, directoriesRouter);
 
   // Admin ping (protected)
-  router.get('/ping', adminAuth, (req, res) => {
+  router.get('/ping', adminAuth, (req: Request, res: Response) => {
     res.json({ status: 'admin-ok' });
   });
 

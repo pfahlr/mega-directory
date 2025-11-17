@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express, { Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import * as directoryService from '../../services/directoryService';
 

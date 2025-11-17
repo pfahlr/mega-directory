@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express, { type Router } from 'express';
 import directoriesRouter from './directories';
 
 /**

@@ -65,7 +65,7 @@ export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
         include: {
           cityRecord: {
             include: {
-              stateRecord: {
+              state: {
                 include: {
                   country: true,
                 },
@@ -76,7 +76,7 @@ export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
       },
     },
     orderBy: { createdAt: 'desc' },
-  });
+  }) as any;
 }
 
 /**
@@ -91,7 +91,7 @@ export async function getActiveDirectories(): Promise<DirectoryWithRelations[]> 
         include: {
           cityRecord: {
             include: {
-              stateRecord: {
+              state: {
                 include: {
                   country: true,
                 },
@@ -102,7 +102,7 @@ export async function getActiveDirectories(): Promise<DirectoryWithRelations[]> 
       },
     },
     orderBy: { createdAt: 'desc' },
-  });
+  }) as any;
 }
 
 /**
@@ -117,7 +117,7 @@ export async function getDirectoryById(id: number): Promise<DirectoryWithRelatio
         include: {
           cityRecord: {
             include: {
-              stateRecord: {
+              state: {
                 include: {
                   country: true,
                 },
@@ -273,7 +273,7 @@ export async function updateDirectory(
       },
     });
 
-    return directory;
+    return directory as any;
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Directory', id);
