@@ -1,0 +1,35 @@
+id: 71
+filename: 71_add_environment_specific_database_seeding.yaml
+title: Add Environment-Specific Database Seeding
+description: >
+  Create environment-aware database seeding with different data volumes for
+  development, test, and production environments.
+
+  Implementation:
+  - Make seed script environment-aware
+  - Create separate seed data volumes
+  - Development: rich test data (50+ listings)
+  - Test: minimal data (10 listings)
+  - Production: essential data only (categories, locations)
+  - Add seed variants for different scenarios
+
+  Example:
+  # db/seed.ts
+  const seedAmount = {
+    development: { listings: 50, categories: 10 },
+    test: { listings: 10, categories: 5 },
+    production: { listings: 0, categories: 5 }
+  }[process.env.NODE_ENV || 'development'];
+
+  # Create seed variants:
+  db/seeds/
+    ├── development.ts (rich test data)
+    ├── test.ts (minimal for tests)
+    └── production.ts (only essential data)
+
+  # package.json scripts:
+  "seed:dev": "NODE_ENV=development npx tsx db/seed.ts",
+  "seed:test": "NODE_ENV=test npx tsx db/seed.ts",
+  "seed:prod": "NODE_ENV=production npx tsx db/seed.ts"
+
+dependencies: []

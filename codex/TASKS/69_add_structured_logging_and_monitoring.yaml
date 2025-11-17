@@ -1,0 +1,46 @@
+id: 69
+filename: 69_add_structured_logging_and_monitoring.yaml
+title: Add Structured Logging and Monitoring
+description: >
+  Implement structured logging with Pino and add health check monitoring endpoints.
+
+  Implementation:
+  - Install pino and pino-pretty
+  - Replace console.log with structured logging
+  - Add request logging middleware
+  - Add error logging with context
+  - Create health check endpoint with metrics
+  - Add database connection health check
+  - Log performance metrics
+
+  Example:
+  npm install pino pino-pretty
+
+  import pino from 'pino';
+  export const logger = pino({
+    level: process.env.LOG_LEVEL || 'info',
+    transport: process.env.NODE_ENV === 'development' ? {
+      target: 'pino-pretty',
+      options: { colorize: true }
+    } : undefined
+  });
+
+  logger.info({ listingId: 123 }, 'Listing created');
+  logger.error({ error, listingId }, 'Failed to create listing');
+
+  app.get('/health', async (req, res) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        database: 'connected'
+      });
+    } catch (err) {
+      res.status(503).json({ status: 'error', database: 'disconnected' });
+    }
+  });
+
+dependencies: []

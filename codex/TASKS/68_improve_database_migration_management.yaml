@@ -1,0 +1,35 @@
+id: 68
+filename: 68_improve_database_migration_management.yaml
+title: Improve Database Migration Management
+description: >
+  Add proper migration management with history tracking, rollback capability,
+  and documentation.
+
+  Implementation:
+  - Document migration workflow
+  - Create migration naming convention
+  - Add migration status checking
+  - Document rollback procedures
+  - Create backup procedures before migrations
+  - Add migration testing strategy
+
+  Commands:
+  # Check migration status
+  npx prisma migrate status
+
+  # Create migration
+  npx prisma migrate dev --name descriptive_name
+
+  # Deploy migrations (production)
+  npx prisma migrate deploy
+
+  # Reset database (development only)
+  npx prisma migrate reset
+
+  Files:
+  - docs/DATABASE_MIGRATIONS.md
+  - docs/DATABASE_ROLLBACK.md
+  - scripts/backup-db.sh
+  - scripts/test-migration.sh
+
+dependencies: []

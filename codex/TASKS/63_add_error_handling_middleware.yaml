@@ -1,0 +1,217 @@
+id: 63
+filename: 63_add_error_handling_middleware.yaml
+title: Add Error Handling Middleware
+description: >
+  Implement centralized error handling middleware to eliminate repetitive try-catch
+  blocks and provide consistent error responses across all API endpoints.
+
+  Critical issue:
+  - Try-catch blocks in every route handler (code duplication)
+  - Inconsistent error response formats
+  - Prisma errors not handled consistently
+  - No distinction between operational and programming errors
+  - Stack traces leaked in production
+
+  Implementation plan:
+
+  1. Create custom error classes
+     - AppError: Base class for operational errors
+     - ValidationError: For validation failures
+     - NotFoundError: For resource not found (404)
+     - UnauthorizedError: For auth failures (401)
+     - ForbiddenError: For permission failures (403)
+     - ConflictError: For duplicate/conflict errors (409)
+
+  2. Create error handling middleware
+     - Catch Prisma errors and convert to AppError
+     - Catch validation errors
+     - Catch async handler errors
+     - Format error responses consistently
+     - Log errors appropriately
+     - Hide stack traces in production
+
+  3. Create async handler wrapper
+     - Wrap async route handlers
+     - Automatically catch and forward errors
+     - Eliminate try-catch in routes
+
+  4. Map Prisma error codes to HTTP status codes
+     - P2002: Unique constraint → 409 Conflict
+     - P2025: Record not found → 404 Not Found
+     - P2003: Foreign key constraint → 400 Bad Request
+     - P2014: Relation violation → 409 Conflict
+
+  5. Update all routes to use error middleware
+     - Remove try-catch blocks
+     - Throw appropriate errors
+     - Let middleware handle response
+
+  Files to create:
+  - apps/api/src/errors/AppError.ts
+  - apps/api/src/errors/index.ts (export all error classes)
+  - apps/api/src/middleware/errorHandler.ts
+  - apps/api/src/middleware/asyncHandler.ts
+
+  Example implementation:
+
+  # errors/AppError.ts
+  export class AppError extends Error {
+    constructor(
+      public statusCode: number,
+      message: string,
+      public isOperational = true,
+      public code?: string
+    ) {
+      super(message);
+      Object.setPrototypeOf(this, AppError.prototype);
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+
+  export class NotFoundError extends AppError {
+    constructor(resource: string, id?: string | number) {
+      const message = id
+        ? `${resource} with id ${id} not found`
+        : `${resource} not found`;
+      super(404, message, true, 'NOT_FOUND');
+    }
+  }
+
+  export class ConflictError extends AppError {
+    constructor(message: string, field?: string) {
+      super(409, message, true, 'CONFLICT');
+      if (field) {
+        this.field = field;
+      }
+    }
+    field?: string;
+  }
+
+  # middleware/errorHandler.ts
+  import { ErrorRequestHandler } from 'express';
+  import { Prisma } from '@prisma/client';
+  import { AppError } from '../errors/AppError';
+  import { ZodError } from 'zod';
+
+  export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    // Log all errors
+    console.error('Error:', {
+      message: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      body: req.body
+    });
+
+    // Prisma errors
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2002') {
+        const field = (err.meta?.target as string[])?.[0];
+        return res.status(409).json({
+          error: 'Unique constraint violation',
+          message: `A record with this ${field || 'value'} already exists`,
+          code: 'DUPLICATE',
+          field
+        });
+      }
+      if (err.code === 'P2025') {
+        return res.status(404).json({
+          error: 'Record not found',
+          code: 'NOT_FOUND'
+        });
+      }
+      if (err.code === 'P2003') {
+        return res.status(400).json({
+          error: 'Foreign key constraint failed',
+          code: 'INVALID_REFERENCE'
+        });
+      }
+    }
+
+    // Zod validation errors
+    if (err instanceof ZodError) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        code: 'VALIDATION_ERROR',
+        details: err.errors.map(e => ({
+          field: e.path.join('.'),
+          message: e.message
+        }))
+      });
+    }
+
+    // Application errors
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).json({
+        error: err.message,
+        code: err.code
+      });
+    }
+
+    // Unknown errors (log but don't expose details)
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
+      ...(process.env.NODE_ENV === 'development' && {
+        message: err.message,
+        stack: err.stack
+      })
+    });
+  };
+
+  # middleware/asyncHandler.ts
+  import { Request, Response, NextFunction, RequestHandler } from 'express';
+
+  export function asyncHandler(fn: RequestHandler): RequestHandler {
+    return (req: Request, res: Response, next: NextFunction) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };
+  }
+
+  # Usage in routes (BEFORE):
+  router.get('/listings/:id', adminAuth, async (req, res) => {
+    try {
+      const listing = await prisma.listing.findUnique({
+        where: { id: parseInt(req.params.id) }
+      });
+      if (!listing) {
+        return res.status(404).json({ error: 'Listing not found' });
+      }
+      res.json({ data: listing });
+    } catch (error) {
+      console.error('Failed to fetch listing:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  # Usage in routes (AFTER):
+  import { NotFoundError } from '../errors';
+  import { asyncHandler } from '../middleware/asyncHandler';
+
+  router.get('/listings/:id', adminAuth, asyncHandler(async (req, res) => {
+    const listing = await prisma.listing.findUnique({
+      where: { id: parseInt(req.params.id) }
+    });
+    if (!listing) {
+      throw new NotFoundError('Listing', req.params.id);
+    }
+    res.json({ data: listing });
+  }));
+
+  # In server.ts:
+  import { errorHandler } from './middleware/errorHandler';
+
+  app.use('/v1', routes);
+  app.use(errorHandler); // Must be last middleware
+
+  Success criteria:
+  - No try-catch blocks in route handlers
+  - Consistent error response format
+  - Prisma errors mapped to appropriate HTTP codes
+  - Operational errors separated from programming errors
+  - Stack traces hidden in production
+  - All errors logged with context
+  - Clear error messages for API consumers
+
+dependencies: [62]
