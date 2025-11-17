@@ -29,20 +29,22 @@ const highlights = listing.highlights ?? [];
 const showMapButton = Boolean(mapFocusTarget && listing.slug);
 ---
 
-<li class="card-surface flex flex-col gap-4 p-5" aria-labelledby={headingId}>
-  <header class="flex flex-wrap items-start gap-4">
+<li>
+  <article class="card-surface flex flex-col gap-4 p-5" aria-labelledby={headingId}>
+    <header class="flex flex-wrap items-start gap-4">
     <div class="min-w-0 flex-1">
       <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Rank #{rank}</p>
       <div class="mt-1 flex flex-col gap-1">
-        <a
-          id={headingId}
-          class="text-xl font-semibold text-white transition hover:text-emerald-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
-          href={listing.url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {listing.name}
-        </a>
+        <h3 id={headingId} class="text-xl font-semibold text-white">
+          <a
+            class="transition hover:text-emerald-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+            href={listing.url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {listing.name}
+          </a>
+        </h3>
         <div class="flex items-center gap-2 text-sm text-slate-400">
           {listing.locationLabel && <p>{listing.locationLabel}</p>}
           {showMapButton && (
@@ -118,4 +120,5 @@ const showMapButton = Boolean(mapFocusTarget && listing.slug);
       ))}
     </div>
   )}
+  </article>
 </li>

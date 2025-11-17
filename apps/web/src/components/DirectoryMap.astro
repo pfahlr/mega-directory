@@ -20,8 +20,8 @@ const toolbarLabel = `Map controls for ${directoryName}`;
 
 {hasPins && (
   <>
-    <section class="directory-map card-surface space-y-4 p-5" data-map-container={mapId}>
-      <header class="flex flex-col gap-1">
+    <section role="region" aria-label="Interactive map" class="directory-map card-surface space-y-4 p-5" data-map-container={mapId}>
+      <header>
         <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Interactive map</p>
         <h2 class="text-xl font-semibold text-white">{directoryName}</h2>
         <p class="text-sm text-slate-400">{locationName || 'Location-aware listings plotted by latitude/longitude.'}</p>
@@ -42,7 +42,7 @@ const toolbarLabel = `Map controls for ${directoryName}`;
           {safePins[0]?.locationLabel ?? description}
         </p>
       </div>
-      <div class="directory-map__toolbar" aria-label={toolbarLabel}>
+      <div role="toolbar" aria-label={toolbarLabel} class="directory-map__toolbar">
         <p class="text-xs text-slate-400">
           {description}
         </p>
