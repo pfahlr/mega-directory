@@ -273,7 +273,7 @@ export async function updateDirectory(
       },
     });
 
-    return directory;
+    return directory as any;
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Directory', id);
