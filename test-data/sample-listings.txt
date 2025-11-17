@@ -1,0 +1,24 @@
+Acme Professional Services - Expert consulting for small businesses.
+Located at 123 Main St, New York, NY 10001. Call (555) 123-4567.
+Website: https://acmepros.example.com
+Email: info@acmepros.example.com
+
+Denver Tech Solutions provides IT support and managed services.
+Contact: contact@denvertech.example.com | Phone: (303) 555-9876
+Office: 456 Tech Blvd, Denver, CO 80202
+Visit us at https://denvertech.example.com
+
+Bay Area Recruiters
+Executive recruiting and talent acquisition for tech companies
+Based in San Francisco at 789 Market Street, CA 94102
+Email jobs@bayarearecruit.example.com
+https://bayarearecruit.example.com
+
+HealthFirst Medical - Primary care clinic in NYC
+100 Health Plaza, New York, NY 10003
+Phone: (555) 234-5678
+https://healthfirst.example.com
+
+EduTech Academy offers online professional development courses
+Email: support@edutech.example.com
+Website: https://edutech.example.com
