@@ -1,0 +1,159 @@
+id: 92
+filename: 92_add_open_graph_twitter_meta_tags.yaml
+title: Add Open Graph and Twitter Card Meta Tags
+priority: 🟡 Important
+impact: Medium
+effort: Low
+dependencies: [76, 80]
+phase: Frontend Enhancement - Phase 2 (SEO Core)
+
+description: >
+  Implement complete Open Graph and Twitter Card meta tags for proper social
+  media sharing. Ensure listings and directory pages have optimized previews
+  when shared on Facebook, Twitter, LinkedIn, etc.
+
+  Context: Social sharing drives traffic. Proper meta tags control how links
+  appear when shared, increasing click-through rates. Essential for modern
+  SEO and social media marketing.
+
+objectives:
+  - Add Open Graph meta tags
+  - Add Twitter Card meta tags
+  - Generate appropriate images for social sharing
+  - Test social sharing previews
+  - Document meta tag requirements
+
+scope:
+  - Homepage
+  - Directory list pages
+  - Individual listing pages
+  - Category pages
+  - Location pages
+
+implementation_guidelines:
+
+  required_meta_tags:
+    open_graph:
+      - "og:type"
+      - "og:url"
+      - "og:title"
+      - "og:description"
+      - "og:image"
+      - "og:image:width"
+      - "og:image:height"
+      - "og:locale"
+      - "og:site_name"
+
+    twitter:
+      - "twitter:card"
+      - "twitter:url"
+      - "twitter:title"
+      - "twitter:description"
+      - "twitter:image"
+
+  complete_example:
+    listing_page: |
+      <head>
+        <!-- Primary Meta Tags -->
+        <title>Main Street Cafe - Coffee Shop in Springfield, IL | YourDirectory</title>
+        <meta name="title" content="Main Street Cafe - Coffee Shop in Springfield, IL">
+        <meta name="description" content="Main Street Cafe is a cozy coffee shop in downtown Springfield. Serving artisan coffee, pastries, and breakfast. Open Mon-Fri 8am-6pm.">
+
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://example.com/listing/main-street-cafe">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="business.business">
+        <meta property="og:url" content="https://example.com/listing/main-street-cafe">
+        <meta property="og:title" content="Main Street Cafe - Coffee Shop in Springfield, IL">
+        <meta property="og:description" content="Main Street Cafe is a cozy coffee shop in downtown Springfield. Serving artisan coffee, pastries, and breakfast.">
+        <meta property="og:image" content="https://example.com/images/listings/main-street-cafe-og.jpg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:locale" content="en_US">
+        <meta property="og:site_name" content="YourDirectory">
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="https://example.com/listing/main-street-cafe">
+        <meta name="twitter:title" content="Main Street Cafe - Coffee Shop in Springfield, IL">
+        <meta name="twitter:description" content="Cozy coffee shop in downtown Springfield. Artisan coffee, pastries, breakfast. Mon-Fri 8am-6pm.">
+        <meta name="twitter:image" content="https://example.com/images/listings/main-street-cafe-twitter.jpg">
+      </head>
+
+    directory_page: |
+      <head>
+        <title>Coffee Shops in Springfield, IL | YourDirectory</title>
+        <meta name="description" content="Find the best coffee shops in Springfield, IL. Browse 50+ cafes with reviews, hours, and contact info.">
+
+        <link rel="canonical" href="https://example.com/coffee-shops/springfield-il">
+
+        <!-- Open Graph -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://example.com/coffee-shops/springfield-il">
+        <meta property="og:title" content="Coffee Shops in Springfield, IL | YourDirectory">
+        <meta property="og:description" content="Find the best coffee shops in Springfield, IL. Browse 50+ cafes with reviews, hours, and contact info.">
+        <meta property="og:image" content="https://example.com/images/categories/coffee-shops-springfield-og.jpg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:locale" content="en_US">
+        <meta property="og:site_name" content="YourDirectory">
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="https://example.com/coffee-shops/springfield-il">
+        <meta name="twitter:title" content="Coffee Shops in Springfield, IL">
+        <meta name="twitter:description" content="Find the best coffee shops in Springfield. 50+ cafes with reviews, hours, contact info.">
+        <meta name="twitter:image" content="https://example.com/images/categories/coffee-shops-springfield-twitter.jpg">
+      </head>
+
+  image_specifications:
+    open_graph:
+      dimensions: "1200x630 pixels"
+      aspect_ratio: "1.91:1"
+      max_file_size: "8MB"
+      format: "JPG or PNG"
+
+    twitter_card:
+      summary_large_image: "1200x628 pixels minimum"
+      summary: "120x120 pixels minimum"
+      aspect_ratio: "2:1"
+      max_file_size: "5MB"
+
+  best_practices:
+    - "Keep titles under 60 characters"
+    - "Keep descriptions under 155 characters"
+    - "Use absolute URLs (not relative)"
+    - "Include proper image dimensions"
+    - "Use high-quality images"
+    - "Avoid generic images - make them specific to content"
+    - "Test with Facebook Sharing Debugger"
+    - "Test with Twitter Card Validator"
+
+success_criteria:
+  - All pages have Open Graph tags
+  - All pages have Twitter Card tags
+  - Images meet size requirements
+  - Previews look good on all platforms
+  - No warnings in validation tools
+
+testing_procedures:
+  automated:
+    - Facebook Sharing Debugger (developers.facebook.com/tools/debug/)
+    - Twitter Card Validator (cards-dev.twitter.com/validator)
+    - LinkedIn Post Inspector
+
+  manual:
+    - Share links on Facebook, verify preview
+    - Share links on Twitter, verify preview
+    - Share links on LinkedIn, verify preview
+    - Check image quality and cropping
+
+acceptance_criteria:
+  - Facebook Sharing Debugger: No warnings
+  - Twitter Card Validator: Card renders correctly
+  - All images display properly
+  - Titles and descriptions are optimized
+  - No missing required tags
+
+estimated_time: 2-3 days

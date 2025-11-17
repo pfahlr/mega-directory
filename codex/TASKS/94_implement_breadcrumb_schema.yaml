@@ -1,0 +1,129 @@
+id: 94
+filename: 94_implement_breadcrumb_schema.yaml
+title: Implement Breadcrumb Schema Markup
+priority: 🟢 Nice-to-Have
+impact: Medium
+effort: Low
+dependencies: [76, 80, 82]
+phase: Frontend Enhancement - Phase 5 (Enhancements)
+
+description: >
+  Add BreadcrumbList schema markup to all pages. Breadcrumbs help users
+  understand site hierarchy and improve search engine understanding. Can
+  result in breadcrumb rich results in search.
+
+  Context: Breadcrumb schema complements visual breadcrumbs and helps search
+  engines understand site structure. Can display in Google search results.
+
+objectives:
+  - Add BreadcrumbList schema to all pages
+  - Ensure schema matches visual breadcrumbs
+  - Validate with Google Rich Results Test
+
+scope:
+  - All directory pages
+  - Category pages
+  - Location pages
+  - Individual listing pages
+
+implementation_guidelines:
+
+  schema_format:
+    type: "JSON-LD"
+    location: "<head> or end of <body>"
+
+  example:
+    three_level: |
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://example.com/"
+        }, {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Coffee Shops",
+          "item": "https://example.com/category/coffee-shops"
+        }, {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Springfield, IL",
+          "item": "https://example.com/category/coffee-shops/springfield-il"
+        }]
+      }
+      </script>
+
+    listing_page: |
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://example.com/"
+        }, {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Coffee Shops",
+          "item": "https://example.com/category/coffee-shops"
+        }, {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Springfield, IL",
+          "item": "https://example.com/category/coffee-shops/springfield-il"
+        }, {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Main Street Cafe"
+          // Note: No "item" for current page
+        }]
+      }
+      </script>
+
+  visual_breadcrumbs:
+    requirement: "Should match schema exactly"
+    example: |
+      <nav aria-label="Breadcrumb">
+        <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="/">
+              <span itemprop="name">Home</span>
+            </a>
+            <meta itemprop="position" content="1" />
+          </li>
+          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="/category/coffee-shops">
+              <span itemprop="name">Coffee Shops</span>
+            </a>
+            <meta itemprop="position" content="2" />
+          </li>
+          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <span itemprop="name">Springfield, IL</span>
+            <meta itemprop="position" content="3" />
+          </li>
+        </ol>
+      </nav>
+
+success_criteria:
+  - All pages have BreadcrumbList schema
+  - Schema matches visual breadcrumbs
+  - Valid in Google Rich Results Test
+  - Positions are sequential
+
+testing_procedures:
+  - Google Rich Results Test
+  - Schema.org Validator
+  - Manual inspection
+
+acceptance_criteria:
+  - Zero validation errors
+  - Breadcrumbs eligible for rich results
+  - Schema matches visual breadcrumbs
+
+estimated_time: 1-2 days

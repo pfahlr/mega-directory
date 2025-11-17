@@ -1,0 +1,134 @@
+id: 87
+filename: 87_implement_large_click_targets.yaml
+title: Implement Large Click Targets (44x44px)
+priority: 🟡 Important
+impact: Medium
+effort: Low
+dependencies: [78, 80]
+phase: Frontend Enhancement - Phase 3 (Polish)
+
+description: >
+  Ensure all interactive elements meet WCAG AAA target size of 44x44 CSS pixels
+  (or WCAG AA minimum of 24x24px). Add adequate spacing between targets.
+  Critical for users with limited dexterity, tremors, or touch screen users.
+
+  Context: Small targets are difficult for users with motor impairments.
+  44x44px is gold standard (AAA), 24x24px is minimum (AA). Also benefits
+  mobile users and anyone with less precise pointing devices.
+
+objectives:
+  - All buttons ≥44x44px
+  - All clickable elements ≥44x44px (except inline links)
+  - Adequate spacing between targets (8px minimum)
+  - Touch-friendly on mobile (48x48px ideal)
+
+scope:
+  - Buttons
+  - Icon buttons
+  - Form inputs
+  - Checkbox/radio buttons (or their labels)
+  - Pagination controls
+  - Filter controls
+  - Map markers (map template)
+
+implementation_guidelines:
+
+  buttons:
+    minimum_size: "44x44px"
+    example: |
+      button, .button, a.button {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 24px;
+      }
+
+  icon_buttons:
+    minimum_size: "44x44px"
+    example: |
+      .icon-button {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+      }
+
+  form_inputs:
+    minimum_height: "44px"
+    example: |
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      select,
+      textarea {
+        min-height: 44px;
+        padding: 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+
+  checkbox_radio:
+    approach: "Make entire label clickable (44px min-height)"
+    example: |
+      label {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 8px;
+        cursor: pointer;
+      }
+
+      input[type="checkbox"],
+      input[type="radio"] {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+      }
+
+  spacing:
+    minimum: "8px between targets"
+    example: |
+      .button-group button {
+        margin: 8px;
+      }
+
+  mobile_optimization:
+    target_size: "48x48px (larger for touch)"
+    example: |
+      @media (max-width: 768px) {
+        button, .button {
+          min-height: 48px;
+          min-width: 48px;
+          padding: 14px 28px;
+        }
+
+        .button-group button {
+          margin: 12px;
+        }
+      }
+
+success_criteria:
+  - All interactive elements ≥44x44px (or 24x24px minimum)
+  - Adequate spacing between targets
+  - Mobile targets ≥48x48px
+  - Inline links have adequate line-height
+
+testing_procedures:
+  automated:
+    - axe DevTools target size checks
+    - Manual measurement in browser DevTools
+
+  manual:
+    - Click all targets with mouse
+    - Tap all targets on touch device
+    - Verify spacing feels comfortable
+    - Test with large finger on mobile
+
+  measurement:
+    tool: "Browser DevTools > Inspect > Check computed dimensions"
+
+acceptance_criteria:
+  - All buttons ≥44x44px
+  - All clickable icons ≥44x44px
+  - Spacing between targets ≥8px
+  - Mobile targets ≥48x48px
+  - Zero target size violations
+
+estimated_time: 2-3 days

@@ -1,0 +1,174 @@
+id: 98
+filename: 98_implement_wcag_aaa_where_feasible.yaml
+title: Implement WCAG AAA Where Feasible
+priority: 🟢 Nice-to-Have
+impact: Medium
+effort: High
+dependencies: [77, 78, 79, 80, 81-96]
+phase: Frontend Enhancement - Phase 5 (Enhancements)
+
+description: >
+  Implement WCAG 2.2 Level AAA requirements where feasible and practical.
+  AAA is aspirational - not all criteria are achievable for all content,
+  but many AAA requirements significantly improve accessibility.
+
+  Context: Level AA is the legal requirement, but AAA provides enhanced
+  experience for users with disabilities. Focus on achievable AAA criteria
+  that benefit users without unreasonable burden.
+
+objectives:
+  - Identify feasible AAA criteria
+  - Implement high-value AAA enhancements
+  - Document AAA compliance level
+  - Understand AAA criteria that aren't feasible
+
+scope:
+  - Color contrast (7:1 for text)
+  - Target size (44x44px)
+  - Extended audio descriptions (if video content)
+  - Consistent help (if applicable)
+
+implementation_guidelines:
+
+  achievable_aaa_criteria:
+
+    1.4.6_contrast_enhanced:
+      requirement: "7:1 contrast for normal text, 4.5:1 for large text"
+      feasibility: "High - mainly color palette adjustment"
+      example: |
+        :root {
+          --text-primary: #000000;     /* 21:1 on white */
+          --text-secondary: #333333;   /* 12.6:1 on white */
+          --link-color: #0051a5;       /* 8.2:1 on white */
+        }
+
+    2.4.8_location:
+      requirement: "Information about user's location within site"
+      feasibility: "High - breadcrumbs already planned"
+      implementation: "Already covered by breadcrumb implementation"
+
+    2.5.5_target_size:
+      requirement: "Minimum 44x44 CSS pixels for targets"
+      feasibility: "High - already planned in Task 87"
+      implementation: "Already covered"
+
+    3.2.5_change_on_request:
+      requirement: "Changes of context only by user request"
+      feasibility: "High - good UX practice anyway"
+      implementation: "No auto-redirects, no auto-playing media, no automatic form submission"
+
+    3.3.5_help:
+      requirement: "Context-sensitive help available"
+      feasibility: "Medium - depends on content"
+      example: |
+        <!-- Inline help text -->
+        <label for="phone">
+          Phone number
+          <button type="button" aria-label="Help with phone number" class="help-btn">?</button>
+        </label>
+        <div id="phone-help" class="help-text" hidden>
+          Enter phone in format: (555) 123-4567
+        </div>
+
+    2.4.10_section_headings:
+      requirement: "Section headings to organize content"
+      feasibility: "High - good content structure anyway"
+      implementation: "Already planned in semantic HTML task"
+
+  difficult_or_inapplicable_aaa_criteria:
+
+    1.2.6_sign_language:
+      requirement: "Sign language interpretation for prerecorded audio"
+      feasibility: "Low - very expensive, limited video content"
+      decision: "Not implementing (directory site has minimal video)"
+
+    1.2.8_media_alternative:
+      requirement: "Full text alternative for prerecorded media"
+      feasibility: "Medium - depends on video content"
+      decision: "Implement if/when video content added"
+
+    1.4.7_low_background_audio:
+      requirement: "Audio with little/no background noise"
+      feasibility: "N/A - directory site has no audio content"
+
+    2.1.3_keyboard_no_exception:
+      requirement: "Keyboard for ALL functionality (no exceptions)"
+      feasibility: "High - already goal for AA"
+      implementation: "Already covered"
+
+    2.2.3_no_timing:
+      requirement: "No time limits"
+      feasibility: "High - directory site doesn't need time limits"
+      implementation: "Already planned (no session timeouts)"
+
+    2.2.4_interruptions:
+      requirement: "Interruptions can be postponed/suppressed"
+      feasibility: "High - don't use interruptions anyway"
+      implementation: "No modal popups, no chat widgets"
+
+    2.4.9_link_purpose_link_only:
+      requirement: "Link purpose clear from link text alone"
+      feasibility: "High - good practice"
+      implementation: "Use descriptive link text (already planned)"
+
+    3.1.3_unusual_words:
+      requirement: "Definitions for unusual words"
+      feasibility: "Medium - depends on content"
+      decision: "Implement if technical terms used"
+
+    3.1.4_abbreviations:
+      requirement: "Expansions for abbreviations"
+      feasibility: "Medium - minimal abbreviations used"
+      example: |
+        <abbr title="Illinois">IL</abbr>
+
+    3.1.5_reading_level:
+      requirement: "Lower secondary education level (8th grade)"
+      feasibility: "High - already planned in plain language task"
+      implementation: "Already covered in Task 90"
+
+  implementation_priority:
+    high_priority_aaa:
+      - "Enhanced contrast (7:1)"
+      - "44x44px targets"
+      - "Section headings"
+      - "Link purpose from text alone"
+      - "Reading level (8th grade)"
+
+    medium_priority_aaa:
+      - "Context-sensitive help"
+      - "Abbreviation expansions"
+      - "No timing"
+      - "No interruptions"
+
+    low_priority_or_na:
+      - "Sign language interpretation"
+      - "Extended audio descriptions"
+      - "Low background audio"
+
+success_criteria:
+  - High-priority AAA criteria implemented
+  - Enhanced contrast (7:1) for most text
+  - 44x44px targets everywhere
+  - No timing or interruptions
+  - Documentation of AAA compliance level
+
+testing_procedures:
+  - Test contrast with 7:1 standard
+  - Measure target sizes
+  - Verify no time limits
+  - Test reading level
+  - Document AAA compliance
+
+deliverables:
+  - AAA compliance documentation
+  - List of implemented AAA criteria
+  - List of non-applicable AAA criteria
+  - Justification for non-implemented criteria
+
+acceptance_criteria:
+  - All achievable AAA criteria implemented
+  - AAA compliance level documented
+  - Rationale for non-implemented criteria documented
+
+estimated_time: 3-5 days

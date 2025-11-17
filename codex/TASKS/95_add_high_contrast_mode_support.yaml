@@ -1,0 +1,165 @@
+id: 95
+filename: 95_add_high_contrast_mode_support.yaml
+title: Add High Contrast Mode Support
+priority: 🟢 Nice-to-Have
+impact: Medium
+effort: Medium
+dependencies: [77, 80, 83]
+phase: Frontend Enhancement - Phase 5 (Enhancements)
+
+description: >
+  Add support for high contrast mode using CSS media queries. Respect user's
+  system-level high contrast preferences. Benefits users with low vision who
+  need maximum contrast.
+
+  Context: Some users with low vision use Windows High Contrast Mode or browser
+  extensions. CSS can detect and adapt to these preferences for better
+  experience.
+
+objectives:
+  - Detect prefers-contrast media query
+  - Provide high contrast styles
+  - Test in Windows High Contrast Mode
+  - Ensure all content visible
+
+scope:
+  - All text
+  - All interactive elements
+  - All borders and dividers
+  - Focus indicators
+
+implementation_guidelines:
+
+  css_media_query:
+    query: "prefers-contrast: high"
+    example: |
+      @media (prefers-contrast: high) {
+        :root {
+          /* Maximum contrast colors */
+          --text-primary: #000000;
+          --text-secondary: #000000;
+          --background: #ffffff;
+          --border: #000000;
+          --link: #0000ff;
+          --focus-indicator: #000000;
+        }
+
+        /* Ensure borders are visible */
+        button,
+        input,
+        select,
+        textarea {
+          border: 2px solid #000000;
+        }
+
+        /* Strong focus indicators */
+        a:focus,
+        button:focus,
+        input:focus {
+          outline: 3px solid #000000;
+          outline-offset: 2px;
+        }
+
+        /* Ensure all text is black */
+        body,
+        p,
+        li,
+        td,
+        th,
+        label {
+          color: #000000;
+        }
+
+        /* Links should be distinguishable */
+        a {
+          color: #0000ff;
+          text-decoration: underline;
+        }
+
+        a:visited {
+          color: #660099;
+        }
+      }
+
+  windows_high_contrast:
+    note: "Windows HCM overrides colors with system colors"
+    support: "Use system-color keywords"
+    example: |
+      @media (prefers-contrast: high) {
+        body {
+          background-color: Canvas;
+          color: CanvasText;
+        }
+
+        a {
+          color: LinkText;
+        }
+
+        button {
+          background-color: ButtonFace;
+          color: ButtonText;
+          border-color: ButtonBorder;
+        }
+
+        :focus {
+          outline-color: Highlight;
+        }
+      }
+
+  forced_colors:
+    detection: "prefers-color-scheme: no-preference with forced-colors: active"
+    example: |
+      @media (forced-colors: active) {
+        /* Ensure custom graphics/icons are visible */
+        .icon {
+          forced-color-adjust: auto;
+        }
+
+        /* Preserve brand colors if critical */
+        .logo {
+          forced-color-adjust: none;
+        }
+
+        /* Ensure borders don't disappear */
+        button,
+        input {
+          border: 1px solid;
+        }
+      }
+
+  testing_checklist:
+    - "All text is visible"
+    - "All borders are visible"
+    - "Focus indicators are visible"
+    - "Links are distinguishable from text"
+    - "Buttons are clearly outlined"
+    - "No information lost"
+
+success_criteria:
+  - High contrast styles defined
+  - All content visible in HCM
+  - Focus indicators visible
+  - No information conveyed by color alone
+
+testing_procedures:
+  windows:
+    - Enable Windows High Contrast Mode
+    - Test all themes (High Contrast Black, White, etc.)
+    - Verify all content visible
+    - Test keyboard navigation
+
+  macos:
+    - Enable "Increase Contrast" in Accessibility
+    - Verify styles adapt appropriately
+
+  browser:
+    - Test with high contrast browser extensions
+    - Verify styles don't conflict
+
+acceptance_criteria:
+  - All content visible in high contrast mode
+  - Focus indicators clearly visible
+  - No layout breaks
+  - User testing passes (if available)
+
+estimated_time: 2-3 days

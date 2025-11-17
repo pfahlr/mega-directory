@@ -1,0 +1,155 @@
+id: 89
+filename: 89_implement_skip_navigation_links.yaml
+title: Implement Skip Navigation Links
+priority: 🟡 Important
+impact: Medium
+effort: Low
+dependencies: [78, 80, 81]
+phase: Frontend Enhancement - Phase 1 (Foundation)
+
+description: >
+  Add skip links to bypass repetitive navigation and jump directly to main
+  content. Required for keyboard and screen reader users to efficiently
+  navigate the site.
+
+  Context: Keyboard users must tab through all header links on every page.
+  Skip links allow jumping directly to main content, search, or skipping
+  complex components like maps. Major usability improvement.
+
+objectives:
+  - Add "Skip to main content" link
+  - Add "Skip to search" link (if applicable)
+  - Add "Skip map" link (map template)
+  - Make skip links visible on focus
+  - Position skip links as first focusable elements
+
+scope:
+  - All pages (skip to main)
+  - Map template (skip map)
+  - Pages with prominent search (skip to search)
+
+implementation_guidelines:
+
+  skip_to_main:
+    required: true
+    position: "First focusable element"
+    target: "#main-content"
+    example: |
+      <body>
+        <a href="#main-content" class="skip-link">
+          Skip to main content
+        </a>
+
+        <header>...</header>
+
+        <main id="main-content">
+          <!-- Main content -->
+        </main>
+      </body>
+
+  skip_to_search:
+    optional: true
+    use_when: "Search is prominent feature"
+    example: |
+      <a href="#search" class="skip-link">
+        Skip to search
+      </a>
+
+      <form id="search" role="search">
+        <!-- Search form -->
+      </form>
+
+  skip_map:
+    required_for: "Map template only"
+    purpose: "Allow skipping interactive map"
+    example: |
+      <a href="#listings-list" class="skip-link">
+        Skip map, view list of businesses
+      </a>
+
+      <div id="map">...</div>
+
+      <div id="listings-list">
+        <!-- Text-based list -->
+      </div>
+
+  css_implementation:
+    behavior: "Hidden by default, visible on focus"
+    example: |
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #000;
+        color: #fff;
+        padding: 8px;
+        text-decoration: none;
+        z-index: 100;
+        transition: top 0.2s;
+      }
+
+      .skip-link:focus {
+        top: 0;
+      }
+
+      /* Alternative with transform (smoother) */
+      .skip-link {
+        position: absolute;
+        transform: translateY(-100%);
+        left: 0;
+        background: #000;
+        color: #fff;
+        padding: 8px;
+        z-index: 100;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+  javascript_enhancement:
+    purpose: "Ensure focus moves to target"
+    example: |
+      // Ensure target receives focus
+      document.querySelectorAll('.skip-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const targetId = link.getAttribute('href').substring(1);
+          const target = document.getElementById(targetId);
+
+          if (target) {
+            target.setAttribute('tabindex', '-1');
+            target.focus();
+            target.addEventListener('blur', () => {
+              target.removeAttribute('tabindex');
+            }, { once: true });
+          }
+        });
+      });
+
+success_criteria:
+  - Skip link is first focusable element
+  - Skip link is visible when focused
+  - Skip link correctly jumps to target
+  - Target receives focus after activation
+  - Skip links on all appropriate pages
+
+testing_procedures:
+  manual:
+    - Press Tab on page load
+    - Verify skip link appears
+    - Activate skip link (Enter)
+    - Verify focus moves to target
+    - Test on all page types
+
+  screen_reader:
+    - Verify skip link is announced first
+    - Verify target is reached after activation
+
+acceptance_criteria:
+  - Skip to main content on all pages
+  - Skip links visible on keyboard focus
+  - Skip links functional
+  - Keyboard users can bypass navigation
+  - Screen readers announce skip links
+
+estimated_time: 1 day

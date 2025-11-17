@@ -1,0 +1,148 @@
+id: 86
+filename: 86_optimize_core_web_vitals.yaml
+title: Optimize Core Web Vitals
+priority: 🔴 Critical
+impact: High
+effort: High
+dependencies: [76, 80]
+phase: Frontend Enhancement - Phase 2 (SEO Core)
+
+description: >
+  Optimize page performance to meet 2025 Core Web Vitals standards. Target
+  LCP ≤2.5s, INP ≤200ms, and CLS <0.1. Core Web Vitals are now mandatory
+  for good search rankings and critical for user experience.
+
+  Context: Google uses Core Web Vitals as ranking signals. Poor performance
+  hurts SEO and user experience. Standards: LCP (loading), INP (interactivity),
+  CLS (visual stability).
+
+objectives:
+  - Achieve LCP (Largest Contentful Paint) ≤2.5s
+  - Achieve INP (Interaction to Next Paint) ≤200ms
+  - Achieve CLS (Cumulative Layout Shift) <0.1
+  - Optimize images (WebP, lazy loading, sizing)
+  - Minimize JavaScript execution time
+  - Eliminate layout shifts
+
+scope:
+  - Image optimization
+  - JavaScript optimization
+  - CSS optimization
+  - Resource loading strategy
+  - Layout stability
+
+implementation_guidelines:
+
+  lcp_optimization:
+    target: "≤2.5s"
+    techniques:
+      - Optimize images (WebP format, proper sizing)
+      - Implement lazy loading for below-fold content
+      - Use CDN for static assets
+      - Preload critical resources
+      - Minimize render-blocking resources
+      - Optimize server response time (TTFB <200ms)
+
+    example: |
+      <!-- Optimized image -->
+      <img src="photo.webp" alt="..."
+           width="800" height="600"
+           loading="lazy" decoding="async">
+
+      <!-- Preload critical resources -->
+      <link rel="preload" href="/fonts/main.woff2" as="font" crossorigin>
+      <link rel="preload" href="/css/critical.css" as="style">
+
+  inp_optimization:
+    target: "≤200ms"
+    techniques:
+      - Minimize JavaScript execution time
+      - Code splitting and lazy loading
+      - Debounce/throttle event handlers
+      - Use requestIdleCallback for non-critical tasks
+      - Optimize event handlers
+      - Reduce third-party scripts
+
+    example: |
+      // Debounce search input
+      const debouncedSearch = debounce((query) => {
+        performSearch(query);
+      }, 300);
+
+      searchInput.addEventListener('input', (e) => {
+        debouncedSearch(e.target.value);
+      });
+
+  cls_optimization:
+    target: "<0.1"
+    techniques:
+      - Set explicit width/height on images and iframes
+      - Reserve space for dynamic content
+      - Use CSS aspect-ratio
+      - Preload web fonts
+      - Avoid inserting content above existing content
+
+    example: |
+      <!-- Set dimensions to prevent layout shift -->
+      <img src="photo.jpg" alt="..." width="800" height="600">
+
+      <!-- CSS for responsive images without shift -->
+      <style>
+      img {
+        aspect-ratio: attr(width) / attr(height);
+        width: 100%;
+        height: auto;
+      }
+
+      /* Font loading -->
+      @font-face {
+        font-family: 'Main';
+        src: url('/fonts/main.woff2') format('woff2');
+        font-display: swap;
+      }
+      </style>
+
+  performance_budget:
+    targets:
+      - LCP: <2.5s
+      - INP: <200ms
+      - CLS: <0.1
+      - FCP (First Contentful Paint): <1.8s
+      - TTI (Time to Interactive): <3.8s
+      - Total page size: <1MB
+      - JavaScript size: <300KB
+      - Image total: <500KB
+
+success_criteria:
+  - LCP ≤2.5s (75th percentile)
+  - INP ≤200ms (75th percentile)
+  - CLS <0.1 (75th percentile)
+  - PageSpeed Insights score: 90+ (mobile and desktop)
+  - All Core Web Vitals in "Good" range
+
+testing_procedures:
+  automated:
+    - Google PageSpeed Insights
+    - Chrome DevTools Lighthouse
+    - WebPageTest.org
+    - Google Search Console Core Web Vitals report
+
+  monitoring:
+    - Real User Monitoring (RUM) after deployment
+    - Google Search Console ongoing monitoring
+    - Set up alerts for regressions
+
+tools:
+  - https://pagespeed.web.dev/
+  - Chrome DevTools > Lighthouse
+  - https://www.webpagetest.org/
+  - Chrome DevTools > Performance tab
+
+acceptance_criteria:
+  - PageSpeed Insights (Mobile): 90+ score
+  - PageSpeed Insights (Desktop): 90+ score
+  - All three Core Web Vitals: Green (Good)
+  - No layout shifts during page load
+  - Images optimized (WebP, proper sizing)
+
+estimated_time: 5-7 days

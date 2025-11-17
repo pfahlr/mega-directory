@@ -1,0 +1,880 @@
+id: 83
+filename: 83_ensure_wcag_aa_color_contrast.yaml
+title: Implement Multi-Theme System with WCAG AA/AAA Color Contrast
+priority: 🔴 Critical
+impact: High
+effort: High
+dependencies: [77, 80]
+phase: Frontend Enhancement - Phase 1 (Foundation)
+
+description: >
+  Implement a comprehensive theming system with 7 color themes, each supporting
+  4 variations (high-contrast-dark, dark, light, high-contrast-light). Ensure
+  all themes meet WCAG 2.2 Level AA requirements (normal modes) and Level AAA
+  requirements (high-contrast modes). Support theme configuration at site,
+  admin, and per-directory levels, with automatic detection of user preferences
+  and Dark Reader plugin compatibility.
+
+  Context: 285 million people worldwide have visual impairments. Proper
+  contrast is essential for low vision users and benefits everyone. A flexible
+  theming system allows customization while maintaining accessibility.
+
+objectives:
+  - Implement 7 distinct color themes with semantic color schemes
+  - Create 4 variations per theme (28 total theme variations)
+  - Ensure WCAG AA compliance for normal modes (4.5:1 text, 3:1 UI)
+  - Ensure WCAG AAA compliance for high-contrast modes (7:1 text, 4.5:1 UI)
+  - Build theme configuration system (site/admin/directory levels)
+  - Implement theme switcher widget with persistence
+  - Auto-detect user preferences (prefers-color-scheme, prefers-contrast)
+  - Support Dark Reader and similar browser extensions
+
+scope:
+  - CSS custom properties architecture
+  - Theme switcher UI component
+  - Django settings and database models
+  - JavaScript theme detection and switching
+  - All text, buttons, links, forms, icons
+  - Focus indicators and interactive states
+  - Admin interface theming
+  - Per-directory page theming
+
+color_themes:
+
+  professional_blue:
+    name: "Professional Blue"
+    slug: "professional-blue"
+    base_colors: ["#00a6fb", "#0582ca", "#006494", "#003554", "#051923"]
+    use_case: "Corporate, trustworthy, financial services"
+
+  earthy_neutral:
+    name: "Earthy Neutral"
+    slug: "earthy-neutral"
+    base_colors: ["#eae0cc", "#c9ada1", "#a0a083", "#798478", "#4d6a6d"]
+    use_case: "Natural, organic, wellness, sustainable businesses"
+
+  modern_slate:
+    name: "Modern Slate"
+    slug: "modern-slate"
+    base_colors: ["#353535", "#3c6e71", "#ffffff", "#d9d9d9", "#284b63"]
+    use_case: "Tech, modern professional services"
+
+  ocean_teal:
+    name: "Ocean Teal"
+    slug: "ocean-teal"
+    base_colors: ["#247ba0", "#70c1b3", "#b2dbbf", "#f3ffbd", "#ff1654"]
+    use_case: "Healthcare, spa, coastal businesses"
+
+  purple_gradient:
+    name: "Purple Gradient"
+    slug: "purple-gradient"
+    base_colors: ["#7400b8", "#6930c3", "#5e60ce", "#5390d9", "#4ea8de", "#48bfe3"]
+    use_case: "Creative, artistic, entertainment"
+
+  navy_slate:
+    name: "Navy Slate"
+    slug: "navy-slate"
+    base_colors: ["#0d1b2a", "#1b263b", "#415a77", "#778da9", "#e0e1dd"]
+    use_case: "Law, consulting, established professional"
+
+  classic_contrast:
+    name: "Classic Contrast"
+    slug: "classic-contrast"
+    base_colors: ["#0b090a", "#161a1d", "#660708", "#a4161a", "#ba181b", "#e5383b", "#b1a7a6", "#d3d3d3", "#f5f3f4", "#ffffff"]
+    use_case: "Maximum flexibility, news, information"
+
+theme_variations:
+
+  structure: >
+    Each theme has 4 variations that cascade in contrast intensity:
+    light → dark → high-contrast-light → high-contrast-dark
+
+  light:
+    description: "Light background, dark text (WCAG AA)"
+    contrast_requirements:
+      text_normal: "4.5:1 minimum"
+      text_large: "3:1 minimum"
+      ui_components: "3:1 minimum"
+    background: "Light colors from palette"
+    text: "Dark colors from palette"
+
+  dark:
+    description: "Dark background, light text (WCAG AA)"
+    contrast_requirements:
+      text_normal: "4.5:1 minimum"
+      text_large: "3:1 minimum"
+      ui_components: "3:1 minimum"
+    background: "Dark colors from palette"
+    text: "Light colors from palette"
+    trigger: "prefers-color-scheme: dark"
+
+  high_contrast_light:
+    description: "Light background, maximum contrast (WCAG AAA)"
+    contrast_requirements:
+      text_normal: "7:1 minimum"
+      text_large: "4.5:1 minimum"
+      ui_components: "4.5:1 minimum"
+    background: "#ffffff"
+    text: "#000000"
+    trigger: "prefers-contrast: more (light mode)"
+
+  high_contrast_dark:
+    description: "Dark background, maximum contrast (WCAG AAA)"
+    contrast_requirements:
+      text_normal: "7:1 minimum"
+      text_large: "4.5:1 minimum"
+      ui_components: "4.5:1 minimum"
+    background: "#000000"
+    text: "#ffffff"
+    trigger: "prefers-contrast: more (dark mode)"
+
+configuration_levels:
+
+  main_site:
+    location: "Django settings or database"
+    model: "SiteConfiguration"
+    fields:
+      - default_theme: "slug (e.g., 'professional-blue')"
+      - default_variation: "light|dark|high-contrast-light|high-contrast-dark"
+      - allow_user_override: "boolean"
+    example: |
+      # settings.py
+      DEFAULT_THEME = 'professional-blue'
+      DEFAULT_VARIATION = 'light'
+      ALLOW_THEME_OVERRIDE = True
+
+  admin_site:
+    location: "Admin-specific configuration"
+    model: "AdminConfiguration"
+    fields:
+      - admin_theme: "slug (e.g., 'navy-slate')"
+      - admin_variation: "light|dark"
+    example: |
+      # Admin can have different theme than public site
+      ADMIN_THEME = 'navy-slate'
+      ADMIN_VARIATION = 'dark'
+
+  per_directory:
+    location: "Directory model"
+    model: "Directory"
+    fields:
+      - theme_override: "slug (optional, null=use site default)"
+      - variation_override: "light|dark|null"
+    example: |
+      class Directory(models.Model):
+          # ... other fields
+          theme_override = models.CharField(
+              max_length=50,
+              null=True,
+              blank=True,
+              choices=THEME_CHOICES
+          )
+          variation_override = models.CharField(
+              max_length=20,
+              null=True,
+              blank=True,
+              choices=VARIATION_CHOICES
+          )
+
+implementation_guidelines:
+
+  css_architecture:
+
+    base_structure: |
+      /* Base CSS custom properties structure */
+      :root {
+        /* Theme semantic colors */
+        --theme-primary: #0582ca;
+        --theme-secondary: #006494;
+        --theme-accent: #00a6fb;
+        --theme-neutral-light: #e0e1dd;
+        --theme-neutral-dark: #051923;
+
+        /* Semantic application */
+        --color-background: var(--theme-neutral-light);
+        --color-surface: #ffffff;
+        --color-text-primary: #1a1a1a;
+        --color-text-secondary: #4a4a4a;
+        --color-link: var(--theme-primary);
+        --color-link-hover: var(--theme-secondary);
+        --color-border: #767676;
+        --color-focus: var(--theme-accent);
+
+        /* Interactive states */
+        --color-button-bg: var(--theme-primary);
+        --color-button-text: #ffffff;
+        --color-button-hover: var(--theme-secondary);
+
+        /* Status colors */
+        --color-success: #006600;
+        --color-warning: #b35900;
+        --color-error: #cc0000;
+        --color-info: var(--theme-primary);
+      }
+
+    dark_mode_override: |
+      /* Dark mode variation */
+      [data-theme-variation="dark"] {
+        --color-background: var(--theme-neutral-dark);
+        --color-surface: #1a1a1a;
+        --color-text-primary: #f5f5f5;
+        --color-text-secondary: #d0d0d0;
+        --color-border: #404040;
+        /* Links may need lightening for dark backgrounds */
+        --color-link: #4ea8de;
+        --color-link-hover: #80ffdb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme-variation]) {
+          /* Auto dark mode when no explicit choice */
+          --color-background: var(--theme-neutral-dark);
+          --color-surface: #1a1a1a;
+          --color-text-primary: #f5f5f5;
+          --color-text-secondary: #d0d0d0;
+        }
+      }
+
+    high_contrast_override: |
+      /* High contrast light mode (WCAG AAA) */
+      [data-theme-variation="high-contrast-light"] {
+        --color-background: #ffffff;
+        --color-surface: #ffffff;
+        --color-text-primary: #000000;
+        --color-text-secondary: #000000;
+        --color-link: #0000ee;
+        --color-link-hover: #0000aa;
+        --color-border: #000000;
+        --color-focus: #0000ff;
+        --color-button-bg: #000000;
+        --color-button-text: #ffffff;
+        --color-success: #006600;
+        --color-error: #cc0000;
+        --color-warning: #995c00;
+      }
+
+      /* High contrast dark mode (WCAG AAA) */
+      [data-theme-variation="high-contrast-dark"] {
+        --color-background: #000000;
+        --color-surface: #000000;
+        --color-text-primary: #ffffff;
+        --color-text-secondary: #ffffff;
+        --color-link: #00ffff;
+        --color-link-hover: #00cccc;
+        --color-border: #ffffff;
+        --color-focus: #00ffff;
+        --color-button-bg: #ffffff;
+        --color-button-text: #000000;
+        --color-success: #00ff00;
+        --color-error: #ff4444;
+        --color-warning: #ffcc00;
+      }
+
+      @media (prefers-contrast: more) {
+        :root:not([data-theme-variation]) {
+          /* Auto high contrast light */
+          --color-text-primary: #000000;
+          --color-background: #ffffff;
+        }
+
+        :root[data-theme-variation="dark"],
+        [data-theme-variation="dark"]:not([data-theme-variation]) {
+          /* Auto high contrast dark when in dark mode */
+          --color-text-primary: #ffffff;
+          --color-background: #000000;
+        }
+      }
+
+  django_models:
+
+    site_configuration: |
+      # apps/core/models.py
+      from django.db import models
+
+      class SiteConfiguration(models.Model):
+          """Global site configuration (singleton)"""
+
+          THEME_CHOICES = [
+              ('professional-blue', 'Professional Blue'),
+              ('earthy-neutral', 'Earthy Neutral'),
+              ('modern-slate', 'Modern Slate'),
+              ('ocean-teal', 'Ocean Teal'),
+              ('purple-gradient', 'Purple Gradient'),
+              ('navy-slate', 'Navy Slate'),
+              ('classic-contrast', 'Classic Contrast'),
+          ]
+
+          VARIATION_CHOICES = [
+              ('light', 'Light'),
+              ('dark', 'Dark'),
+              ('high-contrast-light', 'High Contrast Light'),
+              ('high-contrast-dark', 'High Contrast Dark'),
+          ]
+
+          default_theme = models.CharField(
+              max_length=50,
+              choices=THEME_CHOICES,
+              default='professional-blue'
+          )
+
+          default_variation = models.CharField(
+              max_length=20,
+              choices=VARIATION_CHOICES,
+              default='light'
+          )
+
+          allow_user_override = models.BooleanField(default=True)
+
+          class Meta:
+              verbose_name = "Site Configuration"
+              verbose_name_plural = "Site Configuration"
+
+          def __str__(self):
+              return f"Site Config: {self.default_theme} ({self.default_variation})"
+
+    directory_model: |
+      # apps/directory/models.py (add to existing Directory model)
+
+      class Directory(models.Model):
+          # ... existing fields ...
+
+          theme_override = models.CharField(
+              max_length=50,
+              null=True,
+              blank=True,
+              choices=SiteConfiguration.THEME_CHOICES,
+              help_text="Override site default theme for this directory page"
+          )
+
+          variation_override = models.CharField(
+              max_length=20,
+              null=True,
+              blank=True,
+              choices=SiteConfiguration.VARIATION_CHOICES,
+              help_text="Override default variation (leave blank for user preference)"
+          )
+
+          def get_theme(self):
+              """Get effective theme for this directory"""
+              if self.theme_override:
+                  return self.theme_override
+              config = SiteConfiguration.objects.first()
+              return config.default_theme if config else 'professional-blue'
+
+          def get_variation(self):
+              """Get default variation for this directory"""
+              if self.variation_override:
+                  return self.variation_override
+              config = SiteConfiguration.objects.first()
+              return config.default_variation if config else 'light'
+
+  theme_context_processor: |
+    # apps/core/context_processors.py
+    from .models import SiteConfiguration
+
+    def theme_context(request):
+        """Add theme configuration to all templates"""
+        config = SiteConfiguration.objects.first()
+
+        # Check if we're viewing a directory page
+        theme = None
+        variation = None
+
+        if hasattr(request, 'directory') and request.directory:
+            theme = request.directory.get_theme()
+            variation = request.directory.get_variation()
+        else:
+            theme = config.default_theme if config else 'professional-blue'
+            variation = config.default_variation if config else 'light'
+
+        # Check for admin pages
+        if request.path.startswith('/admin/'):
+            theme = getattr(settings, 'ADMIN_THEME', theme)
+            variation = getattr(settings, 'ADMIN_VARIATION', variation)
+
+        return {
+            'site_theme': theme,
+            'site_variation': variation,
+            'allow_theme_override': config.allow_user_override if config else True,
+        }
+
+  javascript_theme_switcher: |
+    // static/js/theme-switcher.js
+
+    class ThemeSwitcher {
+        constructor() {
+            this.storageKey = 'user-theme-preference';
+            this.init();
+        }
+
+        init() {
+            // Load saved preference or detect system preference
+            const saved = this.getSavedPreference();
+            if (saved) {
+                this.applyTheme(saved.theme, saved.variation);
+            } else {
+                this.detectSystemPreference();
+            }
+
+            // Listen for system preference changes
+            this.watchSystemPreferences();
+        }
+
+        detectSystemPreference() {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const prefersHighContrast = window.matchMedia('(prefers-contrast: more)').matches;
+
+            let variation = 'light';
+            if (prefersHighContrast && prefersDark) {
+                variation = 'high-contrast-dark';
+            } else if (prefersHighContrast) {
+                variation = 'high-contrast-light';
+            } else if (prefersDark) {
+                variation = 'dark';
+            }
+
+            // Don't override theme, just variation
+            const currentTheme = document.documentElement.dataset.theme || 'professional-blue';
+            this.applyTheme(currentTheme, variation);
+        }
+
+        watchSystemPreferences() {
+            // Watch for Dark Reader or system changes
+            const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const contrastQuery = window.matchMedia('(prefers-contrast: more)');
+
+            darkModeQuery.addEventListener('change', () => {
+                if (!this.getSavedPreference()) {
+                    this.detectSystemPreference();
+                }
+            });
+
+            contrastQuery.addEventListener('change', () => {
+                if (!this.getSavedPreference()) {
+                    this.detectSystemPreference();
+                }
+            });
+        }
+
+        applyTheme(theme, variation) {
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.dataset.themeVariation = variation;
+
+            // Update meta theme-color for mobile browsers
+            this.updateMetaThemeColor(variation);
+        }
+
+        updateMetaThemeColor(variation) {
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (!metaThemeColor) return;
+
+            const colors = {
+                'light': '#ffffff',
+                'dark': '#1a1a1a',
+                'high-contrast-light': '#ffffff',
+                'high-contrast-dark': '#000000'
+            };
+
+            metaThemeColor.setAttribute('content', colors[variation] || colors.light);
+        }
+
+        setTheme(theme, variation) {
+            this.applyTheme(theme, variation);
+            this.savePreference(theme, variation);
+        }
+
+        savePreference(theme, variation) {
+            localStorage.setItem(this.storageKey, JSON.stringify({ theme, variation }));
+        }
+
+        getSavedPreference() {
+            const saved = localStorage.getItem(this.storageKey);
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        resetToDefault() {
+            localStorage.removeItem(this.storageKey);
+            this.detectSystemPreference();
+        }
+    }
+
+    // Initialize on page load
+    const themeSwitcher = new ThemeSwitcher();
+
+  theme_switcher_component: |
+    <!-- templates/components/theme_switcher.html -->
+    <div class="theme-switcher" role="group" aria-label="Theme settings">
+
+      <!-- Theme selector dropdown -->
+      <div class="theme-selector">
+        <label for="theme-select">Color Theme:</label>
+        <select id="theme-select" aria-label="Select color theme">
+          <option value="professional-blue">Professional Blue</option>
+          <option value="earthy-neutral">Earthy Neutral</option>
+          <option value="modern-slate">Modern Slate</option>
+          <option value="ocean-teal">Ocean Teal</option>
+          <option value="purple-gradient">Purple Gradient</option>
+          <option value="navy-slate">Navy Slate</option>
+          <option value="classic-contrast">Classic Contrast</option>
+        </select>
+      </div>
+
+      <!-- Variation selector (4 buttons) -->
+      <div class="variation-selector" role="radiogroup" aria-label="Theme variation">
+        <button
+          type="button"
+          class="variation-btn"
+          data-variation="light"
+          aria-label="Light mode"
+          title="Light mode">
+          ☀️ Light
+        </button>
+
+        <button
+          type="button"
+          class="variation-btn"
+          data-variation="dark"
+          aria-label="Dark mode"
+          title="Dark mode">
+          🌙 Dark
+        </button>
+
+        <button
+          type="button"
+          class="variation-btn"
+          data-variation="high-contrast-light"
+          aria-label="High contrast light mode"
+          title="High contrast light mode (WCAG AAA)">
+          ☀️+ HC Light
+        </button>
+
+        <button
+          type="button"
+          class="variation-btn"
+          data-variation="high-contrast-dark"
+          aria-label="High contrast dark mode"
+          title="High contrast dark mode (WCAG AAA)">
+          🌙+ HC Dark
+        </button>
+      </div>
+
+      <!-- Reset to system default -->
+      <button
+        type="button"
+        id="reset-theme"
+        aria-label="Reset to system default">
+        Reset to System Default
+      </button>
+
+    </div>
+
+    <script>
+      // Wire up the switcher component
+      document.querySelectorAll('.variation-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const theme = document.getElementById('theme-select').value;
+          const variation = btn.dataset.variation;
+          themeSwitcher.setTheme(theme, variation);
+          updateActiveButton(variation);
+        });
+      });
+
+      document.getElementById('theme-select').addEventListener('change', (e) => {
+        const currentVariation = document.documentElement.dataset.themeVariation || 'light';
+        themeSwitcher.setTheme(e.target.value, currentVariation);
+      });
+
+      document.getElementById('reset-theme').addEventListener('click', () => {
+        themeSwitcher.resetToDefault();
+        updateUIFromCurrent();
+      });
+
+      function updateActiveButton(variation) {
+        document.querySelectorAll('.variation-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.variation === variation);
+          btn.setAttribute('aria-pressed', btn.dataset.variation === variation);
+        });
+      }
+
+      function updateUIFromCurrent() {
+        const theme = document.documentElement.dataset.theme;
+        const variation = document.documentElement.dataset.themeVariation;
+        document.getElementById('theme-select').value = theme;
+        updateActiveButton(variation);
+      }
+
+      // Initialize UI state
+      updateUIFromCurrent();
+    </script>
+
+  dark_reader_compatibility: |
+    /**
+     * Dark Reader Detection and Compatibility
+     *
+     * Dark Reader injects a style element with data-darkreader-inline-* attributes.
+     * We should respect it and switch to dark mode automatically.
+     */
+
+    function detectDarkReader() {
+        // Check if Dark Reader is active
+        const hasDarkReaderStyle = !!document.querySelector('style[class*="darkreader"]');
+        const hasDarkReaderAttr = !!document.querySelector('[data-darkreader-inline-bgcolor]');
+
+        if (hasDarkReaderStyle || hasDarkReaderAttr) {
+            // User is using Dark Reader, switch to dark variation
+            const currentTheme = document.documentElement.dataset.theme || 'professional-blue';
+            const prefersHighContrast = window.matchMedia('(prefers-contrast: more)').matches;
+            const variation = prefersHighContrast ? 'high-contrast-dark' : 'dark';
+
+            themeSwitcher.applyTheme(currentTheme, variation);
+        }
+    }
+
+    // Check on load and periodically (Dark Reader may load after our script)
+    detectDarkReader();
+    setTimeout(detectDarkReader, 1000);
+
+    // Observe DOM changes for Dark Reader injection
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.addedNodes.length) {
+                detectDarkReader();
+                break;
+            }
+        }
+    });
+
+    observer.observe(document.head, { childList: true });
+
+wcag_compliance_requirements:
+
+  normal_modes:
+    level: "AA"
+    text_contrast:
+      normal_text: "4.5:1 minimum"
+      large_text: "3:1 minimum (18pt+ or 14pt+ bold)"
+    ui_components:
+      borders: "3:1 minimum"
+      icons: "3:1 minimum"
+      focus_indicators: "3:1 minimum against adjacent colors"
+
+  high_contrast_modes:
+    level: "AAA"
+    text_contrast:
+      normal_text: "7:1 minimum"
+      large_text: "4.5:1 minimum"
+    ui_components:
+      borders: "4.5:1 minimum"
+      icons: "4.5:1 minimum"
+      focus_indicators: "4.5:1 minimum"
+
+  testing_each_theme:
+    - Test all 4 variations per theme (28 total)
+    - Verify light and dark meet AA
+    - Verify high-contrast modes meet AAA
+    - Test focus indicators in all modes
+    - Test status colors (success/warning/error)
+    - Test form validation states
+
+success_criteria:
+  - All 7 themes implemented with base color palettes
+  - All 28 variations (7 themes × 4 variations) functional
+  - All normal modes (light/dark) meet WCAG AA (4.5:1 text, 3:1 UI)
+  - All high-contrast modes meet WCAG AAA (7:1 text, 4.5:1 UI)
+  - Theme configuration working at site/admin/directory levels
+  - Theme switcher component functional and accessible
+  - Auto-detection of prefers-color-scheme working
+  - Auto-detection of prefers-contrast working
+  - Dark Reader compatibility confirmed
+  - LocalStorage persistence working
+  - Zero contrast violations in axe DevTools for all variations
+  - Theme documentation complete with usage guidelines
+
+testing_procedures:
+
+  automated_testing:
+    contrast_checking:
+      - "WebAIM Contrast Checker for all color pairs"
+      - "axe DevTools scan for each theme variation"
+      - "WAVE browser extension for full page scans"
+      - "Chrome DevTools color picker contrast ratios"
+
+    theme_switching:
+      - "Jest tests for ThemeSwitcher class methods"
+      - "Cypress E2E tests for theme switcher UI"
+      - "Test localStorage persistence"
+      - "Test system preference detection"
+
+    example_jest_test: |
+      describe('ThemeSwitcher', () => {
+        let switcher;
+
+        beforeEach(() => {
+          localStorage.clear();
+          switcher = new ThemeSwitcher();
+        });
+
+        test('applies theme and variation to document', () => {
+          switcher.setTheme('ocean-teal', 'dark');
+          expect(document.documentElement.dataset.theme).toBe('ocean-teal');
+          expect(document.documentElement.dataset.themeVariation).toBe('dark');
+        });
+
+        test('saves preference to localStorage', () => {
+          switcher.setTheme('purple-gradient', 'high-contrast-light');
+          const saved = JSON.parse(localStorage.getItem('user-theme-preference'));
+          expect(saved).toEqual({
+            theme: 'purple-gradient',
+            variation: 'high-contrast-light'
+          });
+        });
+
+        test('detects dark mode preference', () => {
+          window.matchMedia = jest.fn().mockImplementation(query => ({
+            matches: query === '(prefers-color-scheme: dark)',
+            addEventListener: jest.fn(),
+          }));
+
+          switcher.detectSystemPreference();
+          expect(document.documentElement.dataset.themeVariation).toBe('dark');
+        });
+      });
+
+  manual_testing:
+
+    visual_inspection:
+      - "Review all pages in each theme variation"
+      - "Test with browser zoom at 200%, 300%"
+      - "Verify in different lighting conditions"
+      - "Check with actual low vision users if possible"
+
+    browser_testing:
+      - "Chrome/Edge (Chromium)"
+      - "Firefox"
+      - "Safari (macOS and iOS)"
+      - "Test with Dark Reader extension enabled"
+      - "Test with high contrast OS settings"
+
+    device_testing:
+      - "Desktop (Windows, macOS, Linux)"
+      - "Mobile (iOS, Android)"
+      - "Tablet (iPad, Android tablet)"
+
+    user_preference_scenarios:
+      - "System light mode → verify light theme loads"
+      - "System dark mode → verify dark theme loads"
+      - "System high contrast → verify high contrast loads"
+      - "Manual theme switch → verify persistence"
+      - "Dark Reader active → verify dark mode selected"
+
+    per_directory_testing:
+      - "Create test directory with theme override"
+      - "Verify directory uses custom theme"
+      - "Verify site default still applies to other pages"
+      - "Verify admin theme is separate from public theme"
+
+implementation_phases:
+
+  phase_1_foundation:
+    duration: "2 days"
+    tasks:
+      - "Create CSS custom property architecture"
+      - "Define all 7 base theme color palettes"
+      - "Create light and dark variations (14 variations)"
+      - "Implement basic theme application via CSS"
+
+  phase_2_high_contrast:
+    duration: "1 day"
+    tasks:
+      - "Create high-contrast-light variations (7 themes)"
+      - "Create high-contrast-dark variations (7 themes)"
+      - "Test all 28 variations for WCAG compliance"
+      - "Fix any contrast violations"
+
+  phase_3_backend:
+    duration: "1.5 days"
+    tasks:
+      - "Create/update Django models (SiteConfiguration, Directory)"
+      - "Create migrations"
+      - "Create context processor"
+      - "Update admin interface for theme configuration"
+      - "Add theme fields to Directory admin"
+
+  phase_4_frontend_js:
+    duration: "1.5 days"
+    tasks:
+      - "Implement ThemeSwitcher JavaScript class"
+      - "Build theme switcher UI component"
+      - "Implement localStorage persistence"
+      - "Implement system preference detection"
+      - "Implement Dark Reader detection"
+      - "Wire up theme switcher to all pages"
+
+  phase_5_testing:
+    duration: "1 day"
+    tasks:
+      - "Write Jest tests for ThemeSwitcher"
+      - "Write Cypress E2E tests"
+      - "Manual testing across browsers/devices"
+      - "Accessibility audit with axe DevTools"
+      - "Fix any discovered issues"
+
+  phase_6_documentation:
+    duration: "0.5 days"
+    tasks:
+      - "Document theme system architecture"
+      - "Create admin user guide for theme configuration"
+      - "Document color palette usage guidelines"
+      - "Create developer guide for extending themes"
+
+deliverables:
+  - CSS files with all 28 theme variations
+  - Django models and migrations for theme configuration
+  - Theme switcher JavaScript module
+  - Theme switcher UI component
+  - Admin interface for theme management
+  - Updated base template with theme support
+  - Jest and Cypress test suites
+  - Documentation (architecture, user guide, developer guide)
+  - WCAG compliance report for all themes
+
+tools:
+  - https://webaim.org/resources/contrastchecker/
+  - Chrome DevTools (color picker with contrast ratio)
+  - axe DevTools browser extension
+  - WAVE browser extension
+  - https://whocanuse.com/ (visualize color accessibility)
+  - https://contrast-ratio.com/ (Lea Verou's tool)
+  - Jest (JavaScript testing)
+  - Cypress (E2E testing)
+
+acceptance_criteria:
+  - All 7 themes implemented and functional
+  - All 28 variations tested and WCAG compliant
+  - Site-level default theme configurable via admin
+  - Admin-specific theme configurable
+  - Per-directory theme override functional
+  - Theme switcher widget on all public pages
+  - Auto-detection of prefers-color-scheme working
+  - Auto-detection of prefers-contrast working
+  - Dark Reader compatibility confirmed
+  - axe DevTools: 0 contrast violations across all themes
+  - WAVE: 0 contrast errors across all themes
+  - localStorage persistence working
+  - All tests passing (Jest + Cypress)
+  - Complete documentation delivered
+
+estimated_time: 5-7 days
+
+notes: >
+  This is a foundational task that affects the entire application. Once
+  implemented, all future UI development must use the CSS custom properties
+  to ensure theme compatibility. The theming system provides both aesthetic
+  flexibility and critical accessibility support. High-contrast modes are
+  essential for users with low vision, cataracts, and other visual impairments.
+
+  Consider creating a visual theme preview tool in the admin interface to help
+  users select themes. This could show a live preview of each theme variation.
+
+  Future enhancement: Allow users to create custom themes through an admin
+  interface, though this requires validation to ensure WCAG compliance.

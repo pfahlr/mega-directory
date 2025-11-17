@@ -1,0 +1,169 @@
+id: 97
+filename: 97_document_keyboard_shortcuts.yaml
+title: Document Keyboard Shortcuts and Patterns
+priority: 🟢 Nice-to-Have
+impact: Low
+effort: Low
+dependencies: [84, 93]
+phase: Frontend Enhancement - Phase 5 (Enhancements)
+
+description: >
+  Create user-facing documentation of keyboard shortcuts and navigation
+  patterns. Help keyboard users discover and use shortcuts efficiently.
+
+  Context: Many users don't know what keyboard shortcuts are available.
+  Documentation helps power users, keyboard-only users, and anyone who
+  prefers keyboard navigation.
+
+objectives:
+  - Document all keyboard shortcuts
+  - Create accessible help page
+  - Add "Keyboard shortcuts" link in footer
+  - Consider keyboard shortcut overlay (?)
+
+scope:
+  - General navigation shortcuts
+  - Map-specific shortcuts (map template)
+  - Filter/search shortcuts
+  - Modal/dialog shortcuts
+
+implementation_guidelines:
+
+  standard_shortcuts:
+    navigation:
+      - "Tab: Move to next interactive element"
+      - "Shift+Tab: Move to previous interactive element"
+      - "Enter: Activate links and buttons"
+      - "Space: Activate buttons and checkboxes"
+      - "Escape: Close modals and menus"
+      - "Home: Scroll to top of page"
+      - "End: Scroll to bottom of page"
+
+    forms:
+      - "Arrow keys: Navigate radio buttons"
+      - "Space: Toggle checkboxes"
+      - "Enter: Submit form"
+      - "Escape: Cancel and close form"
+
+  map_shortcuts:
+    if_map_template:
+      - "+: Zoom in"
+      - "-: Zoom out"
+      - "Arrow up: Pan map up"
+      - "Arrow down: Pan map down"
+      - "Arrow left: Pan map left"
+      - "Arrow right: Pan map right"
+      - "Tab: Navigate map markers"
+      - "Enter/Space: Select marker"
+
+  help_page_example: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <title>Keyboard Shortcuts | YourDirectory</title>
+    </head>
+    <body>
+      <main>
+        <h1>Keyboard Shortcuts</h1>
+
+        <p>This page lists all keyboard shortcuts available on our site.</p>
+
+        <section>
+          <h2>General Navigation</h2>
+          <dl>
+            <dt><kbd>Tab</kbd></dt>
+            <dd>Move to next interactive element</dd>
+
+            <dt><kbd>Shift</kbd> + <kbd>Tab</kbd></dt>
+            <dd>Move to previous interactive element</dd>
+
+            <dt><kbd>Enter</kbd></dt>
+            <dd>Activate links and buttons</dd>
+
+            <dt><kbd>Space</kbd></dt>
+            <dd>Activate buttons and checkboxes</dd>
+
+            <dt><kbd>Escape</kbd></dt>
+            <dd>Close modals and dropdown menus</dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Map Controls</h2>
+          <dl>
+            <dt><kbd>+</kbd> or <kbd>=</kbd></dt>
+            <dd>Zoom in on map</dd>
+
+            <dt><kbd>-</kbd></dt>
+            <dd>Zoom out on map</dd>
+
+            <dt><kbd>Arrow keys</kbd></dt>
+            <dd>Pan the map in any direction</dd>
+          </dl>
+        </section>
+      </main>
+    </body>
+    </html>
+
+  css_for_kbd_element:
+    purpose: "Style keyboard shortcuts nicely"
+    example: |
+      kbd {
+        display: inline-block;
+        padding: 3px 6px;
+        font-family: monospace;
+        font-size: 0.9em;
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+      }
+
+  footer_link:
+    example: |
+      <footer>
+        <nav aria-label="Footer navigation">
+          <ul>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li><a href="/keyboard-shortcuts">Keyboard Shortcuts</a></li>
+            <li><a href="/accessibility">Accessibility</a></li>
+          </ul>
+        </nav>
+      </footer>
+
+  optional_shortcut_overlay:
+    trigger: "Press ? to show shortcuts"
+    implementation: |
+      // Show shortcuts overlay when ? is pressed
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '?' && !isTyping(e.target)) {
+          e.preventDefault();
+          showShortcutsOverlay();
+        }
+      });
+
+      function isTyping(element) {
+        const typingElements = ['INPUT', 'TEXTAREA', 'SELECT'];
+        return typingElements.includes(element.tagName);
+      }
+
+success_criteria:
+  - Keyboard shortcuts documented
+  - Help page created and accessible
+  - Link to shortcuts in footer
+  - Documentation is clear and complete
+
+deliverables:
+  - Keyboard shortcuts help page (/keyboard-shortcuts)
+  - Footer link to shortcuts
+  - PDF version (optional)
+  - Printable version (optional)
+
+acceptance_criteria:
+  - All shortcuts documented
+  - Page is accessible
+  - Easy to find (footer link)
+  - Clear, understandable instructions
+
+estimated_time: 1 day

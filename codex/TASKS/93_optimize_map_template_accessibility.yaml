@@ -1,0 +1,253 @@
+id: 93
+filename: 93_optimize_map_template_accessibility.yaml
+title: Optimize Map Template for Accessibility
+priority: 🟡 Important
+impact: High
+effort: High
+dependencies: [78, 80, 84, 89]
+phase: Frontend Enhancement - Phase 3 (Polish)
+
+description: >
+  Make the interactive map template fully accessible. Provide keyboard controls,
+  text-based alternative, screen reader support, and skip functionality.
+  Maps are inherently visual, so providing robust alternatives is critical.
+
+  Context: Interactive maps exclude blind users, keyboard users, and anyone
+  unable to use a mouse. Must provide full alternative while still offering
+  map for those who can use it. This is complex but essential.
+
+objectives:
+  - Add keyboard controls for map
+  - Provide text-based list alternative (list view)
+  - Make map markers keyboard accessible
+  - Add skip link to bypass map
+  - Announce map changes to screen readers
+  - Optimize map loading for performance
+
+scope:
+  - Interactive map template only
+  - Map controls (zoom, pan)
+  - Map markers
+  - View toggle (map vs list)
+  - Loading states
+
+implementation_guidelines:
+
+  view_toggle:
+    purpose: "Allow switching between map and list views"
+    default: "List view (accessible by default)"
+    example: |
+      <div class="view-toggle" role="group" aria-label="View options">
+        <button type="button"
+                aria-pressed="false"
+                onclick="showMap()"
+                id="map-view-btn">
+          Map View
+        </button>
+        <button type="button"
+                aria-pressed="true"
+                onclick="showList()"
+                id="list-view-btn">
+          List View
+        </button>
+      </div>
+
+  skip_link:
+    purpose: "Allow bypassing map entirely"
+    example: |
+      <a href="#listings-list" class="skip-link">
+        Skip map, view list of businesses
+      </a>
+
+  keyboard_controls:
+    required_keys:
+      - "+ key: Zoom in"
+      - "- key: Zoom out"
+      - "Arrow keys: Pan map"
+      - "Tab: Navigate markers"
+      - "Enter/Space: Select marker"
+
+    example: |
+      const map = document.getElementById('map');
+
+      map.addEventListener('keydown', (e) => {
+        if (!mapFocused) return;
+
+        switch(e.key) {
+          case '+':
+          case '=':
+            e.preventDefault();
+            map.setZoom(map.getZoom() + 1);
+            announceToScreenReader('Zoomed in');
+            break;
+
+          case '-':
+            e.preventDefault();
+            map.setZoom(map.getZoom() - 1);
+            announceToScreenReader('Zoomed out');
+            break;
+
+          case 'ArrowUp':
+            e.preventDefault();
+            map.panBy(0, -50);
+            announceToScreenReader('Panned up');
+            break;
+
+          case 'ArrowDown':
+            e.preventDefault();
+            map.panBy(0, 50);
+            announceToScreenReader('Panned down');
+            break;
+
+          case 'ArrowLeft':
+            e.preventDefault();
+            map.panBy(-50, 0);
+            announceToScreenReader('Panned left');
+            break;
+
+          case 'ArrowRight':
+            e.preventDefault();
+            map.panBy(50, 0);
+            announceToScreenReader('Panned right');
+            break;
+        }
+      });
+
+  accessible_markers:
+    requirements:
+      - Make markers keyboard focusable
+      - Add accessible names
+      - Support Enter/Space activation
+
+    example: |
+      markers.forEach((marker, index) => {
+        const markerElement = marker.getElement();
+
+        // Make keyboard accessible
+        markerElement.setAttribute('role', 'button');
+        markerElement.setAttribute('tabindex', '0');
+        markerElement.setAttribute('aria-label',
+          `${marker.title}, ${marker.address}. Press Enter for details.`
+        );
+
+        // Keyboard activation
+        markerElement.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            showMarkerDetails(marker);
+          }
+        });
+
+        // Click activation
+        markerElement.addEventListener('click', () => {
+          showMarkerDetails(marker);
+        });
+      });
+
+  text_alternative:
+    requirement: "Provide complete list view with same information"
+    example: |
+      <div id="listings-list" class="list-view" aria-label="Business listings">
+        <h2>Coffee Shops in Springfield (50 results)</h2>
+
+        <article class="listing-card">
+          <h3><a href="/listing/main-street-cafe">Main Street Cafe</a></h3>
+          <address>
+            123 Main St<br>
+            Springfield, IL 62701
+          </address>
+          <p>Rating: 4.5 stars (127 reviews)</p>
+          <p>Open Monday-Friday, 8am-6pm</p>
+        </article>
+
+        <!-- More listings... -->
+      </div>
+
+  screen_reader_announcements:
+    purpose: "Announce map interactions"
+    example: |
+      // Live region for announcements
+      <div id="map-announcements"
+           role="status"
+           aria-live="polite"
+           aria-atomic="true"
+           class="sr-only">
+      </div>
+
+      function announceToScreenReader(message) {
+        const announcer = document.getElementById('map-announcements');
+        announcer.textContent = message;
+      }
+
+  keyboard_instructions:
+    display: "Visible instructions for keyboard users"
+    example: |
+      <div class="map-instructions" id="map-help">
+        <h3>Keyboard controls</h3>
+        <ul>
+          <li><kbd>+</kbd> or <kbd>=</kbd>: Zoom in</li>
+          <li><kbd>-</kbd>: Zoom out</li>
+          <li><kbd>Arrow keys</kbd>: Pan map</li>
+          <li><kbd>Tab</kbd>: Navigate markers</li>
+          <li><kbd>Enter</kbd> or <kbd>Space</kbd>: Select marker</li>
+        </ul>
+      </div>
+
+  performance_optimization:
+    techniques:
+      - Lazy load map (don't load until needed)
+      - Use lightweight map library
+      - Minimize map library size
+      - Load markers progressively
+
+    example: |
+      // Lazy load map when map view activated
+      function showMap() {
+        if (!mapLoaded) {
+          loadMapLibrary().then(() => {
+            initializeMap();
+            mapLoaded = true;
+          });
+        }
+        mapContainer.style.display = 'block';
+        listContainer.style.display = 'none';
+      }
+
+success_criteria:
+  - Map has keyboard controls
+  - All markers keyboard accessible
+  - Complete text alternative (list view) available
+  - Skip link functional
+  - Screen reader announcements work
+  - Map doesn't block keyboard navigation
+  - Performance acceptable (doesn't hurt Core Web Vitals)
+
+testing_procedures:
+  keyboard_testing:
+    - Navigate to map with keyboard
+    - Test zoom controls (+, -)
+    - Test pan controls (arrows)
+    - Tab through markers
+    - Activate marker with Enter
+    - Verify skip link works
+
+  screen_reader_testing:
+    - Test with NVDA/VoiceOver
+    - Verify announcements
+    - Verify list view is fully accessible
+    - Verify markers are announced
+
+  performance_testing:
+    - Measure impact on Core Web Vitals
+    - Test map loading time
+    - Verify lazy loading works
+
+acceptance_criteria:
+  - Keyboard controls functional
+  - All markers reachable via keyboard
+  - List view has same information as map
+  - Skip link bypasses map
+  - Screen reader can use list view
+  - Map doesn't hurt Core Web Vitals
+
+estimated_time: 5-6 days

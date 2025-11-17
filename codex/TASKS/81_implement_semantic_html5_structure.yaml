@@ -1,0 +1,108 @@
+id: 81
+filename: 81_implement_semantic_html5_structure.yaml
+title: Implement Semantic HTML5 Structure
+priority: 🔴 Critical
+impact: High
+effort: Low
+dependencies: [76, 77, 78, 79, 80]
+phase: Frontend Enhancement - Phase 1 (Foundation)
+
+description: >
+  Replace div soup with semantic HTML5 elements in both directory templates
+  (location-agnostic and interactive map). Use proper document outline with
+  semantic elements like header, nav, main, article, aside, footer.
+
+  Context: Semantic HTML benefits both SEO and accessibility. Search engines
+  better understand content structure, and screen readers can navigate by
+  landmarks. This is foundation for ARIA implementation.
+
+objectives:
+  - Replace generic divs with semantic elements
+  - Implement proper HTML5 document outline
+  - Add ARIA role attributes where needed
+  - Use appropriate elements (article, section, aside, etc.)
+  - Ensure heading hierarchy is logical
+
+scope:
+  - Location-agnostic template
+  - Interactive map template
+  - All shared components (header, footer, listing cards, etc.)
+
+implementation_guidelines:
+
+  page_structure:
+    example: |
+      <header role="banner">
+        <nav role="navigation" aria-label="Main navigation">
+          <!-- Navigation -->
+        </nav>
+      </header>
+
+      <main role="main" id="main-content">
+        <nav aria-label="Breadcrumb">
+          <!-- Breadcrumbs -->
+        </nav>
+
+        <h1>Page Title</h1>
+
+        <section>
+          <!-- Content sections -->
+        </section>
+      </main>
+
+      <aside role="complementary" aria-label="Filters">
+        <!-- Sidebar/Filters -->
+      </aside>
+
+      <footer role="contentinfo">
+        <!-- Footer -->
+      </footer>
+
+  listing_cards:
+    use_article: true
+    example: |
+      <article>
+        <h2>Business Name</h2>
+        <address>
+          123 Main St<br>
+          Springfield, IL 62701
+        </address>
+        <p>Business description...</p>
+      </article>
+
+  forms:
+    use_fieldset_legend: true
+    example: |
+      <form role="search">
+        <fieldset>
+          <legend>Filter by Category</legend>
+          <!-- Form fields -->
+        </fieldset>
+      </form>
+
+success_criteria:
+  - HTML5 semantic elements used throughout
+  - Valid HTML5 (W3C Validator passes)
+  - Proper heading hierarchy (h1-h6, no skipping)
+  - ARIA roles complement semantic HTML
+  - Document outline is logical
+  - Screen readers can navigate by landmarks
+
+testing_procedures:
+  automated:
+    - Run W3C HTML Validator
+    - Run axe DevTools scan
+    - Check heading outline in browser DevTools
+
+  manual:
+    - Test with screen reader (NVDA/VoiceOver)
+    - Navigate by landmarks (D key in NVDA)
+    - Verify heading navigation (H key)
+
+acceptance_criteria:
+  - Zero HTML validation errors
+  - Zero axe DevTools violations for structure
+  - Screen reader can navigate all landmarks
+  - Heading hierarchy is logical
+
+estimated_time: 1-2 days
