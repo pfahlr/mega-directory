@@ -1,4 +1,5 @@
-import express, { type Router, type Request, type Response } from 'express';
+import express, { type Request, type Response } from 'express';
+import type { Router } from 'express-serve-static-core';
 import { requireAdminAuth, type AuthConfig } from '../../middleware/auth';
 import { createAuthRouter } from './auth';
 import categoriesRouter from './categories';

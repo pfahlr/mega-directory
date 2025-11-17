@@ -1,4 +1,5 @@
-import express, { type Router, type Request, type Response } from 'express';
+import express, { type Request, type Response } from 'express';
+import type { Router } from 'express-serve-static-core';
 import { requireCrawlerToken, type AuthConfig } from '../../middleware/auth';
 import listingsRouter from './listings';
 
