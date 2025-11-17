@@ -1,0 +1,184 @@
+id: 61
+filename: 61_refactor_monolithic_server_file.yaml
+title: Refactor Monolithic Server File
+description: >
+  Break up the 2,151-line server.ts file into modular routes, services, and middleware.
+  Current monolithic structure makes navigation, testing, and maintenance difficult.
+
+  Critical issue:
+  - server.ts is 2,151 lines (too large)
+  - All routes in one file
+  - Business logic mixed with route handlers
+  - Hard to navigate and maintain
+  - Difficult to test individual components
+
+  Implementation plan:
+
+  1. Create route modules by resource
+     - apps/api/src/routes/admin/listings.ts
+     - apps/api/src/routes/admin/categories.ts
+     - apps/api/src/routes/admin/directories.ts
+     - apps/api/src/routes/admin/addresses.ts
+     - apps/api/src/routes/public/directories.ts
+     - apps/api/src/routes/crawler/ingestion.ts
+     - apps/api/src/routes/health.ts
+
+  2. Extract middleware to dedicated files
+     - apps/api/src/middleware/auth.ts (adminAuth, crawlerAuth)
+     - apps/api/src/middleware/validation.ts (request validation)
+     - apps/api/src/middleware/errorHandler.ts (global error handling)
+     - apps/api/src/middleware/requestLogger.ts (request logging)
+
+  3. Create service layer for business logic
+     - apps/api/src/services/listingService.ts
+       - createListing()
+       - updateListing()
+       - deleteListing()
+       - getListingWithRelations()
+     - apps/api/src/services/directoryService.ts
+       - getDirectoriesWithData()
+       - getDirectoryBySlug()
+       - filterActiveDirectories()
+     - apps/api/src/services/categoryService.ts
+       - getAllCategories()
+       - createCategory()
+       - updateCategory()
+
+  4. Keep slim route handlers
+     - Validate input
+     - Call service layer
+     - Return response
+     - Handle errors
+
+  5. Create route registration system
+     - apps/api/src/routes/index.ts
+     - Register all route modules
+     - Export single router
+
+  6. Update server.ts to be slim
+     - Import and setup Express
+     - Register middleware
+     - Register routes
+     - Start server
+     - Should be ~100 lines max
+
+  Target structure:
+
+  apps/api/src/
+    ├── server.ts (100 lines - app setup only)
+    ├── db.ts (existing - keep as-is)
+    ├── types.ts (existing - keep as-is)
+    ├── middleware/
+    │   ├── auth.ts
+    │   ├── validation.ts
+    │   ├── errorHandler.ts
+    │   └── requestLogger.ts
+    ├── routes/
+    │   ├── index.ts (route registration)
+    │   ├── admin/
+    │   │   ├── listings.ts
+    │   │   ├── categories.ts
+    │   │   ├── directories.ts
+    │   │   └── addresses.ts
+    │   ├── public/
+    │   │   └── directories.ts
+    │   ├── crawler/
+    │   │   └── ingestion.ts
+    │   └── health.ts
+    └── services/
+        ├── listingService.ts
+        ├── directoryService.ts
+        └── categoryService.ts
+
+  Example refactored code:
+
+  # routes/admin/listings.ts
+  import { Router } from 'express';
+  import { adminAuth } from '../../middleware/auth';
+  import { listingService } from '../../services/listingService';
+
+  const router = Router();
+
+  router.get('/', adminAuth, async (req, res, next) => {
+    try {
+      const listings = await listingService.getAllListings();
+      res.json({ data: listings });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/', adminAuth, async (req, res, next) => {
+    try {
+      const listing = await listingService.createListing(req.body);
+      res.status(201).json({ data: listing });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  export default router;
+
+  # services/listingService.ts
+  import { prisma } from '../db';
+
+  export const listingService = {
+    async getAllListings() {
+      return await prisma.listing.findMany({
+        include: {
+          addresses: true,
+          categories: { include: { category: true } }
+        }
+      });
+    },
+
+    async createListing(data: CreateListingDto) {
+      return await prisma.listing.create({
+        data: {
+          ...data,
+          addresses: { create: data.addresses },
+          categories: { create: data.categoryIds?.map(id => ({ categoryId: id })) }
+        },
+        include: {
+          addresses: true,
+          categories: { include: { category: true } }
+        }
+      });
+    }
+  };
+
+  # server.ts (slim version)
+  import express from 'express';
+  import { errorHandler } from './middleware/errorHandler';
+  import { requestLogger } from './middleware/requestLogger';
+  import routes from './routes';
+
+  const app = express();
+  const PORT = process.env.PORT || 3030;
+
+  app.use(express.json());
+  app.use(requestLogger);
+  app.use('/v1', routes);
+  app.use(errorHandler);
+
+  app.listen(PORT, () => {
+    console.log(`API server listening on http://localhost:${PORT}`);
+  });
+
+  Migration strategy:
+  1. Create new structure alongside existing code
+  2. Migrate one resource at a time (categories first - smallest)
+  3. Test each migration thoroughly
+  4. Delete old code once confirmed working
+  5. Update imports across codebase
+
+  Success criteria:
+  - server.ts reduced to <150 lines
+  - All routes in dedicated modules
+  - Business logic in service layer
+  - Middleware in dedicated files
+  - Each file <300 lines
+  - All tests still passing
+  - No functionality broken
+
+dependencies: []

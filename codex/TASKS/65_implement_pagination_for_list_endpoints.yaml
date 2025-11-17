@@ -1,0 +1,153 @@
+id: 65
+filename: 65_implement_pagination_for_list_endpoints.yaml
+title: Implement Pagination for List Endpoints
+description: >
+  Add pagination to all list endpoints to improve performance and prevent
+  memory issues when returning large result sets. Currently endpoints return
+  all results without pagination.
+
+  Critical issue:
+  - Endpoints return all results (can be thousands of records)
+  - Poor performance for large datasets
+  - High memory usage
+  - Bad UX (slow page loads)
+  - No way to navigate through results
+
+  Implementation plan:
+
+  1. Create pagination utilities
+     - Parse pagination params (page, limit, orderBy, orderDir)
+     - Validate and sanitize inputs
+     - Calculate skip/take for Prisma
+     - Generate pagination metadata
+
+  2. Add pagination to all list endpoints
+     - GET /v1/admin/listings
+     - GET /v1/admin/categories
+     - GET /v1/admin/directories
+     - GET /v1/directories (public)
+
+  3. Return consistent pagination response
+     - data: array of items
+     - meta: pagination metadata (page, limit, total, totalPages, hasNext, hasPrev)
+
+  4. Support sorting and filtering
+     - orderBy: field to sort by
+     - orderDir: asc or desc
+     - Filter params (status, categoryId, etc.)
+
+  Example implementation:
+
+  # utils/pagination.ts
+  import { Request } from 'express';
+
+  export interface PaginationParams {
+    page: number;
+    limit: number;
+    orderBy: string;
+    orderDir: 'asc' | 'desc';
+  }
+
+  export interface PaginationMeta {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }
+
+  export function parsePagination(query: Request['query'], allowedOrderBy: string[] = ['createdAt']): PaginationParams {
+    const page = Math.max(1, parseInt(String(query.page)) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(String(query.limit)) || 20));
+    const orderBy = allowedOrderBy.includes(String(query.orderBy)) ? String(query.orderBy) : allowedOrderBy[0];
+    const orderDir = query.orderDir === 'asc' ? 'asc' : 'desc';
+
+    return { page, limit, orderBy, orderDir };
+  }
+
+  export function getPaginationMeta(page: number, limit: number, total: number): PaginationMeta {
+    const totalPages = Math.ceil(total / limit);
+    return {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
+  }
+
+  # Usage in routes:
+  import { parsePagination, getPaginationMeta } from '../utils/pagination';
+
+  router.get('/listings', adminAuth, asyncHandler(async (req, res) => {
+    const { page, limit, orderBy, orderDir } = parsePagination(req.query, ['createdAt', 'title', 'updatedAt']);
+    const skip = (page - 1) * limit;
+
+    // Build where clause from filters
+    const where: any = {};
+    if (req.query.status) {
+      where.status = req.query.status;
+    }
+    if (req.query.categoryId) {
+      where.categories = {
+        some: { categoryId: parseInt(String(req.query.categoryId)) }
+      };
+    }
+    if (req.query.search) {
+      where.OR = [
+        { title: { contains: String(req.query.search), mode: 'insensitive' } },
+        { summary: { contains: String(req.query.search), mode: 'insensitive' } }
+      ];
+    }
+
+    // Execute query and count in parallel
+    const [listings, total] = await Promise.all([
+      prisma.listing.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [orderBy]: orderDir },
+        include: {
+          addresses: true,
+          categories: { include: { category: true } }
+        }
+      }),
+      prisma.listing.count({ where })
+    ]);
+
+    res.json({
+      data: listings,
+      meta: getPaginationMeta(page, limit, total)
+    });
+  }));
+
+  # Query parameter schema (for validation):
+  import { z } from 'zod';
+
+  export const paginationQuerySchema = z.object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(20),
+    orderBy: z.string().default('createdAt'),
+    orderDir: z.enum(['asc', 'desc']).default('desc')
+  });
+
+  export const listingQuerySchema = paginationQuerySchema.extend({
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+    categoryId: z.coerce.number().int().positive().optional(),
+    directoryId: z.coerce.number().int().positive().optional(),
+    search: z.string().max(200).optional()
+  });
+
+  Success criteria:
+  - All list endpoints support pagination
+  - Default limit: 20, max limit: 100
+  - Pagination metadata returned in all responses
+  - Sorting supported (orderBy, orderDir)
+  - Filtering supported (status, category, search)
+  - Total count returned
+  - hasNext/hasPrev flags for navigation
+  - Performance tested with large datasets
+
+dependencies: [62]
