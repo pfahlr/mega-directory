@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express, { type Router, type Request, type Response } from 'express';
 import { requireCrawlerToken, type AuthConfig } from '../../middleware/auth';
 import listingsRouter from './listings';
 
@@ -13,7 +13,7 @@ export function createCrawlerRouter(config: AuthConfig): Router {
   router.use('/listings', crawlerAuth, listingsRouter);
 
   // Crawler ping (protected)
-  router.post('/ping', crawlerAuth, (req, res) => {
+  router.post('/ping', crawlerAuth, (req: Request, res: Response) => {
     res.json({ status: 'crawler-ok' });
   });
 

@@ -13,14 +13,14 @@ export function validateBody(schema: ZodSchema) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           error: 'Validation failed',
-          details: error.errors.map(err => ({
+          details: error.issues.map((err: any) => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code
           }))
         });
       }
-      next(error);
+      next();
     }
   };
 }
@@ -37,14 +37,14 @@ export function validateQuery(schema: ZodSchema) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           error: 'Invalid query parameters',
-          details: error.errors.map(err => ({
+          details: error.issues.map((err: any) => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code
           }))
         });
       }
-      next(error);
+      next();
     }
   };
 }
@@ -61,14 +61,14 @@ export function validateParams(schema: ZodSchema) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           error: 'Invalid URL parameters',
-          details: error.errors.map(err => ({
+          details: error.issues.map((err: any) => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code
           }))
         });
       }
-      next(error);
+      next();
     }
   };
 }
