@@ -44,6 +44,38 @@ eval "$(make sops-env-export)"  # decrypts env.json and exports DATABASE_URL, JW
 
 You can also `make sops-decrypt > .env` and `source .env` if you prefer classic dotenv files. At a minimum you must supply `DATABASE_URL`, `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, and `CRAWLER_BEARER_TOKEN` before running the API or admin services.
 
+## Environment Variables
+
+Required environment variables in `.env`:
+
+### Authentication
+- `ADMIN_API_TOKEN` - Admin UI authentication token (must match `CRAWLER_BEARER_TOKEN`)
+- `CRAWLER_BEARER_TOKEN` - Crawler authentication token
+- `ADMIN_JWT_SECRET` - JWT signing secret for admin sessions
+- `ADMIN_LOGIN_EMAIL` - Admin login email
+- `ADMIN_LOGIN_PASSCODE` - Admin login passcode
+
+### API Configuration
+- `API_BASE_URL` - API server base URL (default: `http://localhost:3030`)
+- `PUBLIC_API_BASE_URL` - Public API URL for Astro frontend (default: `http://localhost:3030`)
+- `ADMIN_API_BASE_URL` - Admin API URL (default: `http://localhost:3030`)
+- `PORT` - Admin UI server port (default: `3001`)
+
+### Database
+- `DATABASE_URL` - PostgreSQL connection string
+
+### External APIs (optional)
+- `OPENAI_API_KEY` - OpenAI API key for LLM features
+- `OPENROUTER_API_KEY` - OpenRouter API key for LLM features
+- `GEMINI_API_KEY` - Google Gemini API key
+- `GEOCODEMAPS_API_KEY` - GeocodeMAPS API key
+- `GOOGLEMAPS_API_KEY` - Google Maps API key
+
+### Features
+- `SKIP_CRAWLER=1` - Disable automatic crawler startup
+
+**Important:** `ADMIN_API_TOKEN` and `CRAWLER_BEARER_TOKEN` must have identical values.
+
 ### Initialize a brand-new database
 
 Database schema and seed scripts live under `/db`. Run Prisma commands from anywhere in the repo (they default to `db/schema.prisma`):
