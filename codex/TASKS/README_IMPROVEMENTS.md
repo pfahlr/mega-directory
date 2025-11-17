@@ -1,8 +1,10 @@
-# Improvement Tasks (60-75)
+# Improvement Tasks (60-80)
 
-This document provides an overview of the 16 improvement tasks created to enhance the Mega Directory project.
+This document provides an overview of the 21 improvement tasks created to enhance the Mega Directory project.
 
 ## Task Overview
+
+### Backend/Infrastructure Tasks (60-75)
 
 | ID | Task | Priority | Impact | Effort | Dependencies |
 |----|------|----------|--------|--------|--------------|
@@ -22,6 +24,17 @@ This document provides an overview of the 16 improvement tasks created to enhanc
 | 72 | Improve Import Error Reporting | 🟢 Nice-to-Have | Low | Medium | None |
 | 73 | Enable TypeScript Strict Mode | 🟢 Nice-to-Have | Low | Medium | None |
 | 74 | Setup CI/CD Pipeline | 🟢 Nice-to-Have | Low | High | 60, 62, 73 |
+
+### Frontend SEO/Accessibility Tasks (76-80+)
+
+| ID | Task | Priority | Impact | Effort | Dependencies |
+|----|------|----------|--------|--------|--------------|
+| 76 | Research Cutting Edge SEO | 🟡 Important | High | Low | None |
+| 77 | Research WCAG (Low Vision) | 🟡 Important | High | Low | None |
+| 78 | Research WCAG (Motor/Mobility) | 🟡 Important | High | Low | None |
+| 79 | Research WCAG (Multiple Categories) | 🟡 Important | High | Medium | None |
+| 80 | Generate Frontend Enhancement Plan | 🟡 Important | High | Medium | 76, 77, 78, 79 |
+| 81-98 | Implementation Tasks (To Be Created) | TBD | TBD | TBD | 80 |
 
 ## Priority Levels
 
@@ -56,6 +69,32 @@ This document provides an overview of the 16 improvement tasks created to enhanc
 
 **Estimated Time:** 2-3 weeks
 **Impact:** Better operations, monitoring, and automation
+
+### 🟡 Frontend SEO/Accessibility (Tasks 76-80, then 81-98)
+**Research Then Implement** - Perfect the public-facing templates
+
+**Research Phase (Tasks 76-80):**
+- **Task 76: SEO Research** - Cutting-edge SEO techniques for 2025
+- **Task 77: Low Vision Accessibility** - WCAG, ARIA, screen reader optimization
+- **Task 78: Motor/Mobility Accessibility** - Keyboard navigation, single-switch access
+- **Task 79: Multiple Disability Categories** - Cognitive, auditory, age-related, and more
+- **Task 80: Generate Implementation Plan** - Synthesize research into actionable tasks
+
+**Implementation Phase (Tasks 81-98):**
+- Will be generated from Task 80 based on research findings
+- Expected: ~18 implementation tasks covering semantic HTML, ARIA, schema.org, keyboard navigation, color contrast, performance, and more
+- Focus on 2 main templates that power 99% of directory pages
+
+**Estimated Time:**
+- Research: 1-2 weeks (Tasks 76-80)
+- Implementation: 6-9 weeks (Tasks 81-98)
+
+**Impact:**
+- Serve widest possible audience including people with disabilities
+- Competitive advantage through superior accessibility
+- Better SEO rankings and search visibility
+- Thousands of pages perfected through 2 template improvements
+- Potential to capture underserved market of users with accessibility needs
 
 ## Recommended Implementation Order
 
@@ -302,6 +341,7 @@ To begin implementing these tasks:
 
 ## Notes
 
+### Backend/Infrastructure Tasks (60-75)
 - These tasks build on the completed database persistence migration (Tasks 50-54)
 - All tasks include detailed implementation examples
 - Dependencies are minimal - most tasks can be done in parallel
@@ -309,9 +349,25 @@ To begin implementing these tasks:
 - Each task is designed to be completable in 1-5 days
 - Task 75 addresses critical admin UI scalability issues identified by user
 
+### Frontend SEO/Accessibility Tasks (76-80+)
+- Tasks 76-80 are research tasks that inform implementation
+- Research must be completed before generating implementation tasks (81-98)
+- Focus on 2 main public-facing templates that power 99% of pages
+- Comprehensive approach covering SEO, WCAG 2.1 Level AA (minimum), and AAA (where feasible)
+- Addresses needs of users with visual, motor, cognitive, auditory disabilities
+- Also addresses age-related impairments, temporary limitations, and situational constraints
+- SEO and accessibility often overlap and reinforce each other
+- Perfect these 2 templates = perfect thousands of directory pages
+- Competitive advantage through superior accessibility and SEO
+
 ## Questions?
 
-See individual task files in `codex/TASKS/60-75_*.yaml` for:
+See individual task files for details:
+- `codex/TASKS/60-75_*.yaml` - Backend/infrastructure improvement tasks
+- `codex/TASKS/76-80_*.yaml` - Frontend SEO/accessibility research tasks
+- `codex/TASKS/81-98_*.yaml` - Frontend implementation tasks (to be created after Task 80)
+
+Each file includes:
 - Detailed implementation plans
 - Code examples
 - Success criteria
@@ -321,6 +377,8 @@ See individual task files in `codex/TASKS/60-75_*.yaml` for:
 ---
 
 **Created:** 2025-11-17
-**Updated:** 2025-11-17 (Added Task 75)
+**Updated:** 2025-11-17 (Added Tasks 75-80)
 **Status:** Ready for implementation
-**Next Action:** Begin Phase 1 with Tasks 60-63, 75
+**Next Actions:**
+- Backend: Begin Phase 1 with Tasks 60-63, 75
+- Frontend: Begin research with Tasks 76-80 (can run in parallel with backend work)

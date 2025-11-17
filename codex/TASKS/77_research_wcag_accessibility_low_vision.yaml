@@ -1,0 +1,421 @@
+id: 77
+filename: 77_research_wcag_accessibility_low_vision.yaml
+title: Research WCAG Accessibility for Low Vision Users
+priority: 🟡 Important
+impact: High
+effort: Low
+dependencies: []
+
+description: >
+  Research and document WCAG accessibility requirements and best practices
+  specifically for people with low vision and blindness, focusing on screen
+  reader optimization and visual accessibility features.
+
+  Goal: Implement accessibility features that exceed expectations to fill a
+  niche for people with low vision, making our directory pages easier to
+  navigate than search engines.
+
+  Context: The mega-directory has 2 main public templates used for 99% of pages.
+  Perfect accessibility implementation here will benefit thousands of pages and
+  create a competitive advantage for users with disabilities.
+
+reference_urls:
+  - https://www.w3.org/WAI/standards-guidelines/wcag/
+  - https://www.w3.org/WAI/standards-guidelines/aria/
+  - https://www.w3.org/WAI/people-use-web/abilities-barriers/visual/
+  - https://www.w3.org/WAI/WCAG21/quickref/
+  - https://www.w3.org/WAI/tutorials/
+  - https://webaim.org/articles/screenreader/
+
+research_objectives:
+  - Understand needs of people with low vision and blindness
+  - Document WCAG 2.1/2.2 requirements for visual accessibility
+  - Research WAI-ARIA best practices for screen readers
+  - Identify techniques to exceed minimum accessibility standards
+  - Discover how to optimize for popular screen readers
+  - Learn about assistive technology users' expectations
+  - Study best practices for directory/listing interfaces
+
+visual_disabilities_categories:
+
+  low_vision:
+    description: Reduced visual acuity but retains some useful vision
+    needs:
+      - Text magnification / zoom support
+      - High contrast modes
+      - Adjustable font sizes
+      - Proper color contrast ratios
+      - Large click targets
+      - Clear visual focus indicators
+      - No information conveyed by color alone
+      - Readable fonts without anti-aliasing issues
+      - Adequate spacing between interactive elements
+
+  color_blindness:
+    description: Difficulty distinguishing certain colors
+    types:
+      - Deuteranopia (red-green)
+      - Protanopia (red-green)
+      - Tritanopia (blue-yellow)
+      - Achromatopsia (complete color blindness)
+    needs:
+      - Information not conveyed by color alone
+      - Patterns or textures in addition to colors
+      - High contrast between foreground and background
+      - Clear text labels for colored elements
+      - Icon usage with text alternatives
+
+  blindness:
+    description: Complete or near-complete loss of vision
+    needs:
+      - Full screen reader compatibility
+      - Comprehensive alt text for images
+      - Semantic HTML structure
+      - Proper heading hierarchy
+      - Keyboard-only navigation
+      - ARIA landmarks and labels
+      - Skip navigation links
+      - Descriptive link text
+      - Form label associations
+      - Table header associations
+      - Live region announcements
+
+wcag_2_1_requirements:
+
+  level_a_critical:
+    success_criteria:
+      - 1.1.1: Non-text Content (alt text)
+      - 1.3.1: Info and Relationships (semantic structure)
+      - 1.3.3: Sensory Characteristics (not shape/color only)
+      - 1.4.1: Use of Color (not sole means of conveying info)
+      - 2.1.1: Keyboard navigation
+      - 2.4.1: Bypass Blocks (skip links)
+      - 2.4.2: Page Titled
+      - 2.4.4: Link Purpose (in context)
+      - 3.1.1: Language of Page
+      - 3.3.1: Error Identification
+      - 3.3.2: Labels or Instructions
+      - 4.1.1: Parsing (valid HTML)
+      - 4.1.2: Name, Role, Value (ARIA)
+
+  level_aa_recommended:
+    success_criteria:
+      - 1.4.3: Contrast (Minimum) - 4.5:1 for normal text
+      - 1.4.4: Resize Text (up to 200% without loss)
+      - 1.4.5: Images of Text (use real text)
+      - 2.4.5: Multiple Ways (to find pages)
+      - 2.4.6: Headings and Labels (descriptive)
+      - 2.4.7: Focus Visible
+      - 3.1.2: Language of Parts
+      - 3.2.3: Consistent Navigation
+      - 3.2.4: Consistent Identification
+      - 3.3.3: Error Suggestion
+      - 3.3.4: Error Prevention
+
+  level_aaa_aspirational:
+    success_criteria:
+      - 1.4.6: Contrast (Enhanced) - 7:1 for normal text
+      - 1.4.8: Visual Presentation (extensive customization)
+      - 2.4.8: Location (user knows where they are)
+      - 2.4.9: Link Purpose (out of context)
+      - 2.4.10: Section Headings
+      - 3.3.5: Help (context-sensitive)
+      - 3.3.6: Error Prevention (all situations)
+
+wai_aria_best_practices:
+
+  landmark_roles:
+    purpose: Help screen reader users navigate page structure
+    implementation:
+      - banner: Site header with logo and main navigation
+      - navigation: Navigation menus
+      - main: Primary content area
+      - complementary: Sidebar or related content
+      - contentinfo: Footer with copyright/contact
+      - search: Search functionality
+      - form: Form regions (when not in main)
+
+  aria_labels:
+    purpose: Provide accessible names for elements
+    techniques:
+      - aria-label: Direct label for element
+      - aria-labelledby: Reference to labeling element(s)
+      - aria-describedby: Additional descriptive info
+      - Use on buttons, links, regions, form controls
+
+  aria_states:
+    purpose: Communicate dynamic state changes
+    properties:
+      - aria-expanded: Collapsed/expanded state
+      - aria-current: Current item in navigation
+      - aria-selected: Selected item in list
+      - aria-pressed: Toggle button state
+      - aria-checked: Checkbox/radio state
+      - aria-hidden: Hide decorative content
+      - aria-live: Announce dynamic updates
+      - aria-busy: Loading state
+
+  aria_properties:
+    purpose: Provide additional semantics
+    properties:
+      - aria-haspopup: Indicates popup menu/dialog
+      - aria-controls: Element controls another
+      - aria-owns: Relationship between elements
+      - aria-describedby: Additional description
+      - aria-required: Required form field
+      - aria-invalid: Validation state
+
+screen_reader_optimization:
+
+  popular_screen_readers:
+    - JAWS (Windows) - most popular paid screen reader
+    - NVDA (Windows) - most popular free screen reader
+    - VoiceOver (macOS, iOS) - built-in Apple screen reader
+    - TalkBack (Android) - built-in Android screen reader
+    - Narrator (Windows) - built-in Windows screen reader
+    - ChromeVox (Chrome OS) - Chrome extension
+
+  screen_reader_expectations:
+    semantic_html:
+      - Proper heading hierarchy (h1-h6, no skipping levels)
+      - Use of semantic elements (nav, main, article, aside, footer)
+      - Lists for list content (ul, ol, li)
+      - Tables only for tabular data
+      - Form labels properly associated with inputs
+      - Buttons vs links used appropriately
+
+    navigation_efficiency:
+      - Skip to main content link
+      - Landmark navigation (ARIA roles)
+      - Heading navigation
+      - Link list navigation
+      - Form control navigation
+      - Table navigation
+      - Keyboard shortcuts documented
+
+    descriptive_content:
+      - Meaningful alt text (not "image" or filename)
+      - Descriptive link text (not "click here")
+      - Heading text describes section content
+      - Button text describes action
+      - Error messages are specific and helpful
+      - Success messages are clear
+
+    dynamic_content:
+      - ARIA live regions for updates
+      - Focus management for dialogs/modals
+      - Loading states announced
+      - Error states announced
+      - Success states announced
+      - No screen reader traps
+
+directory_specific_considerations:
+
+  listing_cards:
+    requirements:
+      - Each listing should be an article or section
+      - Heading for business name (proper level)
+      - Address should use semantic markup or ARIA
+      - Phone number should be tel: link
+      - Rating should have accessible text ("4.5 out of 5 stars")
+      - Images should have descriptive alt text
+      - Action buttons should have clear labels
+      - Category tags should be readable
+      - Distance/location info should be clear
+
+  map_template:
+    challenges:
+      - Interactive maps are inherently visual
+      - Map markers need text alternatives
+      - Zoom/pan controls need keyboard support
+    solutions:
+      - Provide text-based list view alternative
+      - Ensure map can be skipped
+      - Keyboard controls for map interaction
+      - Screen reader announcements for map updates
+      - Accessible map marker labels
+      - Address and directions available as text
+
+  filters_and_search:
+    requirements:
+      - Filter controls keyboard accessible
+      - Selected filters announced to screen readers
+      - Clear "X results found" announcement
+      - Loading states announced
+      - Error states for no results
+      - Filter labels clear and descriptive
+
+  pagination:
+    requirements:
+      - Current page clearly indicated
+      - "Page X of Y" or similar
+      - aria-current="page" on current page link
+      - Previous/Next links descriptive
+      - Keyboard navigable
+      - Focus management on page change
+
+research_methodology:
+
+  documentation_review:
+    - WCAG 2.1 / 2.2 guidelines (official W3C)
+    - WAI-ARIA Authoring Practices Guide
+    - WebAIM articles and tutorials
+    - Deque University (accessibility training)
+    - a11y Project resources
+    - GOV.UK accessibility blog
+    - Inclusive Components by Heydon Pickering
+
+  user_research:
+    - Screen reader user experience videos
+    - Accessibility user testing case studies
+    - User personas for people with low vision
+    - Common pain points and frustrations
+    - Best practices from user feedback
+
+  technical_testing:
+    - Test with NVDA screen reader
+    - Test with VoiceOver (if Mac available)
+    - Use keyboard-only navigation
+    - Test with high contrast mode
+    - Test with zoom up to 200%
+    - Use color blindness simulators
+    - Automated testing with axe DevTools
+
+  competitor_analysis:
+    - Analyze accessibility of competitor directories
+    - Study government accessible directory sites
+    - Review award-winning accessible sites
+    - Identify gaps in current implementations
+
+deliverables:
+
+  primary_document:
+    filename: docs/research/ACCESSIBILITY_LOW_VISION.md
+    sections:
+      - Executive Summary
+      - Visual Disabilities Overview
+      - WCAG 2.1/2.2 Requirements Checklist
+      - WAI-ARIA Best Practices
+      - Screen Reader Optimization
+      - Color Contrast Requirements
+      - Text Scaling and Magnification
+      - Semantic HTML Guidelines
+      - Directory-Specific Recommendations
+      - Testing Methodology
+      - Tools and Resources
+      - Code Examples
+      - Prioritized Implementation List
+      - Common Mistakes to Avoid
+
+  code_examples:
+    - Accessible listing card HTML
+    - Accessible map alternative
+    - Accessible filter controls
+    - Accessible pagination
+    - ARIA landmark structure
+    - Skip navigation links
+    - Focus management patterns
+    - Live region announcements
+
+  checklists:
+    - WCAG Level AA compliance checklist
+    - Screen reader testing checklist
+    - Color contrast audit checklist
+    - Semantic HTML review checklist
+
+key_implementation_areas:
+
+  color_contrast:
+    requirements:
+      - Normal text: 4.5:1 contrast ratio (AA) or 7:1 (AAA)
+      - Large text (18pt+): 3:1 (AA) or 4.5:1 (AAA)
+      - UI components: 3:1 contrast ratio
+      - Focus indicators: 3:1 contrast ratio
+    tools:
+      - WebAIM Contrast Checker
+      - Chrome DevTools color picker
+      - Stark plugin for Figma
+      - Accessible color palette generators
+
+  text_scaling:
+    requirements:
+      - Support 200% zoom without horizontal scrolling
+      - Use relative units (rem, em) not pixels
+      - No fixed-height containers that clip content
+      - Test with browser zoom and text-only zoom
+      - Maintain layout at different text sizes
+
+  alt_text_guidelines:
+    principles:
+      - Describe purpose and content
+      - Be concise but complete
+      - Don't start with "image of" or "picture of"
+      - Use empty alt="" for decorative images
+      - For complex images, use longer descriptions
+      - Context matters - alt text should fit page flow
+    examples:
+      - Business photo: "Exterior of Main Street Coffee Shop with outdoor seating"
+      - Logo: "Main Street Coffee Shop logo"
+      - Decorative: alt=""
+      - Map marker: "Location marker for 123 Main St"
+
+  focus_indicators:
+    requirements:
+      - All interactive elements must show focus
+      - Focus indicators must be visible (3:1 contrast)
+      - Focus order must be logical
+      - Skip links should be first focusable element
+      - Custom focus styles should be distinctive
+      - Don't remove outline without replacement
+
+  semantic_structure:
+    requirements:
+      - One h1 per page (page title)
+      - Headings in logical order (don't skip levels)
+      - Use nav for navigation regions
+      - Use main for primary content
+      - Use article for independent content
+      - Use section for thematic grouping
+      - Use aside for complementary content
+      - Use footer for footer content
+
+success_criteria:
+  - Comprehensive low vision accessibility research completed
+  - WCAG 2.1 Level AA requirements documented
+  - WAI-ARIA best practices identified
+  - Screen reader optimization strategies defined
+  - Directory-specific accessibility needs addressed
+  - Code examples ready for implementation
+  - Testing methodology established
+  - Findings ready to inform Task 80 (implementation planning)
+
+timeline:
+  estimated_time: 1-2 days
+  breakdown:
+    - Day 1 Morning: Review WCAG guidelines and WAI-ARIA docs
+    - Day 1 Afternoon: Research screen reader best practices
+    - Day 2 Morning: Test competitor sites with screen reader
+    - Day 2 Afternoon: Document findings and create examples
+
+next_steps:
+  - Complete this research
+  - Combine with findings from Tasks 76, 78, 79
+  - Synthesize all research in Task 80
+  - Generate implementation tasks (81-8x) based on findings
+
+related_tasks:
+  - Task 76: Cutting Edge SEO Recommendations
+  - Task 78: WCAG Accessibility for Limited Motor/Mobility
+  - Task 79: WCAG Accessibility for Multiple Categories
+  - Task 80: Generate Implementation Plan from Research
+
+notes:
+  - Accessibility and SEO often reinforce each other
+  - Screen reader optimization benefits voice assistants
+  - Semantic HTML improves both accessibility and SEO
+  - Focus on practical, testable implementations
+  - Aim for WCAG 2.1 Level AA as baseline, AAA where feasible
+  - User testing with actual screen reader users is ideal
+  - Automated testing catches ~30-40% of issues
+  - Manual testing and user testing are essential
+  - Perfect accessibility on 2 templates = perfect on thousands of pages

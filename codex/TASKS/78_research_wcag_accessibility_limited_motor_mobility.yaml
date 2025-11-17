@@ -1,0 +1,525 @@
+id: 78
+filename: 78_research_wcag_accessibility_limited_motor_mobility.yaml
+title: Research WCAG Accessibility for Limited Motor/Mobility Users
+priority: 🟡 Important
+impact: High
+effort: Low
+dependencies: []
+
+description: >
+  Research and document WCAG accessibility requirements and best practices
+  specifically for people with limited motor skills, mobility impairments,
+  and physical disabilities.
+
+  Goal: Implement navigation by single button click (or single-switch access),
+  ensure logical tab order, and research what people with motor impairments
+  expect from web interfaces to make our directory easier to navigate than
+  search engines.
+
+  Context: The mega-directory has 2 main public templates used for 99% of pages.
+  Perfect accessibility for motor-impaired users will create a significant
+  competitive advantage.
+
+reference_urls:
+  - https://www.w3.org/WAI/people-use-web/abilities-barriers/physical/
+  - https://www.w3.org/WAI/standards-guidelines/wcag/
+  - https://www.w3.org/WAI/standards-guidelines/aria/
+  - https://webaim.org/articles/motor/
+  - https://www.w3.org/WAI/perspective-videos/keyboard/
+
+research_objectives:
+  - Understand needs of people with motor impairments
+  - Document WCAG requirements for keyboard-only navigation
+  - Research single-switch access and adaptive technology
+  - Identify techniques for efficient keyboard navigation
+  - Study optimal tab order and focus management
+  - Learn about voice control compatibility
+  - Discover best practices for click target sizing
+  - Research timing requirements and user control
+
+motor_disability_categories:
+
+  limited_dexterity:
+    description: Difficulty with precise movements
+    challenges:
+      - Small click targets hard to activate
+      - Drag-and-drop interactions difficult
+      - Precise mouse movements challenging
+      - Double-click operations problematic
+      - Fine motor control required for sliders
+    needs:
+      - Large click targets (minimum 44x44px)
+      - Adequate spacing between interactive elements
+      - Alternative to drag-and-drop
+      - Alternative to hover-only interactions
+      - Simple click interactions preferred
+      - Clear visual feedback for activations
+
+  tremors_or_spasms:
+    description: Involuntary movements affecting control
+    challenges:
+      - Accidental clicks common
+      - Hovering over targets difficult
+      - Holding modifier keys problematic
+      - Precise positioning impossible
+      - Time-sensitive interactions fail
+    needs:
+      - Undo functionality for actions
+      - Confirmation for destructive actions
+      - Large click targets with spacing
+      - No hover-only content
+      - No time limits (or adjustable)
+      - Sticky keys support
+
+  limited_mobility:
+    description: Limited range of motion or paralysis
+    challenges:
+      - Cannot use standard mouse
+      - May use mouth stick or head pointer
+      - May use single-switch device
+      - May use eye-tracking technology
+      - May use voice control
+    needs:
+      - Full keyboard accessibility
+      - Single-switch access patterns
+      - Voice control compatibility
+      - No mouse-only interactions
+      - Logical tab order
+      - Skip navigation links
+
+  paralysis:
+    description: Loss of muscle function in body parts
+    variations:
+      - Quadriplegia (all four limbs)
+      - Paraplegia (lower body)
+      - Hemiplegia (one side of body)
+    needs:
+      - Keyboard-only navigation
+      - Voice control support
+      - Eye-tracking support
+      - Switch access support
+      - Sip-and-puff device support
+      - Simple, predictable interactions
+
+  repetitive_stress_injury:
+    description: Pain from repetitive motions
+    challenges:
+      - Extended mouse use painful
+      - Many clicks cause discomfort
+      - Scrolling can be painful
+      - Typing may be limited
+    needs:
+      - Keyboard shortcuts
+      - Minimal clicks to complete tasks
+      - Efficient navigation
+      - Auto-complete and suggestions
+      - Pagination over infinite scroll
+
+wcag_requirements_motor_focus:
+
+  level_a_critical:
+    success_criteria:
+      - 2.1.1: Keyboard - All functionality via keyboard
+      - 2.1.2: No Keyboard Trap - Can escape from all components
+      - 2.1.4: Character Key Shortcuts - Can disable or remap
+      - 2.4.1: Bypass Blocks - Skip navigation mechanism
+      - 2.4.3: Focus Order - Logical and intuitive
+      - 2.4.7: Focus Visible - Focus indicator visible
+      - 3.2.1: On Focus - No automatic context change
+      - 3.2.2: On Input - No unexpected behavior
+
+  level_aa_recommended:
+    success_criteria:
+      - 2.4.7: Focus Visible - Clear focus indicators
+      - 2.5.1: Pointer Gestures - Alternatives to complex gestures
+      - 2.5.2: Pointer Cancellation - Can abort/undo activations
+      - 2.5.3: Label in Name - Visual label matches accessible name
+      - 2.5.4: Motion Actuation - Alternatives to motion-based input
+      - 3.2.3: Consistent Navigation - Same navigation order
+      - 3.2.4: Consistent Identification - Same functionality labeled consistently
+
+  level_aaa_aspirational:
+    success_criteria:
+      - 2.1.3: Keyboard (No Exception) - All functionality keyboard-accessible
+      - 2.4.8: Location - User knows where they are
+      - 2.4.11: Focus Not Obscured (Minimum) - Focus not hidden
+      - 2.4.12: Focus Not Obscured (Enhanced) - Focus fully visible
+      - 2.4.13: Focus Appearance - High visibility focus indicator
+      - 2.5.5: Target Size - Large targets (44x44 CSS pixels)
+      - 2.5.6: Concurrent Input Mechanisms - Support multiple inputs
+      - 2.5.7: Dragging Movements - Alternatives to dragging
+      - 2.5.8: Target Size (Minimum) - 24x24 CSS pixels
+
+keyboard_navigation_best_practices:
+
+  fundamental_requirements:
+    tab_navigation:
+      - Tab moves forward through interactive elements
+      - Shift+Tab moves backward
+      - Tab order follows visual order (left-to-right, top-to-bottom)
+      - Tab order is logical and predictable
+      - No keyboard traps (can always escape)
+      - Skip links allow bypassing repetitive content
+      - All interactive elements are in tab order
+      - Decorative/non-interactive elements not in tab order
+
+    arrow_key_navigation:
+      - Arrow keys for composite widgets (menus, tabs, radio groups)
+      - Up/Down for vertical navigation
+      - Left/Right for horizontal navigation
+      - Home/End for first/last items
+      - Page Up/Page Down for pagination
+      - Use roving tabindex for widget components
+
+    activation:
+      - Enter activates buttons and links
+      - Space activates buttons and checkboxes
+      - Space scrolls page (if not in widget)
+      - Enter submits forms
+      - Escape closes dialogs/menus
+      - Consistent behavior across site
+
+    focus_management:
+      - Focus moves logically through content
+      - Opening dialog moves focus to dialog
+      - Closing dialog returns focus to trigger
+      - Deleting item moves focus to next item
+      - Loading content doesn't lose focus
+      - Focus visible at all times
+
+  keyboard_shortcuts:
+    considerations:
+      - Document all keyboard shortcuts
+      - Provide way to disable or customize
+      - Don't override browser/AT shortcuts
+      - Use modifier keys (Ctrl/Alt) to avoid conflicts
+      - Consider international keyboard layouts
+      - Provide shortcut help (? or Shift+/)
+
+    common_shortcuts:
+      - / : Focus search
+      - ? : Show keyboard shortcuts help
+      - Esc : Close dialog/menu
+      - Ctrl+Home : Jump to top
+      - Ctrl+End : Jump to bottom
+
+  skip_links:
+    purpose: Allow bypassing repetitive navigation
+    implementation:
+      - First focusable element on page
+      - Visible on focus (can be hidden otherwise)
+      - Multiple skip links if needed:
+        - Skip to main content
+        - Skip to search
+        - Skip to footer
+      - Internal anchor links (#main-content)
+      - Clear, descriptive text
+
+single_switch_access:
+
+  what_is_switch_access:
+    description: >
+      Single-switch access allows users with severe motor impairments to
+      interact with computers using one or two switches. The interface
+      automatically scans through interactive elements, and the user
+      activates their switch when the desired element is highlighted.
+
+  switch_device_types:
+    - Button switches (hand, foot, head)
+    - Sip-and-puff switches (breath control)
+    - Eye-blink switches
+    - Sound-activated switches
+    - Squeeze switches
+    - Proximity switches
+
+  how_switch_scanning_works:
+    automatic_scanning:
+      - Interface highlights elements sequentially
+      - User activates switch when desired element highlighted
+      - Scanning speed is adjustable
+      - Two-switch mode: one to advance, one to select
+      - One-switch mode: auto-advances, user selects
+
+    scan_patterns:
+      - Linear: scan each element in order
+      - Row-column: scan rows, then columns
+      - Grouped: scan groups, then items within group
+
+  requirements_for_switch_compatibility:
+    - Standard keyboard navigation must work perfectly
+    - Logical, consistent tab order
+    - All interactive elements keyboard-accessible
+    - No keyboard traps
+    - Clear focus indicators
+    - Simple, predictable interactions
+    - Undo functionality
+    - No time limits (or adjustable)
+    - Large click targets
+
+voice_control_compatibility:
+
+  voice_control_systems:
+    - Dragon NaturallySpeaking (Windows)
+    - Voice Control (iOS/macOS)
+    - Voice Access (Android)
+    - Windows Speech Recognition
+    - Browser voice commands
+
+  how_voice_control_works:
+    - Users speak commands to navigate and interact
+    - "Click [button name]" to activate buttons
+    - "Click [link text]" to follow links
+    - "Show numbers" to display number labels
+    - "Show grid" for precise positioning
+
+  requirements_for_voice_compatibility:
+    - Visible labels that match accessible names
+    - Clear, unique button and link text
+    - Avoid generic text like "click here"
+    - Use buttons for actions, links for navigation
+    - Ensure interactive elements have accessible names
+    - No label/name mismatches (WCAG 2.5.3)
+
+click_target_sizing:
+
+  wcag_guidelines:
+    level_aaa:
+      - Minimum target size: 44x44 CSS pixels
+      - Exception: Inline links in text
+      - Exception: User agent controlled (default controls)
+      - Exception: Essential presentation (e.g., maps)
+
+    level_aa_2_2:
+      - Minimum target size: 24x24 CSS pixels
+      - Same exceptions as AAA
+
+  best_practices:
+    recommended_sizes:
+      - Buttons: 44x44px minimum, 48x48px better
+      - Touch targets on mobile: 48x48px minimum
+      - Links in text: Adequate line height (1.5+)
+      - Icons: 24x24px minimum visible area
+      - Form controls: 44px height minimum
+
+    spacing:
+      - 8px minimum spacing between targets
+      - 16px spacing preferred
+      - Adequate padding within targets
+      - Avoid cramped layouts
+
+    implementation:
+      - Use padding to increase click area
+      - Entire card/row clickable (not just text)
+      - Icon buttons should have large click area
+      - Ensure spacing in mobile views
+      - Test with touch/pointer devices
+
+timing_and_user_control:
+
+  no_time_limits:
+    wcag_2_2_1:
+      - No time limits on interactions
+      - Or: User can turn off time limit
+      - Or: User can adjust before encountering
+      - Or: User can extend with simple action
+      - Or: Time limit > 20 hours
+
+    exceptions:
+      - Real-time events (auctions, etc.)
+      - Time limit essential
+      - Time limit > 20 hours
+
+  pause_stop_hide:
+    wcag_2_2_2:
+      - Auto-updating content can be paused
+      - Auto-scrolling can be stopped
+      - Animations can be stopped
+      - Blinking content can be hidden
+
+  avoid:
+    - Session timeouts without warning
+    - Auto-advancing carousels
+    - Auto-scrolling content
+    - Automatic redirects
+    - Animations that can't be stopped
+
+focus_indicators:
+
+  requirements:
+    - All interactive elements show focus
+    - Focus indicator has 3:1 contrast ratio
+    - Focus indicator area is sufficient
+    - Custom indicators are clear and visible
+    - Don't remove :focus without replacement
+    - Consider :focus-visible for mouse/keyboard distinction
+
+  best_practices:
+    - High contrast outline or border
+    - 2-3px thick outline
+    - Offset from element for clarity
+    - Consistent across all elements
+    - Additional indicator (background color) helpful
+    - Test in high contrast mode
+
+  implementation_examples:
+    - CSS outline: 2px solid #005fcc
+    - Box shadow: 0 0 0 3px rgba(0,95,204,0.5)
+    - Background color change
+    - Border color change
+    - Combination of techniques
+
+directory_specific_considerations:
+
+  listing_cards:
+    requirements:
+      - Entire card keyboard accessible
+      - Large click area (whole card clickable)
+      - Tab order logical (one tab stop per card)
+      - Action buttons clearly labeled
+      - No hover-only content
+      - Touch-friendly on mobile (48x48px targets)
+
+  filters_and_search:
+    requirements:
+      - Keyboard accessible controls
+      - Dropdowns navigable with arrow keys
+      - Checkboxes/radios activatable with Space
+      - Clear focus indicators
+      - Apply/Clear buttons keyboard accessible
+      - Filter shortcuts (keyboard quick-access)
+
+  map_template:
+    challenges:
+      - Map interaction requires fine motor control
+      - Zoom/pan can be difficult
+      - Marker selection requires precision
+    solutions:
+      - Provide text-based list alternative
+      - Large zoom controls (44x44px)
+      - Keyboard controls (+/- for zoom, arrows for pan)
+      - Click markers or use list
+      - "Use list view" option prominently displayed
+
+  pagination:
+    requirements:
+      - Large click targets for page numbers
+      - Keyboard accessible
+      - Clear focus indicators
+      - Previous/Next buttons (large)
+      - Jump to page input field
+      - Results per page control
+
+  forms:
+    requirements:
+      - Large input fields (44px height)
+      - Large submit buttons
+      - Labels clearly associated
+      - Error messages clear and actionable
+      - No auto-submit on select change
+      - Confirmation for destructive actions
+
+research_methodology:
+
+  documentation_review:
+    - WCAG 2.1 / 2.2 guidelines (official W3C)
+    - WAI-ARIA Authoring Practices Guide (APG)
+    - WebAIM keyboard accessibility articles
+    - Switch access documentation (Android, iOS)
+    - Voice control documentation (Dragon, Voice Control)
+    - Inclusive Components patterns
+    - Smashing Magazine accessibility articles
+
+  user_research:
+    - Videos of switch access users
+    - Voice control user demonstrations
+    - Case studies from motor-impaired users
+    - Accessibility testing reports
+    - User personas for motor disabilities
+    - Common frustrations and pain points
+
+  technical_testing:
+    - Keyboard-only navigation testing
+    - Tab order analysis
+    - Focus indicator visibility testing
+    - Click target size measurement
+    - Switch access simulator testing (if available)
+    - Voice control testing (if available)
+    - Touch target testing on mobile devices
+
+deliverables:
+
+  primary_document:
+    filename: docs/research/ACCESSIBILITY_MOTOR_MOBILITY.md
+    sections:
+      - Executive Summary
+      - Motor Disabilities Overview
+      - WCAG Requirements for Motor Accessibility
+      - Keyboard Navigation Best Practices
+      - Single-Switch Access Compatibility
+      - Voice Control Compatibility
+      - Click Target Sizing Guidelines
+      - Focus Indicator Requirements
+      - Timing and User Control
+      - Directory-Specific Recommendations
+      - Testing Methodology
+      - Tools and Resources
+      - Code Examples
+      - Prioritized Implementation List
+
+  code_examples:
+    - Keyboard-accessible listing card
+    - Skip navigation implementation
+    - Focus management patterns
+    - Large click target CSS
+    - Roving tabindex for widgets
+    - Accessible dropdown filters
+    - Keyboard shortcut handler
+
+  checklists:
+    - Keyboard accessibility checklist
+    - Tab order review checklist
+    - Click target size audit
+    - Focus indicator checklist
+
+success_criteria:
+  - Comprehensive motor/mobility accessibility research completed
+  - WCAG 2.1 Level AA keyboard requirements documented
+  - Single-switch access requirements identified
+  - Voice control compatibility guidelines established
+  - Click target sizing standards defined
+  - Directory-specific accessibility needs addressed
+  - Code examples ready for implementation
+  - Testing methodology established
+  - Findings ready to inform Task 80
+
+timeline:
+  estimated_time: 1-2 days
+  breakdown:
+    - Day 1 Morning: Review WCAG keyboard accessibility requirements
+    - Day 1 Afternoon: Research switch access and voice control
+    - Day 2 Morning: Study click target sizing and focus indicators
+    - Day 2 Afternoon: Document findings and create examples
+
+next_steps:
+  - Complete this research
+  - Combine with findings from Tasks 76, 77, 79
+  - Synthesize all research in Task 80
+  - Generate implementation tasks (81-8x) based on findings
+
+related_tasks:
+  - Task 76: Cutting Edge SEO Recommendations
+  - Task 77: WCAG Accessibility for Low Vision
+  - Task 79: WCAG Accessibility for Multiple Categories
+  - Task 80: Generate Implementation Plan from Research
+
+notes:
+  - Keyboard accessibility is foundation for all adaptive technologies
+  - Perfect keyboard navigation enables switch access and voice control
+  - Large click targets benefit mobile users and motor-impaired users
+  - Tab order is critical - test thoroughly
+  - Focus indicators must never be removed without replacement
+  - Single-switch access is most demanding - if it works, everything works
+  - Voice control requires visible text labels that match accessible names
+  - Testing with actual users is ideal but not always possible
+  - Automated testing can verify tab order and focus indicators
+  - Perfect accessibility on 2 templates = perfect on thousands of pages

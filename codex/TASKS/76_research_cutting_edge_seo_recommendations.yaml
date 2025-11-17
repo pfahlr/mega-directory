@@ -1,0 +1,273 @@
+id: 76
+filename: 76_research_cutting_edge_seo_recommendations.yaml
+title: Research Cutting Edge SEO Recommendations
+priority: 🟡 Important
+impact: High
+effort: Low
+dependencies: []
+
+description: >
+  Research and document cutting-edge SEO techniques and best practices for 2025
+  that should be implemented in the public-facing directory templates.
+
+  Context: The mega-directory project has 2 main public templates that will be
+  used for 99% of pages across thousands of directory pages:
+  1. Location-agnostic template
+  2. Interactive map template
+
+  Since these templates are foundational, implementing state-of-the-art SEO
+  will have massive impact across the entire site.
+
+research_objectives:
+  - Identify 2025 SEO best practices and emerging trends
+  - Document technical SEO requirements for directory sites
+  - Research schema.org markup for local business directories
+  - Investigate Core Web Vitals optimization techniques
+  - Study mobile-first indexing requirements
+  - Review structured data best practices
+  - Analyze competitor SEO strategies in directory space
+  - Research international SEO considerations (if applicable)
+
+research_areas:
+
+  technical_seo:
+    - Performance optimization (Core Web Vitals)
+    - Mobile-first indexing compliance
+    - Structured data / JSON-LD implementation
+    - XML sitemaps for large-scale sites
+    - Robots.txt optimization
+    - Canonical URLs for duplicate content
+    - Pagination handling (rel=next/prev)
+    - Hreflang tags (if multi-language)
+    - Schema.org vocabulary for directories
+    - Open Graph and Twitter Card metadata
+    - Breadcrumb navigation markup
+    - Site architecture for crawlability
+
+  on_page_seo:
+    - Semantic HTML5 elements
+    - Heading hierarchy (h1-h6)
+    - Title tag optimization
+    - Meta description best practices
+    - Image optimization (alt text, lazy loading)
+    - Internal linking strategies
+    - Content freshness signals
+    - User engagement metrics
+    - Page load speed optimization
+    - Mobile responsiveness
+    - HTTPS implementation
+    - URL structure best practices
+
+  content_seo:
+    - E-E-A-T principles (Experience, Expertise, Authoritativeness, Trust)
+    - Content quality signals
+    - User-generated content SEO
+    - Review and rating markup
+    - Local business information consistency
+    - NAP (Name, Address, Phone) optimization
+    - Helpful content guidelines
+    - Avoiding thin content pages
+    - Content uniqueness for template pages
+
+  local_seo:
+    - LocalBusiness schema markup
+    - Aggregate rating implementation
+    - Business hours markup
+    - Address and location data
+    - Geographic coordinates (latitude/longitude)
+    - Service area definitions
+    - Multiple location handling
+    - Map integration SEO implications
+
+  schema_markup:
+    - Organization schema
+    - WebSite schema with site search
+    - BreadcrumbList schema
+    - LocalBusiness / Business types
+    - ItemList for directory listings
+    - AggregateRating schema
+    - Review schema
+    - Place schema
+    - GeoCoordinates schema
+    - PostalAddress schema
+    - ContactPoint schema
+
+  core_web_vitals:
+    - Largest Contentful Paint (LCP) optimization
+    - First Input Delay (FID) / Interaction to Next Paint (INP)
+    - Cumulative Layout Shift (CLS) prevention
+    - First Contentful Paint (FCP)
+    - Time to First Byte (TTFB)
+    - Resource optimization strategies
+    - Critical rendering path optimization
+
+  emerging_trends_2025:
+    - AI-powered search implications (SGE, ChatGPT, Bard)
+    - Voice search optimization
+    - Visual search considerations
+    - Featured snippet optimization
+    - People Also Ask (PAA) targeting
+    - Zero-click search strategies
+    - Passage ranking optimization
+    - Video content for SEO
+    - Progressive Web App (PWA) benefits
+
+research_methodology:
+
+  sources_to_review:
+    official_documentation:
+      - Google Search Central documentation
+      - Google Search Quality Rater Guidelines
+      - Bing Webmaster Guidelines
+      - Schema.org vocabulary documentation
+      - W3C HTML specification
+      - Open Graph Protocol documentation
+      - Twitter Card documentation
+
+    industry_resources:
+      - Moz Blog and Whiteboard Friday
+      - Search Engine Journal
+      - Search Engine Land
+      - Ahrefs Blog
+      - SEMrush Academy
+      - Google Search Central Blog
+      - Yoast SEO Blog
+      - BackLinko SEO guides
+
+    technical_resources:
+      - web.dev (Google's web performance guide)
+      - PageSpeed Insights documentation
+      - Lighthouse audit criteria
+      - Chrome DevTools performance guides
+      - HTTP Archive research
+
+    case_studies:
+      - Directory site SEO case studies
+      - Local business SEO success stories
+      - Large-scale site SEO strategies
+      - Template-based site optimization
+
+  tools_to_utilize:
+    - Google Search Console
+    - Google PageSpeed Insights
+    - Lighthouse audits
+    - Schema.org validator
+    - Rich Results Test (Google)
+    - Mobile-Friendly Test (Google)
+    - Structured Data Testing Tool
+    - Screaming Frog (for crawl analysis)
+    - GTmetrix / WebPageTest
+    - SEO browser extensions (SEO Minion, etc.)
+
+  analysis_approach:
+    - Review current mega-directory template HTML
+    - Identify gaps in current SEO implementation
+    - Benchmark against competitor directory sites
+    - Prioritize recommendations by impact vs effort
+    - Document quick wins vs long-term improvements
+    - Consider scalability for thousands of pages
+
+deliverables:
+
+  primary_document:
+    filename: docs/research/SEO_RESEARCH_2025.md
+    sections:
+      - Executive Summary (key findings)
+      - Technical SEO Checklist
+      - On-Page SEO Guidelines
+      - Schema Markup Requirements
+      - Core Web Vitals Optimization
+      - Content SEO Best Practices
+      - Local SEO Recommendations
+      - Emerging Trends to Consider
+      - Prioritized Recommendations (High/Medium/Low)
+      - Implementation Roadmap
+      - Tools and Resources
+      - Competitor Analysis
+      - Appendices (code examples, references)
+
+  supplementary_documents:
+    - Schema markup examples (JSON-LD snippets)
+    - HTML template recommendations
+    - Meta tag templates
+    - Structured data examples
+    - Checklist for SEO audit
+
+  code_examples:
+    - Complete JSON-LD schema for directory listing
+    - Open Graph meta tags
+    - Twitter Card meta tags
+    - Semantic HTML structure
+    - Breadcrumb markup
+    - Pagination markup
+
+expected_findings:
+
+  critical_seo_elements:
+    - Proper schema.org markup for all business listings
+    - Core Web Vitals optimization (LCP < 2.5s, CLS < 0.1, INP < 200ms)
+    - Mobile-first responsive design
+    - Semantic HTML5 structure
+    - Comprehensive meta tags
+    - XML sitemap for thousands of pages
+    - Proper canonical URL handling
+    - Internal linking strategy
+    - Image optimization (WebP, lazy loading)
+    - Structured data for breadcrumbs and ratings
+
+  directory_specific_seo:
+    - Each listing should have unique, descriptive content
+    - Aggregate ratings should be marked up properly
+    - Location data should use precise schema markup
+    - Category taxonomy should be SEO-friendly
+    - URL structure should be hierarchical and descriptive
+    - Pagination should be handled correctly
+    - Faceted navigation should not create duplicate content
+    - Map integration should not negatively impact performance
+
+  template_optimization:
+    - Both templates should have identical SEO foundation
+    - Map template should lazy-load map assets
+    - Template variables should generate SEO-friendly content
+    - Dynamic content should be server-rendered for crawlers
+    - Client-side routing (if any) should be SEO-compatible
+
+success_criteria:
+  - Comprehensive SEO research document completed
+  - All major SEO areas covered (technical, on-page, content, local)
+  - Actionable recommendations with priority levels
+  - Code examples provided for key implementations
+  - Findings ready to inform Task 80 (implementation planning)
+  - Research covers 2025 best practices and emerging trends
+  - Specific recommendations for directory template enhancement
+
+timeline:
+  estimated_time: 1-2 days
+  breakdown:
+    - Day 1 Morning: Review official documentation (Google, Schema.org)
+    - Day 1 Afternoon: Research industry best practices and trends
+    - Day 2 Morning: Analyze competitor directory sites
+    - Day 2 Afternoon: Document findings and create examples
+
+next_steps:
+  - Complete this research
+  - Feed findings into Tasks 77-79 (accessibility research)
+  - Synthesize all research in Task 80
+  - Generate implementation tasks (81-8x) based on findings
+
+related_tasks:
+  - Task 77: WCAG Accessibility for Low Vision
+  - Task 78: WCAG Accessibility for Limited Motor/Mobility
+  - Task 79: WCAG Accessibility for Multiple Categories
+  - Task 80: Generate Implementation Plan from Research
+  - Task 65: Implement Pagination (may benefit from SEO findings)
+
+notes:
+  - SEO and accessibility often overlap (semantic HTML, alt text, etc.)
+  - Focus on scalability - recommendations must work for thousands of pages
+  - Consider performance implications of SEO enhancements
+  - Map template may need special attention for performance
+  - Local SEO is critical for directory business model
+  - Schema markup is highest-impact, lowest-effort improvement
+  - Core Web Vitals directly impact search rankings
+  - Mobile-first is non-negotiable in 2025

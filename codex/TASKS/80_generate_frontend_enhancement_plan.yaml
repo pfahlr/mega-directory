@@ -1,0 +1,624 @@
+id: 80
+filename: 80_generate_frontend_enhancement_plan.yaml
+title: Generate Frontend Enhancement Plan from SEO/Accessibility Research
+priority: 🟡 Important
+impact: High
+effort: Medium
+dependencies: [76, 77, 78, 79]
+
+description: >
+  Synthesize findings from Tasks 76-79 (SEO and accessibility research) to
+  create a comprehensive implementation plan for enhancing the 2 main public-
+  facing directory templates.
+
+  This task will analyze all research, identify overlapping requirements,
+  prioritize enhancements, and generate specific implementation tasks (81-8x)
+  for the development team.
+
+  Context: The mega-directory has 2 main templates that will be used for 99%
+  of pages across thousands of directory pages:
+  1. Location-agnostic template
+  2. Interactive map template
+
+  Perfecting these templates with cutting-edge SEO and comprehensive
+  accessibility will create competitive advantage and serve the widest
+  possible audience.
+
+objectives:
+  - Synthesize research from Tasks 76-79
+  - Identify common requirements across SEO and accessibility
+  - Prioritize enhancements by impact and effort
+  - Create detailed implementation tasks (81-8x)
+  - Establish testing and validation procedures
+  - Define success metrics
+  - Create implementation roadmap
+
+synthesis_methodology:
+
+  step_1_consolidate_research:
+    - Review all findings from Task 76 (SEO)
+    - Review all findings from Task 77 (Low Vision)
+    - Review all findings from Task 78 (Motor/Mobility)
+    - Review all findings from Task 79 (Multiple Categories)
+    - Extract key requirements from each
+    - Identify common themes
+
+  step_2_identify_overlaps:
+    seo_and_accessibility_synergies:
+      - Semantic HTML (SEO + Screen Readers)
+      - Alt text for images (SEO + Low Vision)
+      - Clear heading hierarchy (SEO + All Accessibility)
+      - Descriptive link text (SEO + Screen Readers)
+      - Page load performance (SEO + All Users)
+      - Mobile responsiveness (SEO + All Users)
+      - Structured data (SEO + Voice Assistants)
+      - Simple language (SEO + Cognitive)
+
+    areas_of_focus:
+      - HTML structure and semantics
+      - ARIA implementation
+      - Keyboard navigation
+      - Focus management
+      - Color contrast
+      - Text sizing and scaling
+      - Click target sizing
+      - Performance optimization
+      - Schema markup
+      - Meta tags
+      - Plain language content
+      - Error handling
+      - Forms accessibility
+
+  step_3_categorize_enhancements:
+    technical_infrastructure:
+      - Schema.org JSON-LD implementation
+      - ARIA landmarks and roles
+      - Semantic HTML5 structure
+      - Meta tags (Open Graph, Twitter Cards)
+      - Sitemap generation
+      - Canonical URLs
+      - Breadcrumb markup
+
+    visual_design:
+      - Color contrast compliance (WCAG AA/AAA)
+      - Text sizing and scaling
+      - Focus indicators
+      - High contrast mode support
+      - Responsive typography
+      - Layout consistency
+
+    interaction_design:
+      - Keyboard navigation
+      - Tab order optimization
+      - Click target sizing
+      - Skip links
+      - Focus management
+      - Error prevention
+      - Loading states
+
+    content_strategy:
+      - Plain language guidelines
+      - Alt text standards
+      - Link text best practices
+      - Heading structure
+      - Error messages
+      - Help text
+
+    performance:
+      - Core Web Vitals optimization
+      - Image optimization
+      - Lazy loading
+      - Resource prioritization
+      - Critical CSS
+      - Code splitting
+
+  step_4_prioritize_enhancements:
+    priority_matrix:
+      critical_quick_wins:
+        description: High impact, low effort - do first
+        examples:
+          - Add semantic HTML5 elements
+          - Implement basic schema markup
+          - Fix color contrast issues
+          - Add alt text to images
+          - Ensure keyboard navigation works
+          - Add skip links
+
+      critical_major_work:
+        description: High impact, high effort - schedule next
+        examples:
+          - Comprehensive ARIA implementation
+          - Complete schema.org vocabulary
+          - Full keyboard interaction patterns
+          - Testing with assistive technologies
+          - Performance optimization
+
+      important_enhancements:
+        description: Medium impact - do after critical items
+        examples:
+          - Enhanced focus indicators
+          - Advanced ARIA patterns
+          - Extended schema types
+          - Comprehensive error handling
+          - Plain language content audit
+
+      nice_to_have:
+        description: Low impact or very high effort
+        examples:
+          - WCAG Level AAA compliance
+          - Multiple language support
+          - Advanced personalization
+          - AI-powered accessibility
+
+  step_5_create_implementation_tasks:
+    task_structure:
+      - Specific, actionable objectives
+      - Clear success criteria
+      - Code examples
+      - Testing procedures
+      - Estimated effort
+      - Dependencies
+      - Priority level
+
+    expected_tasks:
+      task_81:
+        title: "Implement Semantic HTML5 Structure"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Low
+
+      task_82:
+        title: "Add Comprehensive Schema.org Markup"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Medium
+
+      task_83:
+        title: "Ensure WCAG Level AA Color Contrast"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Low
+
+      task_84:
+        title: "Implement Complete Keyboard Navigation"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Medium
+
+      task_85:
+        title: "Add ARIA Landmarks and Roles"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Low
+
+      task_86:
+        title: "Optimize Core Web Vitals"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: High
+
+      task_87:
+        title: "Implement Large Click Targets (44x44px)"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Low
+
+      task_88:
+        title: "Add Comprehensive Alt Text Standards"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Low
+
+      task_89:
+        title: "Implement Skip Navigation Links"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Low
+
+      task_90:
+        title: "Create Plain Language Content Guidelines"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Low
+
+      task_91:
+        title: "Implement Focus Management Patterns"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Medium
+
+      task_92:
+        title: "Add Open Graph and Twitter Card Meta Tags"
+        scope: Both templates
+        priority: 🟡 Important
+        effort: Low
+
+      task_93:
+        title: "Optimize Map Template for Accessibility"
+        scope: Map template only
+        priority: 🟡 Important
+        effort: High
+
+      task_94:
+        title: "Implement Breadcrumb Schema Markup"
+        scope: Both templates
+        priority: 🟢 Nice-to-Have
+        effort: Low
+
+      task_95:
+        title: "Add High Contrast Mode Support"
+        scope: Both templates
+        priority: 🟢 Nice-to-Have
+        effort: Medium
+
+      task_96:
+        title: "Create Accessibility Testing Suite"
+        scope: Both templates
+        priority: 🔴 Critical
+        effort: Medium
+
+      task_97:
+        title: "Document Keyboard Shortcuts and Patterns"
+        scope: Both templates
+        priority: 🟢 Nice-to-Have
+        effort: Low
+
+      task_98:
+        title: "Implement WCAG Level AAA Where Feasible"
+        scope: Both templates
+        priority: 🟢 Nice-to-Have
+        effort: High
+
+template_specific_analysis:
+
+  location_agnostic_template:
+    current_state:
+      - Need to audit current HTML structure
+      - Identify existing accessibility issues
+      - Review current SEO implementation
+      - Measure current performance
+
+    required_enhancements:
+      - Semantic HTML structure
+      - Schema.org markup
+      - ARIA landmarks
+      - Keyboard navigation
+      - Focus indicators
+      - Color contrast
+      - Alt text
+      - Skip links
+      - Meta tags
+
+  interactive_map_template:
+    current_state:
+      - Same as location-agnostic plus map concerns
+      - Map accessibility is complex
+      - Performance considerations with map libraries
+
+    required_enhancements:
+      - All location-agnostic enhancements
+      - Map keyboard controls
+      - Map text alternative (list view)
+      - Map loading performance
+      - Screen reader announcements for map
+      - Accessible map markers
+
+    special_considerations:
+      - Map should be optional/skippable
+      - Provide full text-based alternative
+      - Don't let map block keyboard navigation
+      - Optimize map library loading
+      - Consider lazy-loading map
+
+common_patterns_both_templates:
+
+  listing_card_component:
+    requirements:
+      - Semantic HTML (article or section)
+      - Proper heading hierarchy
+      - LocalBusiness schema
+      - Address markup
+      - Rating markup
+      - Keyboard accessible
+      - Large click targets
+      - Clear focus indicators
+      - Descriptive alt text for images
+      - No information by color alone
+
+  search_and_filters:
+    requirements:
+      - Keyboard accessible controls
+      - ARIA labels
+      - Clear focus indicators
+      - Live region announcements
+      - Error handling
+      - Large click targets
+      - Simple language
+
+  pagination:
+    requirements:
+      - Keyboard accessible
+      - aria-current on current page
+      - Large click targets
+      - Clear labeling
+      - Semantic markup
+
+  header_navigation:
+    requirements:
+      - Skip to main content link
+      - ARIA landmarks (banner, navigation)
+      - Keyboard accessible
+      - Focus management
+      - Consistent across templates
+
+  footer:
+    requirements:
+      - ARIA landmark (contentinfo)
+      - Semantic structure
+      - Keyboard accessible
+      - Schema.org Organization markup
+
+testing_and_validation:
+
+  automated_testing:
+    tools:
+      - axe DevTools
+      - Lighthouse CI
+      - Pa11y
+      - WAVE
+      - Google Rich Results Test
+      - Schema.org Validator
+      - HTML Validator
+      - WebPageTest
+      - PageSpeed Insights
+
+    what_to_test:
+      - WCAG compliance
+      - Color contrast
+      - HTML validity
+      - Schema markup validity
+      - Performance metrics
+      - Mobile responsiveness
+      - Keyboard navigation paths
+      - Focus indicators
+
+  manual_testing:
+    screen_readers:
+      - NVDA (Windows)
+      - VoiceOver (macOS/iOS)
+      - JAWS (Windows) if available
+      - Test key user journeys
+
+    keyboard_only:
+      - Navigate entire page with keyboard
+      - Verify tab order
+      - Verify all functionality accessible
+      - Verify focus indicators visible
+
+    magnification:
+      - Test at 200% zoom
+      - Test with browser text scaling
+      - Verify no horizontal scrolling
+      - Verify no content cut off
+
+    high_contrast:
+      - Test with Windows High Contrast Mode
+      - Test with browser high contrast extensions
+      - Verify all content visible
+
+  user_testing:
+    ideal_scenarios:
+      - Test with actual users with disabilities
+      - Screen reader users
+      - Keyboard-only users
+      - Low vision users
+      - Cognitive disability users
+      - Older adults
+
+    alternative:
+      - Empathy testing (developers use assistive tech)
+      - Accessibility expert review
+      - Community feedback
+
+success_metrics:
+
+  wcag_compliance:
+    - WCAG 2.1 Level AA: 100% compliance
+    - WCAG 2.1 Level AAA: As many as feasible
+    - Zero critical issues in automated testing
+    - Zero blocker issues in manual testing
+
+  seo_metrics:
+    - Google PageSpeed Insights: 90+ score
+    - Core Web Vitals: All green
+    - Schema markup: Valid, no errors
+    - Mobile-Friendly Test: Pass
+    - Rich Results: Eligible for all applicable types
+    - Lighthouse SEO score: 100
+
+  performance_metrics:
+    - LCP: < 2.5s
+    - FID/INP: < 200ms
+    - CLS: < 0.1
+    - First Contentful Paint: < 1.8s
+    - Time to Interactive: < 3.8s
+
+  accessibility_scores:
+    - axe DevTools: Zero violations
+    - Lighthouse Accessibility: 100
+    - WAVE: Zero errors
+    - Keyboard-only navigation: 100% functional
+
+  user_experience:
+    - Average time to find listing: Decrease
+    - Bounce rate: Decrease
+    - Task completion rate: Increase
+    - Accessibility complaints: Zero
+    - User satisfaction: Increase
+
+implementation_roadmap:
+
+  phase_1_foundation:
+    duration: 2-3 weeks
+    priority: 🔴 Critical
+    focus: "HTML, ARIA, Keyboard, Contrast"
+    tasks:
+      - Task 81: Semantic HTML5 Structure
+      - Task 83: Color Contrast (WCAG AA)
+      - Task 84: Keyboard Navigation
+      - Task 85: ARIA Landmarks
+      - Task 89: Skip Navigation Links
+
+  phase_2_seo_core:
+    duration: 1-2 weeks
+    priority: 🔴 Critical
+    focus: "Schema, Meta Tags, Performance"
+    tasks:
+      - Task 82: Schema.org Markup
+      - Task 92: Open Graph/Twitter Cards
+      - Task 86: Core Web Vitals
+
+  phase_3_polish:
+    duration: 2-3 weeks
+    priority: 🟡 Important
+    focus: "UX Details, Content, Special Cases"
+    tasks:
+      - Task 87: Large Click Targets
+      - Task 88: Alt Text Standards
+      - Task 90: Plain Language Guidelines
+      - Task 91: Focus Management
+      - Task 93: Map Accessibility
+
+  phase_4_testing:
+    duration: 1-2 weeks
+    priority: 🔴 Critical
+    focus: "Validation, Testing, Documentation"
+    tasks:
+      - Task 96: Accessibility Testing Suite
+      - Comprehensive manual testing
+      - User testing if possible
+      - Documentation
+
+  phase_5_enhancements:
+    duration: 1-2 weeks
+    priority: 🟢 Nice-to-Have
+    focus: "Advanced Features, AAA Compliance"
+    tasks:
+      - Task 94: Breadcrumb Schema
+      - Task 95: High Contrast Mode
+      - Task 97: Keyboard Shortcuts Docs
+      - Task 98: WCAG AAA Where Feasible
+
+deliverables:
+
+  primary_document:
+    filename: docs/FRONTEND_ENHANCEMENT_PLAN.md
+    sections:
+      - Executive Summary
+      - Research Synthesis (Tasks 76-79)
+      - Prioritized Enhancement List
+      - Implementation Tasks (81-98)
+      - Template-Specific Recommendations
+      - Testing and Validation Plan
+      - Success Metrics
+      - Implementation Roadmap (5 phases)
+      - Resource Requirements
+      - Timeline and Milestones
+      - Risk Assessment
+      - Maintenance Plan
+
+  task_files:
+    - Create individual YAML files for Tasks 81-98
+    - Each with detailed implementation guidance
+    - Code examples included
+    - Testing procedures defined
+
+  supplementary_documents:
+    - Component accessibility checklist
+    - SEO implementation checklist
+    - Testing procedures guide
+    - Before/after comparison templates
+
+decision_framework:
+
+  when_requirements_conflict:
+    principle: "Accessibility takes precedence over aesthetics"
+    examples:
+      - If design reduces contrast, increase contrast
+      - If interaction requires mouse, add keyboard alternative
+      - If animation is distracting, allow disabling
+
+  when_effort_is_high:
+    principle: "Break into smaller tasks, but don't skip"
+    examples:
+      - Large task? Break into sub-tasks
+      - Complex implementation? Start with MVP
+      - But never sacrifice accessibility for convenience
+
+  when_unsure:
+    principle: "Test with users, follow standards"
+    examples:
+      - WCAG guidelines are minimum
+      - User testing reveals real issues
+      - When in doubt, make it more accessible
+
+maintenance_considerations:
+
+  ongoing_tasks:
+    - Alt text for new images
+    - Schema markup for new content
+    - Accessibility testing for changes
+    - Performance monitoring
+    - Regular audits (quarterly)
+
+  documentation:
+    - Component usage guidelines
+    - Accessibility patterns library
+    - SEO checklist for new pages
+    - Testing procedures
+
+  training:
+    - Developer accessibility training
+    - Content creator guidelines
+    - QA testing procedures
+
+success_criteria:
+  - Comprehensive enhancement plan created
+  - All research from Tasks 76-79 synthesized
+  - Implementation tasks (81-98) defined
+  - Testing procedures established
+  - Success metrics identified
+  - Roadmap with 5 phases created
+  - Ready to begin implementation
+
+timeline:
+  estimated_time: 2-3 days
+  breakdown:
+    - Day 1: Synthesize research, identify patterns
+    - Day 2: Prioritize, create task list
+    - Day 3: Write detailed plan, create task files
+
+next_steps:
+  - Complete this synthesis task
+  - Create individual task files (81-98)
+  - Get stakeholder approval
+  - Begin Phase 1 implementation
+
+related_tasks:
+  - Task 76: Cutting Edge SEO Recommendations (input)
+  - Task 77: WCAG Accessibility for Low Vision (input)
+  - Task 78: WCAG Accessibility for Limited Motor/Mobility (input)
+  - Task 79: WCAG Accessibility for Multiple Categories (input)
+  - Tasks 81-98: Implementation tasks (output)
+  - Task 60: Automated Testing (may integrate)
+  - Task 65: Pagination (may integrate)
+
+notes:
+  - This is a planning/synthesis task, not implementation
+  - Will generate 15-18 new implementation tasks
+  - Focus on templates used for 99% of pages
+  - Perfect these templates = perfect thousands of pages
+  - SEO and accessibility reinforce each other
+  - Comprehensive approach creates competitive advantage
+  - Will serve widest possible audience
+  - Maintenance and training are essential for success
