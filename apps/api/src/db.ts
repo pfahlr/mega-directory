@@ -1,11 +1,60 @@
 import { PrismaClient, ListingStatus, DirectoryStatus, Prisma } from '@prisma/client';
 
+/**
+ * Database Connection Pool Configuration
+ *
+ * Connection pooling helps manage database connections efficiently.
+ * Pool size should be configured based on your deployment and database limits.
+ *
+ * Formula: connection_limit = (num_physical_cpus * 2) + num_effective_spindle_disks
+ * For most applications:
+ * - Development: 5-10 connections
+ * - Production: 10-20 connections per instance
+ *
+ * Environment Variables:
+ * - DATABASE_URL: Must include connection_limit and pool_timeout parameters
+ *   Example: postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
+ * - DB_CONNECTION_LIMIT: Maximum number of connections (default: 10)
+ * - DB_POOL_TIMEOUT: Seconds to wait for connection (default: 20)
+ */
+
+// Build DATABASE_URL with connection pool parameters if not already present
+function getDatabaseUrl(): string {
+  const baseUrl = process.env.DATABASE_URL;
+  if (!baseUrl) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
+
+  // Parse URL to check if pool parameters are already set
+  const url = new URL(baseUrl);
+  const hasConnectionLimit = url.searchParams.has('connection_limit');
+  const hasPoolTimeout = url.searchParams.has('pool_timeout');
+
+  // If already configured, return as-is
+  if (hasConnectionLimit && hasPoolTimeout) {
+    return baseUrl;
+  }
+
+  // Add connection pool parameters
+  const connectionLimit = process.env.DB_CONNECTION_LIMIT ?? '10';
+  const poolTimeout = process.env.DB_POOL_TIMEOUT ?? '20';
+
+  if (!hasConnectionLimit) {
+    url.searchParams.set('connection_limit', connectionLimit);
+  }
+  if (!hasPoolTimeout) {
+    url.searchParams.set('pool_timeout', poolTimeout);
+  }
+
+  return url.toString();
+}
+
 // Initialize Prisma Client with connection pooling configuration
 export const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   datasources: {
     db: {
-      url: process.env.DATABASE_URL,
+      url: getDatabaseUrl(),
     },
   },
 });
