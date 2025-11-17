@@ -1,17 +1,43 @@
-- [ ] 024_setup_project_scaffolding_and_configuration
-- [ ] 025_build_initial_api_endpoints_for_listings_and_categories
-- [ ] 026_create_directory_pages_table_and_related_metadata
-- [ ] 027_implement_location_data_import_and_normalization
-- [ ] 028_enhance_listing_model_with_multiple_categories_addresses
-- [ ] 029_add_geocoding_support_with_fallbacks
-- [ ] 030_create_listing_and_directory_admin_views
-- [ ] 031_implement_admin_workflow_for_reviewing_new_listings
-- [ ] 032_configure_astro_site_subdomain_vs_subdirectory_handling
-- [ ] 033_build_directory_page_rendering_with_tailwind_and_ssr
-- [ ] 034_integrate_map_widget_and_pin_controls
-- [ ] 035_add_support_for_location_agnostic_vs_geolocated_directories
-- [ ] 036_generate_full_migrations_for_all_new_schema
-- [ ] 037_build_and_test_environment_variable_loader_for_secrets
-- [ ] 038_update_makefile_for_data_loading_and_environment_handling
-- [ ] 039_prepare_docker_configuration_for_deployment_targets
-- [ ] 040_finalize_phase_1_code_review_and_cleanup
+- [✅] 024_setup_project_scaffolding_and_configuration
+- [✅] 025_build_initial_api_endpoints_for_listings_and_categories
+- [✅] 026_create_directory_pages_table_and_related_metadata
+- [✅] 027_implement_location_data_import_and_normalization
+- [✅] 028_enhance_listing_model_with_multiple_categories_addresses
+- [✅] 029_add_geocoding_support_with_fallbacks
+- [✅] 030_create_listing_and_directory_admin_views
+- [✅] 031_implement_admin_workflow_for_reviewing_new_listings
+- [✅] 032_configure_astro_site_subdomain_vs_subdirectory_handling
+- [✅] 033_build_directory_page_rendering_with_tailwind_and_ssr
+- [✅] 034_integrate_map_widget_and_pin_controls
+- [✅] 035_add_support_for_location_agnostic_vs_geolocated_directories
+- [✅] 036_generate_full_migrations_for_all_new_schema
+- [✅] 037_build_and_test_environment_variable_loader_for_secrets
+- [✅] 038_update_makefile_for_data_loading_and_environment_handling
+- [✅] 039_prepare_docker_configuration_for_deployment_targets
+- [✅] 040_finalize_phase_1_code_review_and_cleanup
+- [✅] 50_fix_environment_variables_and_configuration.yaml
+- [✅] 51_integrate_prisma_client_into_api_server.yaml
+- [✅] 52_seed_database_with_test_data.yaml
+- [✅] 53_test_and_verify_admin_api_integration.yaml
+- [✅] 54_test_text_import_script_functionality.yaml
+- [✅] 60_implement_automated_testing.yaml
+- [✅] 61_refactor_monolithic_server_file.yaml
+- [✅] 62_add_input_validation_layer.yaml
+- [✅] 63_add_error_handling_middleware.yaml
+- [✅] 64_add_api_documentation_with_openapi.yaml
+- [✅] 65_implement_pagination_for_list_endpoints.yaml
+- [✅] 66_add_caching_layer_with_redis.yaml
+- [✅] 67_implement_rate_limiting.yaml
+- [✅] 68_improve_database_migration_management.yaml
+- [✅] 69_add_structured_logging_and_monitoring.yaml
+- [✅] 70_configure_database_connection_pooling.yaml
+- [✅] 71_add_environment_specific_database_seeding.yaml
+- [✅] 72_improve_import_script_error_reporting.yaml
+- [✅] 73_enable_typescript_strict_mode.yaml
+- [✅] 74_setup_cicd_pipeline.yaml
+- [✅] 75_refactor_admin_ui_to_follow_crud_patterns.yaml
+- [ ] 76_research_cutting_edge_seo_recommendations.yaml
+- [ ] 77_research_wcag_accessibility_low_vision.yaml
+- [ ] 78_research_wcag_accessibility_limited_motor_mobility.yaml
+- [ ] 79_research_wcag_accessibility_multiple_categories.yaml
+- [ ] 80_generate_frontend_enhancement_plan.yaml
