@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { generateAdminToken, type AuthConfig } from '../../middleware/auth';
 import { BadRequestError, UnauthorizedError, InternalServerError } from '../../errors';
+import { authRateLimiter } from '../../middleware/rateLimiter';
 
 const router = express.Router();
 
@@ -75,6 +76,7 @@ const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
 export function createAuthRouter(config: AuthConfig) {
   router.post(
     '/',
+    authRateLimiter,
     asyncHandler(async (req, res) => {
       const { email, passcode } = req.body;
 

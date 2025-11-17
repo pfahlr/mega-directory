@@ -116,22 +116,40 @@ export function createRequestLogger(logger?: Logger): RequestLogger {
     return (_req, _res, next) => next();
   }
 
+  // Performance thresholds for monitoring (in milliseconds)
+  const SLOW_REQUEST_THRESHOLD = Number.parseInt(process.env.SLOW_REQUEST_THRESHOLD_MS ?? '1000', 10);
+  const VERY_SLOW_REQUEST_THRESHOLD = Number.parseInt(process.env.VERY_SLOW_REQUEST_THRESHOLD_MS ?? '5000', 10);
+
   return (req, res, next) => {
     const start = process.hrtime.bigint();
     res.on('finish', () => {
       const diffNs = process.hrtime.bigint() - start;
       const durationMs = Number(diffNs) / 1e6;
       const roundedDuration = Math.round(durationMs * 1000) / 1000;
-      logger.info(
-        {
-          event: 'http.request',
-          method: req.method,
-          path: req.originalUrl || req.url,
-          statusCode: res.statusCode,
-          durationMs: roundedDuration
-        },
-        'Handled request'
-      );
+
+      const logData = {
+        event: 'http.request',
+        requestId: (req as any).id, // Request ID from middleware
+        method: req.method,
+        path: req.originalUrl || req.url,
+        statusCode: res.statusCode,
+        durationMs: roundedDuration,
+        userAgent: req.headers['user-agent'],
+        ip: req.ip || req.socket.remoteAddress,
+      };
+
+      // Log level based on status code and duration
+      if (res.statusCode >= 500) {
+        logger.error(logData, 'Request failed with server error');
+      } else if (res.statusCode >= 400) {
+        logger.warn(logData, 'Request failed with client error');
+      } else if (roundedDuration >= VERY_SLOW_REQUEST_THRESHOLD) {
+        logger.warn({ ...logData, performance: 'very_slow' }, 'Very slow request detected');
+      } else if (roundedDuration >= SLOW_REQUEST_THRESHOLD) {
+        logger.warn({ ...logData, performance: 'slow' }, 'Slow request detected');
+      } else {
+        logger.info(logData, 'Request completed');
+      }
     });
     next();
   };

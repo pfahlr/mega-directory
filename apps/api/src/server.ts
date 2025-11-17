@@ -4,6 +4,9 @@ import { createLogger, createRequestLogger, type Logger } from './logger';
 import { initializePrisma, disconnectPrisma } from './db';
 import { initializeRedis, disconnectRedis, type CacheConfig } from './cache';
 import { errorHandler } from './middleware/errorHandler';
+import { globalRateLimiter } from './middleware/rateLimiter';
+import { requestIdMiddleware } from './middleware/requestId';
+import { performHealthCheck, isReady, isAlive } from './health';
 import { createAdminRouter } from './routes/admin';
 import { createPublicRouter } from './routes/public';
 import { createCrawlerRouter } from './routes/crawler';
@@ -125,8 +128,12 @@ export function createServer(options: CreateServerOptions = {}): Express {
   locals.health = { startedAt: new Date() };
 
   // Global middleware
+  app.use(requestIdMiddleware); // Must be first to add request ID
   app.use(createRequestLogger(logger));
   app.use(express.json());
+
+  // Global rate limiting
+  app.use(globalRateLimiter);
 
   // API Documentation
   if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_API_DOCS === 'true') {
@@ -137,17 +144,72 @@ export function createServer(options: CreateServerOptions = {}): Express {
     logger.info('API documentation available at /api-docs');
   }
 
-  // Health check
-  app.get('/health', (_req, res) => {
-    const now = new Date();
-    locals.health.lastCheck = now;
-    res.json({
-      status: 'ok',
-      uptime: process.uptime(),
-      startedAt: locals.health.startedAt.toISOString(),
-      timestamp: now.toISOString(),
-      environment: process.env.NODE_ENV || 'development'
-    });
+  // Health check endpoints
+
+  /**
+   * Comprehensive health check
+   * Checks database, cache, system resources
+   * Use for monitoring and alerting
+   */
+  app.get('/health', async (_req, res) => {
+    try {
+      const healthCheck = await performHealthCheck(logger);
+      locals.health.lastCheck = new Date();
+
+      // Return appropriate HTTP status code based on health
+      const statusCode = healthCheck.status === 'healthy' ? 200 :
+                        healthCheck.status === 'degraded' ? 200 : 503;
+
+      res.status(statusCode).json({
+        ...healthCheck,
+        startedAt: locals.health.startedAt.toISOString()
+      });
+    } catch (error) {
+      logger.error({ error }, 'Health check failed');
+      res.status(503).json({
+        status: 'unhealthy',
+        error: 'Health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  /**
+   * Readiness check
+   * Indicates if the service is ready to accept traffic
+   * Use for load balancer health checks
+   */
+  app.get('/health/ready', async (_req, res) => {
+    try {
+      const ready = await isReady();
+      if (ready) {
+        res.status(200).json({ status: 'ready' });
+      } else {
+        res.status(503).json({ status: 'not ready' });
+      }
+    } catch (error) {
+      logger.error({ error }, 'Readiness check failed');
+      res.status(503).json({ status: 'not ready' });
+    }
+  });
+
+  /**
+   * Liveness check
+   * Indicates if the service is alive
+   * Use for container orchestrator health checks (Kubernetes)
+   */
+  app.get('/health/live', (_req, res) => {
+    try {
+      const alive = isAlive();
+      if (alive) {
+        res.status(200).json({ status: 'alive' });
+      } else {
+        res.status(503).json({ status: 'dead' });
+      }
+    } catch (error) {
+      logger.error({ error }, 'Liveness check failed');
+      res.status(503).json({ status: 'dead' });
+    }
   });
 
   // API routes
