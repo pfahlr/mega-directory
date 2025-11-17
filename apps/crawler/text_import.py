@@ -20,6 +20,7 @@ from jinja2 import Environment, StrictUndefined, TemplateError
 
 from llm import LLMClient, LLMRequest
 from post_processing import ListingPostProcessor, PostProcessingContext
+from import_result import ImportResult
 
 
 DEFAULT_HTML_SELECTORS = {
@@ -201,18 +202,60 @@ class ListingEnricher:
             dict(post_processing_config) if isinstance(post_processing_config, Mapping) else None
         )
 
-    def enrich(self, listings: Sequence[Mapping[str, Any]], defaults: ImportDefaults) -> List[Dict[str, Any]]:
+    def enrich(
+        self,
+        listings: Sequence[Mapping[str, Any]],
+        defaults: ImportDefaults,
+        result: Optional[ImportResult] = None
+    ) -> List[Dict[str, Any]]:
         enriched: List[Dict[str, Any]] = []
         for index, listing in enumerate(listings):
-            payload = self._normalize_payload(listing, defaults, index)
-            context = self._build_context(payload, listing, defaults)
-            processed = self.post_processor.process(
-                payload,
-                context,
-                config=self.post_processing_config,
-            )
-            enriched.append({key: value for key, value in processed.items() if value is not None})
+            line_number = index + 1
+            try:
+                payload = self._normalize_payload(listing, defaults, index)
+
+                # Validate data quality if result tracker provided
+                if result:
+                    self._validate_listing_quality(payload, result, line_number)
+
+                context = self._build_context(payload, listing, defaults)
+                processed = self.post_processor.process(
+                    payload,
+                    context,
+                    config=self.post_processing_config,
+                )
+                final = {key: value for key, value in processed.items() if value is not None}
+                enriched.append(final)
+
+                if result:
+                    result.add_success(final, line_number)
+            except Exception as exc:
+                if result:
+                    result.add_error(listing, exc, line_number)
+                else:
+                    raise
         return enriched
+
+    def _validate_listing_quality(
+        self,
+        payload: Dict[str, Any],
+        result: ImportResult,
+        line_number: int
+    ) -> None:
+        """Validate listing data quality and add warnings."""
+        # Check optional but recommended fields
+        result.check_optional_field(payload, 'summary', line_number)
+        result.check_optional_field(payload, 'description', line_number)
+        result.check_optional_field(payload, 'websiteUrl', line_number)
+        result.check_optional_field(payload, 'contactEmail', line_number)
+        result.check_optional_field(payload, 'location', line_number)
+
+        # Validate URLs
+        result.validate_url(payload, 'websiteUrl', line_number)
+        result.validate_url(payload, 'sourceUrl', line_number)
+
+        # Validate emails
+        result.validate_email(payload, 'contactEmail', line_number)
 
     def _normalize_payload(
         self,
@@ -505,6 +548,15 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--text-prompt-template",
         help="Custom Jinja2 template used to build the text extraction prompt.",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and report on data without actually ingesting to API.",
+    )
+    parser.add_argument(
+        "--report-output",
+        help="Path to write detailed import report JSON (default: import-report.json).",
+    )
     args = parser.parse_args(argv)
 
     if args.format in {"html", "text"} and not (args.category or args.category_slug):
@@ -548,6 +600,7 @@ def run_cli(args: argparse.Namespace) -> int:
         print(f"Wrote {len(listings)} listings to {target}")  # noqa: T201
         return 0
 
+    # JSON/CSV ingestion with error tracking
     if args.format == "json":
         loader = JSONListingLoader()
         listings = loader.load(raw_input)
@@ -555,16 +608,36 @@ def run_cli(args: argparse.Namespace) -> int:
         loader = CSVListingLoader()
         listings = loader.load(raw_input)
 
+    # Create import result tracker
+    import_result = ImportResult()
+
+    # Enrich listings with error tracking
     enricher = ListingEnricher(llm_client=llm_client, post_processing_config=post_processing_config)
-    enriched = enricher.enrich(listings, defaults)
-    ingestor = ListingAPIIngestor(
-        endpoint=args.api_endpoint,
-        token=args.api_token,
-        timeout=args.api_timeout,
-    )
-    result = ingestor.ingest(enriched)
-    print(f"Ingested {result.get('ingestedCount') or len(enriched)} listings via API.")  # noqa: T201
-    return 0
+    enriched = enricher.enrich(listings, defaults, result=import_result)
+
+    # Save report if requested
+    report_path = args.report_output or "import-report.json"
+    import_result.save(report_path)
+    print(f"Import report saved to {report_path}")  # noqa: T201
+
+    # Print summary to console
+    import_result.print_summary()
+
+    # Ingest to API unless in dry-run mode
+    if args.dry_run:
+        print("DRY RUN: Skipping API ingestion")  # noqa: T201
+        return 0 if not import_result.failed else 1
+
+    if enriched:
+        ingestor = ListingAPIIngestor(
+            endpoint=args.api_endpoint,
+            token=args.api_token,
+            timeout=args.api_timeout,
+        )
+        result = ingestor.ingest(enriched)
+        print(f"Ingested {result.get('ingestedCount') or len(enriched)} listings via API.")  # noqa: T201
+
+    return 0 if not import_result.failed else 1
 
 
 def build_llm_client_from_args(args: argparse.Namespace) -> Optional[LLMClient]:
@@ -635,6 +708,7 @@ __all__ = [
     "HTMLListingExtractor",
     "HTTPChatLLMClient",
     "ImportDefaults",
+    "ImportResult",
     "JSONListingLoader",
     "ListingAPIIngestor",
     "ListingEnricher",
