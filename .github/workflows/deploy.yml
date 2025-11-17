@@ -1,0 +1,157 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build applications
+        run: |
+          cd apps/api && npm ci && npm run build
+          cd ../web && npm ci && npm run build
+          cd ../admin && npm ci && npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Create deployment artifact
+        run: |
+          mkdir -p deploy
+          cp -r apps/api/dist deploy/api
+          cp -r apps/api/package*.json deploy/api/
+          cp -r apps/web/dist deploy/web
+          cp -r apps/admin/dist deploy/admin
+        continue-on-error: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: deploy/
+          retention-days: 7
+        continue-on-error: true
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.example.com
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: deploy/
+        continue-on-error: true
+
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to staging environment..."
+          echo "Configure your deployment commands here"
+          echo "Examples:"
+          echo "  - Railway: railway up --service api --environment staging"
+          echo "  - Vercel: vercel --prod"
+          echo "  - Custom: scp -r deploy/ user@staging-server:/var/www/"
+        # Add your actual deployment commands here
+        # For Railway:
+        # - uses: railwayapp/railway-deploy@v1
+        #   with:
+        #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
+        #     service: api
+        #     environment: staging
+        # For Vercel:
+        # - uses: amondnet/vercel-action@v25
+        #   with:
+        #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://example.com
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: deploy/
+        continue-on-error: true
+
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production environment..."
+          echo "Configure your deployment commands here"
+          echo "Examples:"
+          echo "  - Railway: railway up --service api --environment production"
+          echo "  - Vercel: vercel --prod"
+          echo "  - Custom: scp -r deploy/ user@prod-server:/var/www/"
+        # Add your actual deployment commands here
+        # Ensure you have proper safeguards for production deployments
+
+      - name: Notify deployment
+        run: |
+          echo "Deployment to production completed"
+          echo "Send notifications via Slack, Discord, email, etc."
+        # Add notification logic here
+        # - uses: 8398a7/action-slack@v3
+        #   with:
+        #     status: ${{ job.status }}
+        #     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  database-migrate:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: npm ci
+
+      - name: Run database migrations
+        working-directory: apps/api
+        run: |
+          echo "Running database migrations..."
+          echo "npx prisma migrate deploy"
+          # Uncomment when Prisma is properly set up:
+          # npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        continue-on-error: true
