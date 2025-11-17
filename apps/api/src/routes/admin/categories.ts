@@ -8,13 +8,15 @@ const router = express.Router();
 
 /**
  * GET /v1/admin/categories
- * Get all categories
+ * Get all categories (paginated)
  */
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const categories = await categoryService.getAllCategories();
-    res.json({ data: categories });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+    const result = await categoryService.getAllCategories({ page, limit });
+    res.json(result);
   })
 );
 

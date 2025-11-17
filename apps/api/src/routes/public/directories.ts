@@ -6,13 +6,15 @@ const router = express.Router();
 
 /**
  * GET /v1/directories
- * Get all active directories
+ * Get all active directories (paginated)
  */
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const directories = await directoryService.getActiveDirectories();
-    res.json({ data: directories });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+    const result = await directoryService.getActiveDirectories({ page, limit });
+    res.json(result);
   })
 );
 
