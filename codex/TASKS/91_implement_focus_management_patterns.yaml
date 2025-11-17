@@ -1,0 +1,233 @@
+id: 91
+filename: 91_implement_focus_management_patterns.yaml
+title: Implement Focus Management Patterns
+priority: 🟡 Important
+impact: Medium
+effort: Medium
+dependencies: [78, 80, 84]
+phase: Frontend Enhancement - Phase 3 (Polish)
+
+description: >
+  Implement proper focus management for modals, dynamic content, and user
+  actions. Ensure focus is always logical and visible. Critical for keyboard
+  and screen reader users to maintain context and orientation.
+
+  Context: Poor focus management confuses keyboard users and screen reader
+  users. After actions like opening modals or deleting items, focus must be
+  placed logically. This is about context and orientation.
+
+objectives:
+  - Manage focus in modal dialogs
+  - Handle focus after deletions
+  - Restore focus after actions
+  - Trap focus where appropriate
+  - Announce changes to screen readers
+
+scope:
+  - Modal dialogs
+  - Deletion actions
+  - Form submissions
+  - Dynamic content updates
+  - Filter applications
+
+implementation_guidelines:
+
+  modal_dialogs:
+    behavior:
+      - "Move focus to modal when opened"
+      - "Trap focus within modal"
+      - "Return focus to trigger when closed"
+      - "Escape key closes modal"
+
+    example: |
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const trigger = document.activeElement;
+
+        // Store trigger for focus restoration
+        modal.dataset.triggerElement = trigger.id || createUniqueId(trigger);
+
+        // Show modal
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+
+        // Move focus to first focusable element
+        const firstFocusable = modal.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (firstFocusable) {
+          firstFocusable.focus();
+        }
+
+        // Trap focus
+        trapFocus(modal);
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const triggerId = modal.dataset.triggerElement;
+
+        // Hide modal
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+
+        // Return focus to trigger
+        const trigger = document.getElementById(triggerId);
+        if (trigger) {
+          trigger.focus();
+        }
+
+        // Remove focus trap
+        removeFocusTrap(modal);
+      }
+
+      function trapFocus(element) {
+        const focusableElements = element.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        element.addEventListener('keydown', (e) => {
+          if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstFocusable) {
+              e.preventDefault();
+              lastFocusable.focus();
+            } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+              e.preventDefault();
+              firstFocusable.focus();
+            }
+          }
+        });
+      }
+
+  deletion_actions:
+    behavior:
+      - "Move focus to next item in list"
+      - "If last item, move to previous"
+      - "If only item, move to parent container or add button"
+
+    example: |
+      function deleteItem(itemId) {
+        const item = document.getElementById(itemId);
+        const nextItem = item.nextElementSibling;
+        const previousItem = item.previousElementSibling;
+        const parent = item.parentElement;
+
+        // Remove item
+        item.remove();
+
+        // Determine where to move focus
+        if (nextItem) {
+          const nextButton = nextItem.querySelector('button, a');
+          if (nextButton) nextButton.focus();
+        } else if (previousItem) {
+          const prevButton = previousItem.querySelector('button, a');
+          if (prevButton) prevButton.focus();
+        } else {
+          // No items left, focus on add button or parent
+          const addButton = parent.querySelector('.add-button');
+          if (addButton) {
+            addButton.focus();
+          } else {
+            parent.setAttribute('tabindex', '-1');
+            parent.focus();
+          }
+        }
+      }
+
+  form_submissions:
+    success_behavior: "Focus on success message or first error"
+    example: |
+      async function handleFormSubmit(form) {
+        const result = await submitForm(form);
+
+        if (result.success) {
+          const successMessage = document.getElementById('success-message');
+          successMessage.style.display = 'block';
+          successMessage.setAttribute('tabindex', '-1');
+          successMessage.focus();
+
+          // Announce to screen readers
+          successMessage.setAttribute('role', 'status');
+          successMessage.setAttribute('aria-live', 'polite');
+        } else {
+          const firstError = form.querySelector('[aria-invalid="true"]');
+          if (firstError) {
+            firstError.focus();
+          }
+        }
+      }
+
+  dynamic_content:
+    behavior: "Announce changes to screen readers"
+    example: |
+      function updateResults(newResults) {
+        const resultsContainer = document.getElementById('results');
+        const announcement = document.getElementById('results-announcement');
+
+        // Update content
+        resultsContainer.innerHTML = renderResults(newResults);
+
+        // Announce to screen readers
+        announcement.textContent = `${newResults.length} results found`;
+
+        // Optionally move focus to results
+        if (newResults.length > 0) {
+          const firstResult = resultsContainer.querySelector('a, button');
+          if (firstResult) {
+            firstResult.focus();
+          }
+        }
+      }
+
+      // In HTML:
+      // <div id="results-announcement" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+  filter_application:
+    behavior: "Announce result count, optionally move focus to first result"
+    example: |
+      function applyFilters() {
+        const results = getFilteredResults();
+        updateResults(results);
+
+        // Announce
+        const announcement = document.getElementById('filter-announcement');
+        announcement.textContent = `Filters applied. ${results.length} results found`;
+
+        // Don't force focus movement - let user continue from filters
+        // Screen reader will announce via live region
+      }
+
+success_criteria:
+  - Focus is always visible and logical
+  - Modal focus management works correctly
+  - Deletion focus management works correctly
+  - Form focus management works correctly
+  - Screen readers announce dynamic changes
+
+testing_procedures:
+  manual:
+    - Test all modals with keyboard
+    - Test deletions with keyboard
+    - Test form submissions
+    - Verify focus is always visible
+    - Test with screen reader (NVDA/VoiceOver)
+
+  keyboard_testing:
+    - Navigate to modal trigger, activate
+    - Verify focus in modal
+    - Tab through modal
+    - Verify focus trap works
+    - Escape to close
+    - Verify focus returns to trigger
+
+acceptance_criteria:
+  - Modal focus trap functional
+  - Focus returns after modal close
+  - Deletion moves focus logically
+  - Form errors receive focus
+  - Dynamic updates announced
+  - No loss of focus
+
+estimated_time: 3-4 days

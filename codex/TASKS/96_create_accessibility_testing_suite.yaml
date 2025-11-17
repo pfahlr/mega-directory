@@ -1,0 +1,184 @@
+id: 96
+filename: 96_create_accessibility_testing_suite.yaml
+title: Create Accessibility Testing Suite
+priority: 🔴 Critical
+impact: High
+effort: Medium
+dependencies: [80, 81, 83, 84, 85]
+phase: Frontend Enhancement - Phase 4 (Testing)
+
+description: >
+  Create comprehensive accessibility testing suite combining automated tools,
+  manual testing procedures, and documentation. Ensure ongoing compliance
+  and prevent regressions.
+
+  Context: Testing is how we verify all accessibility work. Need both
+  automated (fast, catches obvious issues) and manual (catches nuanced issues).
+  This is quality assurance for accessibility.
+
+objectives:
+  - Set up automated accessibility testing
+  - Document manual testing procedures
+  - Create testing checklists
+  - Train team on testing
+  - Establish ongoing testing process
+
+scope:
+  - Automated testing setup
+  - Manual testing procedures
+  - Screen reader testing guide
+  - Keyboard testing guide
+  - Compliance verification
+
+implementation_guidelines:
+
+  automated_tools:
+    ci_integration:
+      - axe-core (via Playwright or Cypress)
+      - Pa11y
+      - Lighthouse CI
+
+    browser_extensions:
+      - axe DevTools
+      - WAVE
+      - IBM Equal Access Accessibility Checker
+
+    example_playwright: |
+      // tests/accessibility.spec.ts
+      import { test, expect } from '@playwright/test';
+      import AxeBuilder from '@axe-core/playwright';
+
+      test.describe('Accessibility tests', () => {
+        test('Homepage should not have accessibility violations', async ({ page }) => {
+          await page.goto('/');
+
+          const accessibilityScanResults = await new AxeBuilder({ page })
+            .analyze();
+
+          expect(accessibilityScanResults.violations).toEqual([]);
+        });
+
+        test('Directory page should not have violations', async ({ page }) => {
+          await page.goto('/coffee-shops/springfield-il');
+
+          const accessibilityScanResults = await new AxeBuilder({ page })
+            .withTags(['wcag2aa', 'wcag21aa'])
+            .analyze();
+
+          expect(accessibilityScanResults.violations).toEqual([]);
+        });
+      });
+
+  manual_testing_checklist:
+    keyboard_navigation:
+      - "[ ] Can reach all interactive elements with Tab"
+      - "[ ] Tab order is logical"
+      - "[ ] Can activate all buttons (Enter/Space)"
+      - "[ ] Can use all form controls"
+      - "[ ] Can close modals (Escape)"
+      - "[ ] No keyboard traps"
+      - "[ ] Focus indicators always visible"
+      - "[ ] Skip links work"
+
+    screen_reader:
+      - "[ ] All images have appropriate alt text"
+      - "[ ] Headings are logical (h1-h6, no skipping)"
+      - "[ ] Landmarks are present and labeled"
+      - "[ ] Forms have associated labels"
+      - "[ ] Links have descriptive text"
+      - "[ ] Dynamic content announces changes"
+      - "[ ] Error messages are announced"
+      - "[ ] Required fields are identified"
+
+    visual:
+      - "[ ] Color contrast meets 4.5:1 (normal text)"
+      - "[ ] Color contrast meets 3:1 (large text, UI)"
+      - "[ ] No information by color alone"
+      - "[ ] Text scales to 200% without breaking"
+      - "[ ] No horizontal scrolling at 200% zoom"
+      - "[ ] Focus indicators meet 3:1 contrast"
+
+    mobile:
+      - "[ ] All targets at least 44x44px (or 24x24px min)"
+      - "[ ] Adequate spacing between targets"
+      - "[ ] Responsive design works properly"
+      - "[ ] Touch targets easy to tap"
+
+  screen_reader_testing_guide:
+    nvda_windows:
+      download: "https://www.nvaccess.org/"
+      basic_commands:
+        - "NVDA+Q: Quit NVDA"
+        - "H: Next heading"
+        - "D: Next landmark"
+        - "B: Next button"
+        - "F: Next form field"
+        - "G: Next graphic/image"
+        - "Tab: Next interactive element"
+        - "Down arrow: Next line"
+
+    voiceover_macos:
+      enable: "Cmd+F5"
+      basic_commands:
+        - "VO = Ctrl+Option"
+        - "VO+Right/Left Arrow: Navigate"
+        - "VO+Space: Activate"
+        - "VO+U: Rotor (lists headings, links, etc.)"
+        - "VO+A: Read from current position"
+
+  compliance_verification:
+    wcag_checklist:
+      level_a:
+        - "1.1.1 Non-text Content (alt text)"
+        - "1.3.1 Info and Relationships (semantic HTML)"
+        - "1.4.1 Use of Color"
+        - "2.1.1 Keyboard"
+        - "2.1.2 No Keyboard Trap"
+        - "2.4.1 Bypass Blocks (skip links)"
+        - "2.4.2 Page Titled"
+        # ... more criteria
+
+      level_aa:
+        - "1.4.3 Contrast (Minimum) - 4.5:1"
+        - "1.4.4 Resize Text - 200%"
+        - "2.4.5 Multiple Ways"
+        - "2.4.6 Headings and Labels"
+        - "2.4.7 Focus Visible"
+        - "3.2.3 Consistent Navigation"
+        # ... more criteria
+
+  testing_schedule:
+    continuous:
+      - "Run automated tests on every PR"
+      - "Block merges if violations found"
+
+    weekly:
+      - "Manual spot checks on new features"
+      - "Keyboard navigation testing"
+
+    monthly:
+      - "Full manual accessibility audit"
+      - "Screen reader testing"
+      - "Update documentation"
+
+    quarterly:
+      - "Comprehensive WCAG audit"
+      - "User testing (if available)"
+      - "Third-party audit (optional)"
+
+success_criteria:
+  - Automated tests integrated in CI
+  - Manual testing procedures documented
+  - Team trained on testing
+  - Zero critical accessibility violations
+  - Testing is part of development workflow
+
+deliverables:
+  - Automated test suite (Playwright/Cypress with axe)
+  - Manual testing checklist
+  - Screen reader testing guide
+  - WCAG compliance checklist
+  - Testing schedule document
+  - Team training materials
+
+estimated_time: 4-5 days

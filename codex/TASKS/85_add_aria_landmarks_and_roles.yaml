@@ -1,0 +1,126 @@
+id: 85
+filename: 85_add_aria_landmarks_and_roles.yaml
+title: Add ARIA Landmarks and Roles
+priority: 🔴 Critical
+impact: High
+effort: Low
+dependencies: [77, 80, 81]
+phase: Frontend Enhancement - Phase 1 (Foundation)
+
+description: >
+  Add ARIA landmarks and roles to major page regions to help screen reader
+  users navigate efficiently. Complement semantic HTML with appropriate ARIA
+  attributes for enhanced accessibility.
+
+  Context: Screen reader users navigate by landmarks (using D key in NVDA/JAWS).
+  Proper landmarks allow quick access to main content, navigation, search, etc.
+
+objectives:
+  - Add ARIA landmarks to major page regions
+  - Use appropriate ARIA roles
+  - Provide accessible names where needed
+  - Ensure landmarks complement semantic HTML
+
+scope:
+  - Header (banner)
+  - Navigation (navigation)
+  - Main content (main)
+  - Sidebars (complementary)
+  - Footer (contentinfo)
+  - Search (search)
+
+implementation_guidelines:
+
+  aria_landmarks:
+    banner:
+      element: "<header>"
+      role: "banner"
+      usage: "Site header, typically containing logo and main navigation"
+      example: '<header role="banner">'
+
+    navigation:
+      element: "<nav>"
+      role: "navigation"
+      usage: "Primary navigation menus"
+      example: '<nav role="navigation" aria-label="Main navigation">'
+      note: "Use aria-label to distinguish multiple nav elements"
+
+    main:
+      element: "<main>"
+      role: "main"
+      usage: "Primary content of the page"
+      example: '<main role="main" id="main-content">'
+      note: "Only one main landmark per page"
+
+    complementary:
+      element: "<aside>"
+      role: "complementary"
+      usage: "Supporting content (sidebars, filters)"
+      example: '<aside role="complementary" aria-label="Filter options">'
+
+    contentinfo:
+      element: "<footer>"
+      role: "contentinfo"
+      usage: "Site footer with metadata and links"
+      example: '<footer role="contentinfo">'
+
+    search:
+      element: "<form>"
+      role: "search"
+      usage: "Search functionality"
+      example: '<form role="search" aria-label="Search businesses">'
+
+  complete_example:
+    template: |
+      <header role="banner">
+        <nav role="navigation" aria-label="Main navigation">
+          <!-- Primary nav -->
+        </nav>
+      </header>
+
+      <main role="main" id="main-content">
+        <nav aria-label="Breadcrumb">
+          <!-- Breadcrumbs -->
+        </nav>
+
+        <h1>Page Title</h1>
+
+        <form role="search" aria-label="Search businesses">
+          <!-- Search form -->
+        </form>
+
+        <!-- Main content -->
+      </main>
+
+      <aside role="complementary" aria-label="Filter businesses">
+        <!-- Filters sidebar -->
+      </aside>
+
+      <footer role="contentinfo">
+        <!-- Footer -->
+      </footer>
+
+success_criteria:
+  - All major page regions have appropriate landmarks
+  - Multiple instances of same landmark type have unique labels
+  - Landmarks are properly nested
+  - Screen readers can navigate by landmarks
+
+testing_procedures:
+  automated:
+    - axe DevTools scan for landmarks
+    - WAVE browser extension
+
+  manual:
+    - Test with NVDA (D key to navigate landmarks)
+    - Test with VoiceOver (VO+U, then select Landmarks)
+    - Verify all expected landmarks present
+    - Verify landmark labels are descriptive
+
+acceptance_criteria:
+  - All pages have banner, main, contentinfo landmarks
+  - Navigation landmarks have unique labels
+  - Screen reader users can navigate efficiently
+  - axe DevTools: 0 landmark violations
+
+estimated_time: 1 day

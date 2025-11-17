@@ -1,0 +1,132 @@
+id: 88
+filename: 88_add_comprehensive_alt_text_standards.yaml
+title: Add Comprehensive Alt Text Standards
+priority: 🟡 Important
+impact: High
+effort: Low
+dependencies: [77, 80]
+phase: Frontend Enhancement - Phase 3 (Polish)
+
+description: >
+  Ensure all images have appropriate alt text. Create standards and guidelines
+  for different image types. Alt text benefits screen reader users, SEO, and
+  provides fallback when images fail to load.
+
+  Context: Alt text is critical for blind users and beneficial for SEO. 39
+  million people worldwide are blind. Proper alt text also helps search
+  engines understand image content.
+
+objectives:
+  - Add alt text to all images
+  - Use alt="" for decorative images
+  - Create alt text guidelines for different image types
+  - Ensure alt text is concise and descriptive
+
+scope:
+  - Business photos
+  - Logos
+  - Icons
+  - Decorative images
+  - Rating visualizations
+  - Map markers (map template)
+
+implementation_guidelines:
+
+  principles:
+    - "Describe purpose and content"
+    - "Be concise (under 125 characters ideal)"
+    - "Don't start with 'image of' or 'picture of'"
+    - "Use alt='' for decorative images"
+    - "Provide longer descriptions for complex images if needed"
+
+  business_photos:
+    purpose: "Help users visualize the business"
+    example: |
+      <img src="cafe-exterior.jpg"
+           alt="Main Street Cafe storefront with red awning and outdoor seating">
+
+  logos:
+    purpose: "Identify the brand"
+    example: |
+      <img src="logo.png" alt="Main Street Cafe logo">
+
+  decorative_images:
+    purpose: "Visual decoration only, no information"
+    example: |
+      <img src="decorative-line.png" alt="" role="presentation">
+
+  icons_with_text:
+    purpose: "Icon accompanies text label"
+    example: |
+      <!-- Icon is decorative when text is present -->
+      <button>
+        <img src="search-icon.svg" alt="" role="presentation">
+        Search
+      </button>
+
+  icons_standalone:
+    purpose: "Icon conveys meaning without text"
+    example: |
+      <button>
+        <img src="search-icon.svg" alt="Search">
+      </button>
+
+  ratings:
+    purpose: "Convey rating information"
+    example: |
+      <div role="img" aria-label="4.5 out of 5 stars based on 127 reviews">
+        <img src="star-full.svg" alt="">
+        <img src="star-full.svg" alt="">
+        <img src="star-full.svg" alt="">
+        <img src="star-full.svg" alt="">
+        <img src="star-half.svg" alt="">
+      </div>
+
+  location_markers:
+    purpose: "Indicate geographic location"
+    example: |
+      <img src="marker.svg" alt="Location marker for 123 Main St">
+
+  complex_images:
+    purpose: "Charts, diagrams, infographics need extended descriptions"
+    example: |
+      <img src="chart.png"
+           alt="Sales chart showing 20% growth"
+           aria-describedby="chart-description">
+      <div id="chart-description" class="sr-only">
+        Detailed description of chart data...
+      </div>
+
+  alt_text_checklist:
+    questions:
+      - "What information does the image convey?"
+      - "What action can users take from this image?"
+      - "If I couldn't see the image, what would I need to know?"
+      - "Is the image purely decorative?"
+
+success_criteria:
+  - 100% of images have alt attribute
+  - Informative images have descriptive alt text
+  - Decorative images use alt=""
+  - Alt text is concise and meaningful
+  - Zero missing alt text violations
+
+testing_procedures:
+  automated:
+    - axe DevTools alt text checks
+    - WAVE browser extension
+    - Lighthouse accessibility audit
+
+  manual:
+    - Review each image's alt text
+    - Test with screen reader (NVDA/VoiceOver)
+    - Verify alt text makes sense in context
+    - Check images with network disabled
+
+acceptance_criteria:
+  - axe DevTools: 0 missing alt text violations
+  - WAVE: 0 missing alt text errors
+  - Screen reader announces meaningful descriptions
+  - Alt text guidelines documented
+
+estimated_time: 2-3 days

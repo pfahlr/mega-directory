@@ -1,0 +1,167 @@
+id: 90
+filename: 90_create_plain_language_guidelines.yaml
+title: Create Plain Language Content Guidelines
+priority: 🟡 Important
+impact: Medium
+effort: Low
+dependencies: [79, 80]
+phase: Frontend Enhancement - Phase 3 (Polish)
+
+description: >
+  Create and implement plain language guidelines for all directory content.
+  Target 8th grade reading level. Plain language benefits everyone, not just
+  people with cognitive disabilities - improves comprehension, reduces bounce
+  rate, and supports non-native speakers.
+
+  Context: Plain language is critical for cognitive accessibility (ADHD,
+  learning disabilities, intellectual disabilities) and benefits all users.
+  Improves SEO and user satisfaction.
+
+objectives:
+  - Create plain language writing guidelines
+  - Audit existing content
+  - Rewrite content to meet guidelines
+  - Train content creators
+  - Document before/after examples
+
+scope:
+  - Page headings and titles
+  - Body content
+  - Button and link text
+  - Form labels and instructions
+  - Error messages
+  - Help text
+
+implementation_guidelines:
+
+  core_principles:
+    reading_level: "8th grade (Flesch-Kincaid Grade Level ≤8)"
+    sentence_length: "Average 20 words or less"
+    paragraph_length: "3-4 sentences maximum"
+    voice: "Active voice preferred"
+    tone: "Conversational, friendly"
+    words: "Common words, avoid jargon"
+
+  specific_rules:
+    - "Use 'use' instead of 'utilize'"
+    - "Use 'help' instead of 'assist'"
+    - "Use 'buy' instead of 'purchase'"
+    - "Use 'about' instead of 'approximately'"
+    - "Use 'start' instead of 'commence'"
+    - "Define technical terms when necessary"
+    - "Avoid double negatives"
+    - "Break up long sentences"
+    - "Use bullet points for lists"
+    - "Put important information first"
+
+  before_after_examples:
+    navigation:
+      before: "Utilize the filter functionality to refine your query parameters"
+      after: "Use filters to narrow your search"
+
+    actions:
+      before: "Submit your inquiry via our contact form"
+      after: "Send us a message using this form"
+
+    instructions:
+      before: "In order to locate establishments within your vicinity, please input your geographic coordinates or postal designation"
+      after: "Enter your address or zip code to find nearby businesses"
+
+    errors:
+      before: "Invalid input detected in the designated field"
+      after: "Please enter a valid phone number in this format: (555) 123-4567"
+
+    descriptions:
+      before: "This establishment provides comprehensive culinary offerings and beverage services"
+      after: "This restaurant serves food and drinks"
+
+  content_types:
+
+    headings:
+      guidelines:
+        - "Describe the content below"
+        - "Use common words"
+        - "Keep under 60 characters"
+      examples:
+        bad: "Culinary Establishments in Metropolitan Springfield"
+        good: "Restaurants in Springfield"
+
+    buttons:
+      guidelines:
+        - "Describe the action"
+        - "Start with verb"
+        - "Be specific"
+      examples:
+        bad: "Submit", "Click here", "More"
+        good: "Search restaurants", "View details", "Apply filters"
+
+    forms:
+      guidelines:
+        - "Clear, simple labels"
+        - "Explain what to enter"
+        - "Provide examples"
+      example: |
+        <!-- Good -->
+        <label for="phone">
+          Phone number (optional)
+          <span class="hint">Format: (555) 123-4567</span>
+        </label>
+        <input type="tel" id="phone" placeholder="(555) 123-4567">
+
+    error_messages:
+      guidelines:
+        - "Explain what went wrong"
+        - "Tell user how to fix it"
+        - "Be helpful, not blaming"
+      examples:
+        bad: "Error 422: Unprocessable entity"
+        good: "We couldn't save your changes. Please check that all required fields are filled out."
+
+  testing_readability:
+    tools:
+      - Hemingway Editor (hemingwayapp.com)
+      - Readable.com
+      - WebFX Readability Test
+      - Microsoft Word (Review > Readability Statistics)
+
+    target_scores:
+      flesch_reading_ease: "60-70 (fairly easy)"
+      flesch_kincaid_grade: "7-8"
+      gunning_fog: "8-10"
+
+  implementation_checklist:
+    - "Audit all existing content"
+    - "Identify complex language"
+    - "Rewrite to plain language"
+    - "Test with readability tools"
+    - "Get user feedback if possible"
+    - "Document guidelines"
+    - "Train content team"
+
+success_criteria:
+  - Plain language guidelines documented
+  - All new content meets guidelines
+  - Existing content audited and improved
+  - Flesch-Kincaid Grade Level ≤8
+  - Average sentence length ≤20 words
+  - User comprehension improved
+
+testing_procedures:
+  automated:
+    - Run content through readability tools
+    - Check Flesch-Kincaid scores
+    - Measure average sentence length
+
+  manual:
+    - Read content aloud
+    - Ask non-experts to review
+    - User testing if possible
+
+acceptance_criteria:
+  - Guidelines document created
+  - All content meets 8th grade level
+  - Before/after examples documented
+  - Team trained on guidelines
+  - Readability scores within targets
+
+estimated_time: 3-4 days

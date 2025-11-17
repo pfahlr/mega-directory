@@ -1,0 +1,120 @@
+id: 84
+filename: 84_complete_keyboard_navigation.yaml
+title: Complete Keyboard Navigation
+priority: 🔴 Critical
+impact: High
+effort: Medium
+dependencies: [78, 80, 81]
+phase: Frontend Enhancement - Phase 1 (Foundation)
+
+description: >
+  Ensure all functionality is accessible via keyboard alone. Implement proper
+  tab order, keyboard event handlers, and standard keyboard conventions.
+  Foundation for single-switch access and voice control compatibility.
+
+  Context: Keyboard accessibility is required for users with motor disabilities,
+  screen reader users, power users, and is the foundation for assistive
+  technologies like single-switch devices.
+
+objectives:
+  - All interactive elements reachable via Tab
+  - Logical tab order (follows visual order)
+  - Standard keyboard conventions (Enter, Space, Escape, Arrows)
+  - No keyboard traps
+  - Skip navigation functionality
+
+scope:
+  - All interactive elements (links, buttons, forms, controls)
+  - Modal dialogs
+  - Dropdown menus
+  - Filters and search
+  - Pagination
+  - Map controls (map template)
+
+implementation_guidelines:
+
+  tab_order:
+    principle: "Tab order must follow visual order (left-to-right, top-to-bottom)"
+    avoid_tabindex_positive: true
+    example: |
+      <!-- Good - natural order -->
+      <input id="name">
+      <input id="email">
+      <button>Submit</button>
+
+      <!-- Bad - forced unnatural order -->
+      <button tabindex="3">Third</button>
+      <button tabindex="1">First</button>
+
+  keyboard_events:
+    standard_keys:
+      - "Tab: Navigate forward"
+      - "Shift+Tab: Navigate backward"
+      - "Enter: Activate buttons/links"
+      - "Space: Activate buttons/checkboxes"
+      - "Escape: Close modals/menus"
+      - "Arrow keys: Navigate menus/tabs/radio groups"
+
+    example: |
+      button.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      });
+
+  modal_dialogs:
+    requirements:
+      - Trap focus within modal
+      - Escape key closes modal
+      - Return focus to trigger on close
+
+    example: |
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const trigger = document.activeElement;
+
+        modal.dataset.trigger = trigger.id;
+        modal.style.display = 'block';
+        modal.querySelector('[tabindex="0"]').focus();
+
+        // Trap focus
+        trapFocus(modal);
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const triggerId = modal.dataset.trigger;
+
+        modal.style.display = 'none';
+        document.getElementById(triggerId).focus();
+      }
+
+success_criteria:
+  - 100% of functionality accessible via keyboard
+  - Tab order is logical
+  - No keyboard traps
+  - Standard keyboard conventions work
+  - Focus is always visible
+  - Modals are keyboard accessible
+
+testing_procedures:
+  manual:
+    - Navigate entire site using keyboard only (no mouse)
+    - Verify all actions can be performed
+    - Check tab order is logical
+    - Test modal interactions
+    - Verify no keyboard traps exist
+
+  automated:
+    - axe DevTools keyboard navigation checks
+    - Tab order testing tools
+
+acceptance_criteria:
+  - Full site navigation with keyboard only
+  - All forms submittable via keyboard
+  - All filters/search usable via keyboard
+  - All modals operable via keyboard
+  - Zero keyboard traps
+
+estimated_time: 2-3 days

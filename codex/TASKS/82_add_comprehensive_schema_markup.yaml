@@ -1,0 +1,139 @@
+id: 82
+filename: 82_add_comprehensive_schema_markup.yaml
+title: Add Comprehensive Schema.org Markup
+priority: 🔴 Critical
+impact: High
+effort: Medium
+dependencies: [76, 80, 81]
+phase: Frontend Enhancement - Phase 2 (SEO Core)
+
+description: >
+  Implement comprehensive Schema.org markup using JSON-LD format for all
+  directory pages. Include LocalBusiness, ItemList, Breadcrumb, and
+  Organization schemas to maximize search visibility and rich results.
+
+  Context: Schema markup is 4x more likely to appear in rich results. It's
+  critical for local search, voice assistants, and AI-powered search (SGE).
+  Google officially endorses JSON-LD format.
+
+objectives:
+  - Add LocalBusiness schema to individual listing pages
+  - Add ItemList schema to category/location directory pages
+  - Add BreadcrumbList schema to all pages
+  - Add Organization schema to site-wide
+  - Validate all markup with Google Rich Results Test
+
+scope:
+  - Individual listing pages (LocalBusiness)
+  - Directory list pages (ItemList)
+  - All pages (Breadcrumb)
+  - Site-wide (Organization)
+
+implementation_guidelines:
+
+  local_business_schema:
+    format: JSON-LD
+    example: |
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Business Name",
+        "image": "https://example.com/image.jpg",
+        "@id": "https://example.com/listing/business-slug",
+        "url": "https://businesswebsite.com",
+        "telephone": "+1-555-123-4567",
+        "priceRange": "$$",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "123 Main St",
+          "addressLocality": "Springfield",
+          "addressRegion": "IL",
+          "postalCode": "62701",
+          "addressCountry": "US"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 39.7817,
+          "longitude": -89.6501
+        },
+        "openingHoursSpecification": [{
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "08:00",
+          "closes": "18:00"
+        }],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.5",
+          "reviewCount": "127"
+        }
+      }
+      </script>
+
+  item_list_schema:
+    format: JSON-LD
+    example: |
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "LocalBusiness",
+            "name": "Business Name",
+            "url": "https://example.com/listing/business-1"
+          }
+        }]
+      }
+      </script>
+
+  breadcrumb_schema:
+    format: JSON-LD
+    example: |
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://example.com/"
+        }, {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Coffee Shops",
+          "item": "https://example.com/category/coffee-shops"
+        }]
+      }
+      </script>
+
+success_criteria:
+  - All listing pages have valid LocalBusiness schema
+  - All directory pages have valid ItemList schema
+  - All pages have valid Breadcrumb schema
+  - Organization schema on homepage
+  - Zero errors in Google Rich Results Test
+  - Zero errors in Schema.org Validator
+
+testing_procedures:
+  automated:
+    - Google Rich Results Test
+    - Schema.org Validator
+    - Google Search Console (after deployment)
+
+  manual:
+    - Review schema in source code
+    - Verify all required properties present
+    - Check data accuracy
+
+acceptance_criteria:
+  - Google Rich Results Test: Eligible for rich results
+  - Schema.org Validator: 0 errors, 0 warnings
+  - All required schema properties included
+  - Schema data matches actual page content
+
+estimated_time: 3-4 days
