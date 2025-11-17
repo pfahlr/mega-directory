@@ -7,6 +7,7 @@ import {
   type PaginationParams,
   type PaginatedResponse,
 } from '../utils/pagination';
+import { CacheInvalidation } from '../cache';
 
 export interface CreateListingDto {
   title: string;
@@ -181,6 +182,9 @@ export async function createListing(data: CreateListingDto): Promise<ListingWith
       },
     });
 
+    // Invalidate caches
+    await CacheInvalidation.listings();
+
     return listing;
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -275,6 +279,9 @@ export async function updateListing(
       },
     });
 
+    // Invalidate caches
+    await CacheInvalidation.listing(id);
+
     return listing;
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -295,6 +302,9 @@ export async function deleteListing(id: number): Promise<void> {
     await prisma.listing.delete({
       where: { id },
     });
+
+    // Invalidate caches
+    await CacheInvalidation.listing(id);
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Listing', id);

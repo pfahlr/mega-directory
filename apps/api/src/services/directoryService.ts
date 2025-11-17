@@ -1,6 +1,7 @@
 import { prisma } from '../db';
 import { NotFoundError, ConflictError, BadRequestError } from '../errors';
 import type { Directory, DirectoryStatus } from '@prisma/client';
+import { CacheInvalidation } from '../cache';
 import {
   normalizePaginationParams,
   createPaginatedResponse,
@@ -96,27 +97,6 @@ export async function getAllDirectories(
   ]);
 
   return createPaginatedResponse(data, page, limit, totalCount);
-=======
-export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
-  return await prisma.directory.findMany({
-    include: {
-      category: true,
-      location: {
-        include: {
-          cityRecord: {
-            include: {
-              state: {
-                include: {
-                  country: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  }) as any;
 }
 
 /**
@@ -156,28 +136,6 @@ export async function getActiveDirectories(
   ]);
 
   return createPaginatedResponse(data, page, limit, totalCount);
-
-export async function getActiveDirectories(): Promise<DirectoryWithRelations[]> {
-  return await prisma.directory.findMany({
-    where: { status: 'ACTIVE' },
-    include: {
-      category: true,
-      location: {
-        include: {
-          cityRecord: {
-            include: {
-              state: {
-                include: {
-                  country: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  }) as any;
 }
 
 /**
@@ -303,6 +261,9 @@ export async function createDirectory(data: CreateDirectoryDto): Promise<Directo
       },
     });
 
+    // Invalidate caches
+    await CacheInvalidation.directories();
+
     return directory;
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -348,6 +309,9 @@ export async function updateDirectory(
       },
     });
 
+    // Invalidate caches
+    await CacheInvalidation.directory(id, directory.slug);
+
     return directory as any;
   } catch (error: any) {
     if (error.code === 'P2025') {
@@ -371,6 +335,9 @@ export async function deleteDirectory(id: number): Promise<void> {
     await prisma.directory.delete({
       where: { id },
     });
+
+    // Invalidate caches
+    await CacheInvalidation.directory(id);
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Directory', id);

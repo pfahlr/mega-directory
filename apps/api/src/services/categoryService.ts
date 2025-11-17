@@ -7,6 +7,7 @@ import {
   type PaginationParams,
   type PaginatedResponse,
 } from '../utils/pagination';
+import { CacheInvalidation } from '../cache';
 
 export interface CreateCategoryDto {
   name: string;
@@ -66,7 +67,7 @@ export async function getCategoryById(id: number): Promise<Category> {
  */
 export async function createCategory(data: CreateCategoryDto): Promise<Category> {
   try {
-    return await prisma.category.create({
+    const category = await prisma.category.create({
       data: {
         name: data.name,
         slug: data.slug,
@@ -76,6 +77,11 @@ export async function createCategory(data: CreateCategoryDto): Promise<Category>
         isActive: data.isActive ?? true,
       },
     });
+
+    // Invalidate caches
+    await CacheInvalidation.categories();
+
+    return category;
   } catch (error: any) {
     if (error.code === 'P2002') {
       throw new ConflictError('Category with this slug already exists', 'slug');
@@ -92,7 +98,7 @@ export async function updateCategory(
   data: UpdateCategoryDto
 ): Promise<Category> {
   try {
-    return await prisma.category.update({
+    const category = await prisma.category.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -103,6 +109,11 @@ export async function updateCategory(
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
     });
+
+    // Invalidate caches
+    await CacheInvalidation.category(id);
+
+    return category;
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Category', id);
@@ -122,6 +133,9 @@ export async function deleteCategory(id: number): Promise<void> {
     await prisma.category.delete({
       where: { id },
     });
+
+    // Invalidate caches
+    await CacheInvalidation.category(id);
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Category', id);
