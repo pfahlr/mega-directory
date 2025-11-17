@@ -4,6 +4,8 @@ import { DEFAULT_PORTS, PROJECT_NAME } from '@mega-directory/config';
 import directoryCatalog from '@mega-directory/directory-data';
 import { geocodeListingLocation, type GeocodingAddress } from './geocoding';
 import { createLogger, createRequestLogger, type Logger } from './logger';
+import { initializePrisma, disconnectPrisma, prisma, getListingsWithRelations, getDirectoriesWithData, createListingWithAddress } from './db';
+import { ListingWithRelations, ListingStatus as PrismaListingStatus, DirectoryStatus as PrismaDirectoryStatus } from './types';
 
 const DEFAULT_PORT = DEFAULT_PORTS.api;
 const DEFAULT_LISTING_STATUS: ListingStatus = 'INACTIVE';
@@ -135,17 +137,6 @@ interface DirectoryRecord {
   updatedAt: string;
 }
 
-interface AdminStore {
-  categories: CategoryRecord[];
-  directories: DirectoryRecord[];
-  listings: AdminListingRecord[];
-  addresses: ListingAddressRecord[];
-  nextCategoryId: number;
-  nextDirectoryId: number;
-  nextListingId: number;
-  nextAddressId: number;
-}
-
 interface ListingValidationSuccess {
   valid: true;
   value: NormalizedListing;
@@ -184,7 +175,6 @@ interface HealthState {
 interface AppLocals {
   config: ServerConfig;
   ingestionStore: ListingStore;
-  adminStore: AdminStore;
   logger: Logger;
   health: HealthState;
 }
@@ -265,7 +255,6 @@ export function createServer(options: CreateServerOptions = {}): Express {
 
   locals.config = config;
   locals.ingestionStore = createListingStore();
-  locals.adminStore = createAdminStore();
   locals.logger = logger;
   locals.health = { startedAt: new Date() };
 
@@ -327,11 +316,33 @@ export function createServer(options: CreateServerOptions = {}): Express {
 export function startServer() {
   const app = createServer();
   const { port } = getAppLocals(app).config;
-  app.listen(port, () => {
-    getAppLocals(app).logger.info(
-      { event: 'api.start', port, environment: process.env.NODE_ENV || 'development' },
-      `API server running at http://localhost:${port}`
-    );
+
+  // Initialize database connection
+  initializePrisma()
+    .then(() => {
+      app.listen(port, () => {
+        getAppLocals(app).logger.info(
+          { event: 'api.start', port, environment: process.env.NODE_ENV || 'development' },
+          `API server running at http://localhost:${port}`
+        );
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to initialize database:', error);
+      process.exit(1);
+    });
+
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    await disconnectPrisma();
+    process.exit(0);
+  });
+
+  process.on('SIGINT', async () => {
+    console.log('SIGINT received, shutting down gracefully');
+    await disconnectPrisma();
+    process.exit(0);
   });
 }
 
@@ -631,103 +642,6 @@ function createListingStore(): ListingStore {
     all() {
       return listings.slice();
     }
-  };
-}
-
-function createAdminStore(): AdminStore {
-  const now = () => new Date().toISOString();
-  const categories: CategoryRecord[] = [
-    {
-      id: 1,
-      name: 'Electricians',
-      slug: 'electricians',
-      description: 'Licensed electricians and electrical contractors.',
-      metaTitle: 'Electricians Directory',
-      metaDescription: 'Find trusted electricians for residential and commercial projects.',
-      isActive: true,
-      createdAt: now(),
-      updatedAt: now()
-    },
-    {
-      id: 2,
-      name: 'Plumbers',
-      slug: 'plumbers',
-      description: 'Residential and commercial plumbing specialists.',
-      metaTitle: 'Plumbers Directory',
-      metaDescription: 'Top-rated plumbers for installs, repairs, and maintenance.',
-      isActive: true,
-      createdAt: now(),
-      updatedAt: now()
-    }
-  ];
-  const directories: DirectoryRecord[] = [
-    {
-      id: 1,
-      title: 'NYC Electricians',
-      slug: 'nyc-electricians',
-      subdomain: 'nyc-electricians',
-      subdirectory: 'nyc/electricians',
-      heroTitle: 'Trusted NYC Electricians',
-      heroSubtitle: 'Emergency crews across every borough',
-      introMarkdown: 'Compare **licensed electricians** ready for EV chargers and emergency calls.',
-      metaTitle: 'Best Electricians in NYC | Mega Directory',
-      metaDescription: 'Hand-reviewed electricians serving Manhattan, Brooklyn, Queens, Bronx, and Staten Island.',
-      metaKeywords: 'electricians,nyc,licensed,emergency',
-      ogImageUrl: 'https://cdn.example.com/og/nyc-electricians.png',
-      status: 'ACTIVE',
-      locationAgnostic: false,
-      categoryIds: [categories[0].id],
-      locationIds: ['loc_new_york_ny'],
-      createdAt: now(),
-      updatedAt: now()
-    }
-  ];
-  const listings: AdminListingRecord[] = [
-    {
-      id: 1,
-      title: 'Nova Electric Co.',
-      slug: 'nova-electric-co',
-      status: 'PENDING',
-      summary: '24/7 emergency electricians covering NYC.',
-      websiteUrl: 'https://novaelectric.example.com',
-      sourceUrl: null,
-      contactEmail: 'contact@novaelectric.example.com',
-      notes: null,
-      sourceName: 'seed',
-      categoryIds: [categories[0].id],
-      addressIds: [],
-      createdAt: now(),
-      updatedAt: now()
-    }
-  ];
-  const addresses: ListingAddressRecord[] = [
-    {
-      id: 1,
-      listingId: listings[0].id,
-      label: 'HQ',
-      addressLine1: '123 5th Ave',
-      addressLine2: null,
-      city: 'New York',
-      region: 'NY',
-      postalCode: '10010',
-      country: 'US',
-      latitude: null,
-      longitude: null,
-      isPrimary: true,
-      createdAt: now(),
-      updatedAt: now()
-    }
-  ];
-  listings[0].addressIds.push(addresses[0].id);
-  return {
-    categories,
-    directories,
-    listings,
-    addresses,
-    nextCategoryId: categories.length + 1,
-    nextDirectoryId: directories.length + 1,
-    nextListingId: listings.length + 1,
-    nextAddressId: addresses.length + 1
   };
 }
 
