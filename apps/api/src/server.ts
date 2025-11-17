@@ -1080,159 +1080,208 @@ function registerAdminAddressRoutes(app: ExpressApp, adminAuth: RequestHandler) 
 }
 
 function registerAdminDirectoryRoutes(app: ExpressApp, adminAuth: RequestHandler) {
-  app.get('/v1/admin/directories', adminAuth, (_req: Request, res: Response) => {
-    const store = getAppLocals(app).adminStore;
-    res.json({ data: store.directories.slice() });
+  app.get('/v1/admin/directories', adminAuth, async (_req: Request, res: Response) => {
+    try {
+      const directories = await prisma.directory.findMany({
+        include: {
+          category: true,
+          location: {
+            include: {
+              cityRecord: {
+                include: {
+                  stateRecord: {
+                    include: {
+                      country: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ data: directories });
+    } catch (error) {
+      console.error('[admin] Failed to fetch directories:', error);
+      res.status(500).json({ error: 'Failed to fetch directories' });
+    }
   });
 
-  app.get('/v1/admin/directories/:directoryId', adminAuth, (req: Request, res: Response) => {
-    const directoryId = parseIdParam(req.params?.directoryId);
-    if (!directoryId) {
-      return res.status(400).json({ error: 'Invalid directory id' });
-    }
-    const store = getAppLocals(app).adminStore;
-    const record = store.directories.find((entry) => entry.id === directoryId);
-    if (!record) {
-      return res.status(404).json({ error: 'Directory not found' });
-    }
-    return res.json({ data: record });
-  });
+  app.get('/v1/admin/directories/:id', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id, 10);
 
-  app.post('/v1/admin/directories', adminAuth, (req: Request, res: Response) => {
-    const validation = validateDirectoryPayload(req.body, 'create');
-    if (!validation.valid) {
-      return res.status(400).json({ error: 'Validation failed', details: validation.errors });
-    }
-    const store = getAppLocals(app).adminStore;
-    if (store.directories.some((entry) => entry.slug === validation.value.slug)) {
-      return res
-        .status(400)
-        .json({ error: 'Validation failed', details: ['slug already exists'] });
-    }
-    const categoryCheck = ensureCategoryIdsExist(
-      store,
-      validation.value.categoryIds ?? [],
-      'categoryIds'
-    );
-    if (!categoryCheck.valid) {
-      return res.status(400).json({ error: 'Validation failed', details: categoryCheck.errors });
-    }
-    const now = new Date().toISOString();
-    const record: DirectoryRecord = {
-      id: store.nextDirectoryId++,
-      title: validation.value.title!,
-      slug: validation.value.slug!,
-      subdomain: validation.value.subdomain ?? null,
-      subdirectory: validation.value.subdirectory ?? null,
-      heroTitle: validation.value.heroTitle ?? null,
-      heroSubtitle: validation.value.heroSubtitle ?? null,
-      introMarkdown: validation.value.introMarkdown ?? null,
-      metaTitle: validation.value.metaTitle ?? null,
-      metaDescription: validation.value.metaDescription ?? null,
-      metaKeywords: validation.value.metaKeywords ?? null,
-      ogImageUrl: validation.value.ogImageUrl ?? null,
-      status: validation.value.status ?? 'DRAFT',
-      locationAgnostic: validation.value.locationAgnostic ?? false,
-      categoryIds: validation.value.categoryIds ?? [],
-      locationIds: validation.value.locationIds ?? [],
-      createdAt: now,
-      updatedAt: now
-    };
-    store.directories.push(record);
-    return res.status(201).json({ data: record });
-  });
+      const directory = await prisma.directory.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          location: {
+            include: {
+              cityRecord: {
+                include: {
+                  stateRecord: {
+                    include: {
+                      country: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          listings: {
+            include: {
+              addresses: true,
+            },
+          },
+        },
+      });
 
-  app.put('/v1/admin/directories/:directoryId', adminAuth, (req: Request, res: Response) => {
-    const directoryId = parseIdParam(req.params?.directoryId);
-    if (!directoryId) {
-      return res.status(400).json({ error: 'Invalid directory id' });
-    }
-    const store = getAppLocals(app).adminStore;
-    const record = store.directories.find((entry) => entry.id === directoryId);
-    if (!record) {
-      return res.status(404).json({ error: 'Directory not found' });
-    }
-    const validation = validateDirectoryPayload(req.body, 'update');
-    if (!validation.valid) {
-      return res.status(400).json({ error: 'Validation failed', details: validation.errors });
-    }
-    if (
-      validation.value.slug &&
-      store.directories.some((entry) => entry.slug === validation.value.slug && entry.id !== record.id)
-    ) {
-      return res
-        .status(400)
-        .json({ error: 'Validation failed', details: ['slug already exists'] });
-    }
-    if (validation.value.categoryIds !== undefined) {
-      const categoryCheck = ensureCategoryIdsExist(
-        store,
-        validation.value.categoryIds,
-        'categoryIds'
-      );
-      if (!categoryCheck.valid) {
-        return res.status(400).json({ error: 'Validation failed', details: categoryCheck.errors });
+      if (!directory) {
+        return res.status(404).json({ error: 'Directory not found' });
       }
-      record.categoryIds = validation.value.categoryIds;
+
+      res.json({ data: directory });
+    } catch (error) {
+      console.error('[admin] Failed to fetch directory:', error);
+      res.status(500).json({ error: 'Failed to fetch directory' });
     }
-    if (validation.value.title !== undefined) {
-      record.title = validation.value.title;
-    }
-    if (validation.value.slug) {
-      record.slug = validation.value.slug;
-    }
-    if (validation.value.subdomain !== undefined) {
-      record.subdomain = validation.value.subdomain;
-    }
-    if (validation.value.subdirectory !== undefined) {
-      record.subdirectory = validation.value.subdirectory;
-    }
-    if (validation.value.heroTitle !== undefined) {
-      record.heroTitle = validation.value.heroTitle;
-    }
-    if (validation.value.heroSubtitle !== undefined) {
-      record.heroSubtitle = validation.value.heroSubtitle;
-    }
-    if (validation.value.introMarkdown !== undefined) {
-      record.introMarkdown = validation.value.introMarkdown;
-    }
-    if (validation.value.metaTitle !== undefined) {
-      record.metaTitle = validation.value.metaTitle;
-    }
-    if (validation.value.metaDescription !== undefined) {
-      record.metaDescription = validation.value.metaDescription;
-    }
-    if (validation.value.metaKeywords !== undefined) {
-      record.metaKeywords = validation.value.metaKeywords;
-    }
-    if (validation.value.ogImageUrl !== undefined) {
-      record.ogImageUrl = validation.value.ogImageUrl;
-    }
-    if (validation.value.status) {
-      record.status = validation.value.status;
-    }
-    if (validation.value.locationAgnostic !== undefined) {
-      record.locationAgnostic = validation.value.locationAgnostic;
-    }
-    if (validation.value.locationIds !== undefined) {
-      record.locationIds = validation.value.locationIds;
-    }
-    record.updatedAt = new Date().toISOString();
-    return res.json({ data: record });
   });
 
-  app.delete('/v1/admin/directories/:directoryId', adminAuth, (req: Request, res: Response) => {
-    const directoryId = parseIdParam(req.params?.directoryId);
-    if (!directoryId) {
-      return res.status(400).json({ error: 'Invalid directory id' });
+  app.post('/v1/admin/directories', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const {
+        title,
+        slug,
+        subdomain,
+        subdirectory,
+        categoryId,
+        locationId,
+        locationAgnostic,
+        status,
+        heroTitle,
+        heroSubtitle,
+        metaTitle,
+        metaDescription,
+      } = req.body;
+
+      if (!title || !slug || !subdomain || !subdirectory || !categoryId) {
+        return res.status(400).json({
+          error: 'title, slug, subdomain, subdirectory, and categoryId are required',
+        });
+      }
+
+      const directory = await prisma.directory.create({
+        data: {
+          title,
+          slug,
+          subdomain,
+          subdirectory,
+          categoryId,
+          locationId,
+          locationAgnostic: locationAgnostic || false,
+          status: status || 'DRAFT',
+          heroTitle,
+          heroSubtitle,
+          metaTitle,
+          metaDescription,
+        },
+        include: {
+          category: true,
+          location: true,
+        },
+      });
+
+      res.status(201).json({ data: directory });
+    } catch (error: any) {
+      console.error('[admin] Failed to create directory:', error);
+
+      if (error.code === 'P2002') {
+        return res.status(409).json({ error: 'Directory with this slug/subdomain already exists' });
+      }
+
+      res.status(500).json({ error: 'Failed to create directory' });
     }
-    const store = getAppLocals(app).adminStore;
-    const index = store.directories.findIndex((entry) => entry.id === directoryId);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Directory not found' });
+  });
+
+  app.put('/v1/admin/directories/:id', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const {
+        title,
+        slug,
+        subdomain,
+        subdirectory,
+        categoryId,
+        locationId,
+        locationAgnostic,
+        status,
+        heroTitle,
+        heroSubtitle,
+        metaTitle,
+        metaDescription,
+      } = req.body;
+
+      const directory = await prisma.directory.update({
+        where: { id },
+        data: {
+          ...(title && { title }),
+          ...(slug && { slug }),
+          ...(subdomain && { subdomain }),
+          ...(subdirectory && { subdirectory }),
+          ...(categoryId && { categoryId }),
+          ...(locationId !== undefined && { locationId }),
+          ...(locationAgnostic !== undefined && { locationAgnostic }),
+          ...(status && { status: status as DirectoryStatus }),
+          ...(heroTitle !== undefined && { heroTitle }),
+          ...(heroSubtitle !== undefined && { heroSubtitle }),
+          ...(metaTitle !== undefined && { metaTitle }),
+          ...(metaDescription !== undefined && { metaDescription }),
+        },
+        include: {
+          category: true,
+          location: true,
+        },
+      });
+
+      res.json({ data: directory });
+    } catch (error: any) {
+      console.error('[admin] Failed to update directory:', error);
+
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'Directory not found' });
+      }
+
+      if (error.code === 'P2002') {
+        return res.status(409).json({ error: 'Directory with this slug/subdomain already exists' });
+      }
+
+      res.status(500).json({ error: 'Failed to update directory' });
     }
-    store.directories.splice(index, 1);
-    return res.status(204).json({});
+  });
+
+  app.delete('/v1/admin/directories/:id', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+
+      await prisma.directory.delete({
+        where: { id },
+      });
+
+      res.status(204).send();
+    } catch (error: any) {
+      console.error('[admin] Failed to delete directory:', error);
+
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'Directory not found' });
+      }
+
+      if (error.code === 'P2003') {
+        return res.status(409).json({ error: 'Cannot delete directory with associated listings' });
+      }
+
+      res.status(500).json({ error: 'Failed to delete directory' });
+    }
   });
 }
 
