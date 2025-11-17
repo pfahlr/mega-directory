@@ -50,8 +50,9 @@
         </div>
 
         <p class="muted">
-          These rows come directly from imported JSON payloads. Keep both checkboxes checked to store an entry,
-          uncheck <strong>Saved</strong> to discard it entirely, or uncheck <strong>Active</strong> to save it as inactive.
+          These rows are loaded from the API ingestion queue so you can review data that matches the live database.
+          Keep both checkboxes checked to store an entry, uncheck <strong>Saved</strong> to discard it entirely, or
+          uncheck <strong>Active</strong> to save it as inactive.
         </p>
 
         <div class="pagination-bar">
@@ -116,7 +117,7 @@
                       <p class="eyebrow"><%= listing.category %> • <%= listing.location %></p>
                       <p class="muted">Status <strong class="status-label"><%= listing.status %></strong></p>
                       <p class="muted">Phone <strong><%= listing.phone %></strong></p>
-                      <p class="muted">Quality score <strong><%= listing.score %>/100</strong> • Source <strong><%= listing.source %></strong></p>
+                      <p class="muted">Quality score <strong><%= listing.scoreLabel %></strong> • Source <strong><%= listing.source %></strong></p>
                       <p class="muted">Submitted <strong><%= submittedLabel %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
                     </div>
                     <p class="summary"><%= listing.summary %></p>
@@ -158,7 +159,7 @@
 
       <div class="form-actions">
         <button type="submit" class="btn primary">Save changes</button>
-        <p class="muted">Uncheck <strong>Saved</strong> to discard an import or <strong>Active</strong> to keep it inactive. Changes persist in memory for this demo app.</p>
+        <p class="muted">Uncheck <strong>Saved</strong> to discard an import or <strong>Active</strong> to keep it inactive. Changes are saved via the API on the next refresh.</p>
       </div>
     </form>
   <% } %>

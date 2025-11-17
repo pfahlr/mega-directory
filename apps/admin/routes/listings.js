@@ -3,17 +3,21 @@ const { getListings, updateListings } = require('../services/listingsService');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  const page = parsePage(req.query.page);
-  const result = getListings({ page });
+router.get('/', async (req, res, next) => {
+  try {
+    const page = parsePage(req.query.page);
+    const result = await getListings({ page });
 
-  res.render('listings/index', {
-    title: 'Listing Review',
-    listings: result.records,
-    savedCount: parseCount(req.query.saved),
-    removedCount: parseCount(req.query.removed),
-    pagination: buildPagination(result)
-  });
+    res.render('listings/index', {
+      title: 'Listing Review',
+      listings: result.records,
+      savedCount: parseCount(req.query.saved),
+      removedCount: parseCount(req.query.removed),
+      pagination: buildPagination(result)
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/', async (req, res, next) => {

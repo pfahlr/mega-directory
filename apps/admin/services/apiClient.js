@@ -1,6 +1,7 @@
 require('../polyfills/fetch');
 
-const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings/review';
+const ADMIN_LISTINGS_ENDPOINT = '/v1/admin/listings';
+const ADMIN_LISTINGS_REVIEW_ENDPOINT = '/v1/admin/listings/review';
 
 class ApiClientError extends Error {
   constructor(message, { status = null, payload = null, code = null, cause = null } = {}) {
@@ -21,7 +22,7 @@ async function submitListingUpdates(updates = []) {
   }
 
   try {
-    const result = await callApi(ADMIN_LISTINGS_ENDPOINT, {
+    const result = await callApi(ADMIN_LISTINGS_REVIEW_ENDPOINT, {
       method: 'POST',
       body: { listings: updates }
     });
@@ -76,6 +77,11 @@ async function deleteDirectory(directoryId) {
 
 async function fetchCategories() {
   const data = await callApi('/v1/admin/categories');
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchListings() {
+  const data = await callApi(ADMIN_LISTINGS_ENDPOINT);
   return Array.isArray(data) ? data : [];
 }
 
@@ -155,5 +161,7 @@ module.exports = {
   createDirectory,
   updateDirectory,
   deleteDirectory,
-  fetchCategories
+  fetchCategories,
+  fetchListings,
+  resolveConfig
 };
