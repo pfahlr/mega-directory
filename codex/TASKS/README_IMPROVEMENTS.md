@@ -1,6 +1,6 @@
-# Improvement Tasks (60-74)
+# Improvement Tasks (60-75)
 
-This document provides an overview of the 15 improvement tasks created to enhance the Mega Directory project.
+This document provides an overview of the 16 improvement tasks created to enhance the Mega Directory project.
 
 ## Task Overview
 
@@ -10,6 +10,7 @@ This document provides an overview of the 15 improvement tasks created to enhanc
 | 61 | Refactor Monolithic Server File | 🔴 Critical | High | Medium | None |
 | 62 | Add Input Validation Layer | 🔴 Critical | High | Low | None |
 | 63 | Add Error Handling Middleware | 🔴 Critical | High | Low | 62 |
+| 75 | Refactor Admin UI CRUD Patterns | 🔴 Critical | High | Medium | None |
 | 64 | Add API Documentation (OpenAPI) | 🟡 Important | Medium | Low | 61, 62, 63 |
 | 65 | Implement Pagination | 🟡 Important | Medium | Low | 62 |
 | 66 | Add Caching Layer (Redis) | 🟡 Important | Medium | Medium | None |
@@ -24,16 +25,17 @@ This document provides an overview of the 15 improvement tasks created to enhanc
 
 ## Priority Levels
 
-### 🔴 Critical Priority (Tasks 60-63)
+### 🔴 Critical Priority (Tasks 60-63, 75)
 **Do These First** - Foundation for maintainable, reliable code
 
 - **Task 60: Automated Testing** - No tests exist; critical for confidence in changes
 - **Task 61: Refactor server.ts** - 2,151 lines; hard to maintain and test
 - **Task 62: Input Validation** - Prevent invalid data from reaching database
 - **Task 63: Error Handling** - Eliminate repetitive try-catch blocks
+- **Task 75: Refactor Admin UI CRUD** - Fix scalability issues with admin UI patterns
 
-**Estimated Time:** 2-3 weeks
-**Impact:** Dramatically improves code quality, maintainability, and reliability
+**Estimated Time:** 3-4 weeks
+**Impact:** Dramatically improves code quality, maintainability, reliability, and admin UX
 
 ### 🟡 Important Priority (Tasks 64-67)
 **Do Next** - Improve performance, usability, and security
@@ -57,8 +59,8 @@ This document provides an overview of the 15 improvement tasks created to enhanc
 
 ## Recommended Implementation Order
 
-### Phase 1: Foundation (Weeks 1-2)
-**Goal:** Establish testing and code quality foundation
+### Phase 1: Foundation (Weeks 1-3)
+**Goal:** Establish testing and code quality foundation + fix critical UX issues
 
 1. **Task 62:** Add Input Validation (1-2 days)
    - Install Zod
@@ -72,40 +74,46 @@ This document provides an overview of the 15 improvement tasks created to enhanc
    - Create asyncHandler wrapper
    - Remove try-catch from routes
 
-3. **Task 60:** Implement Testing (3-5 days)
+3. **Task 75:** Refactor Admin UI CRUD Patterns (3-5 days)
+   - Fix directories page scalability issue
+   - Implement list/create/edit/delete pattern for all entities
+   - Add pagination to admin list views
+   - Improve admin UX and performance
+
+4. **Task 60:** Implement Testing (3-5 days)
    - Install Vitest
    - Set up test database
    - Write unit tests
    - Write integration tests
    - Achieve 80%+ coverage
 
-4. **Task 61:** Refactor server.ts (2-3 days)
+5. **Task 61:** Refactor server.ts (2-3 days)
    - Create routes/ structure
    - Extract middleware
    - Create services layer
    - Migrate one resource at a time
 
-**Deliverable:** Tested, well-structured codebase
+**Deliverable:** Tested, well-structured codebase with scalable admin UI
 
-### Phase 2: Performance & Documentation (Weeks 3-4)
+### Phase 2: Performance & Documentation (Weeks 4-5)
 **Goal:** Improve performance and developer experience
 
-5. **Task 64:** API Documentation (1 day)
+6. **Task 64:** API Documentation (1 day)
    - Install Swagger
    - Add JSDoc to routes
    - Serve at /api-docs
 
-6. **Task 65:** Implement Pagination (1-2 days)
+7. **Task 65:** Implement Pagination (1-2 days)
    - Create pagination utils
    - Add to all list endpoints
    - Return pagination metadata
 
-7. **Task 67:** Rate Limiting (1 day)
+8. **Task 67:** Rate Limiting (1 day)
    - Install express-rate-limit
    - Configure limiters
    - Apply to endpoints
 
-8. **Task 66:** Add Caching (2-3 days)
+9. **Task 66:** Add Caching (2-3 days)
    - Install Redis
    - Create cache service
    - Cache public endpoints
@@ -113,43 +121,43 @@ This document provides an overview of the 15 improvement tasks created to enhanc
 
 **Deliverable:** Fast, well-documented API
 
-### Phase 3: Operations (Weeks 5-6)
+### Phase 3: Operations (Weeks 6-7)
 **Goal:** Improve operations and monitoring
 
-9. **Task 69:** Structured Logging (1 day)
-   - Install Pino
-   - Replace console.log
-   - Add request logging
-   - Create health check
+10. **Task 69:** Structured Logging (1 day)
+    - Install Pino
+    - Replace console.log
+    - Add request logging
+    - Create health check
 
-10. **Task 70:** Connection Pooling (1 day)
+11. **Task 70:** Connection Pooling (1 day)
     - Configure pool settings
     - Update documentation
 
-11. **Task 68:** Migration Management (1 day)
+12. **Task 68:** Migration Management (1 day)
     - Document procedures
     - Create backup scripts
 
-12. **Task 71:** Environment Seeding (1 day)
+13. **Task 71:** Environment Seeding (1 day)
     - Make seed env-aware
     - Create seed variants
 
-13. **Task 72:** Import Error Reporting (1-2 days)
+14. **Task 72:** Import Error Reporting (1-2 days)
     - Create ImportResult class
     - Add detailed errors
     - Generate reports
 
 **Deliverable:** Production-ready operations
 
-### Phase 4: Quality & Automation (Weeks 7-8)
+### Phase 4: Quality & Automation (Weeks 8-9)
 **Goal:** Ensure code quality and automate workflows
 
-14. **Task 73:** TypeScript Strict Mode (2-3 days)
+15. **Task 73:** TypeScript Strict Mode (2-3 days)
     - Enable strict flags incrementally
     - Fix type errors
     - Add explicit types
 
-15. **Task 74:** CI/CD Pipeline (2-3 days)
+16. **Task 74:** CI/CD Pipeline (2-3 days)
     - Create GitHub Actions workflow
     - Run tests in CI
     - Add deployment automation
@@ -198,6 +206,7 @@ These can be implemented immediately without major changes:
                   │                       │
 63 (Error Handling) ─┬────────────────────┤
 61 (Refactor) ───────┤                    │
+75 (Admin UI) ───────┤                    │
                      │                    │
 64 (API Docs) ───────┴────────────────────┤
 65 (Pagination) ─────────────────────────┤
@@ -216,6 +225,9 @@ These can be implemented immediately without major changes:
 - ✅ 80%+ test coverage
 - ✅ Modular, maintainable code structure
 - ✅ server.ts reduced to <150 lines
+- ✅ Admin UI follows proper CRUD patterns
+- ✅ Admin pages are scalable and performant
+- ✅ All entities have paginated list views
 
 ### After Phase 2 (Performance)
 - ✅ Interactive API documentation
@@ -295,10 +307,11 @@ To begin implementing these tasks:
 - Dependencies are minimal - most tasks can be done in parallel
 - Start with high-priority tasks for maximum impact
 - Each task is designed to be completable in 1-5 days
+- Task 75 addresses critical admin UI scalability issues identified by user
 
 ## Questions?
 
-See individual task files in `codex/TASKS/60-74_*.yaml` for:
+See individual task files in `codex/TASKS/60-75_*.yaml` for:
 - Detailed implementation plans
 - Code examples
 - Success criteria
@@ -308,5 +321,6 @@ See individual task files in `codex/TASKS/60-74_*.yaml` for:
 ---
 
 **Created:** 2025-11-17
+**Updated:** 2025-11-17 (Added Task 75)
 **Status:** Ready for implementation
-**Next Action:** Begin Phase 1 with Tasks 60-63
+**Next Action:** Begin Phase 1 with Tasks 60-63, 75
