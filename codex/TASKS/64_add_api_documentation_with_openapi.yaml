@@ -1,0 +1,243 @@
+id: 64
+filename: 64_add_api_documentation_with_openapi.yaml
+title: Add API Documentation with OpenAPI/Swagger
+description: >
+  Generate interactive API documentation using OpenAPI 3.0 specification and Swagger UI.
+  Currently there is no formal API documentation, making it difficult for frontend
+  developers and external consumers to understand available endpoints.
+
+  Implementation plan:
+
+  1. Install OpenAPI dependencies
+     - npm install swagger-jsdoc swagger-ui-express
+     - npm install --save-dev @types/swagger-jsdoc @types/swagger-ui-express
+
+  2. Create OpenAPI configuration
+     - apps/api/src/swagger.ts
+     - Define base OpenAPI spec (info, servers, tags)
+     - Configure swagger-jsdoc options
+
+  3. Add JSDoc annotations to routes
+     - Document all endpoint paths
+     - Document request/response schemas
+     - Document authentication requirements
+     - Document error responses
+
+  4. Set up Swagger UI endpoint
+     - Serve at /api-docs
+     - Enable in development and staging
+     - Optional in production (with auth)
+
+  5. Document all resources
+     - Listings (CRUD endpoints)
+     - Categories (CRUD endpoints)
+     - Directories (CRUD endpoints)
+     - Public endpoints
+     - Crawler endpoints
+
+  6. Add example requests/responses
+     - Provide realistic examples
+     - Show successful responses
+     - Show error responses
+
+  Example implementation:
+
+  # swagger.ts
+  import swaggerJsdoc from 'swagger-jsdoc';
+
+  const options = {
+    definition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Mega Directory API',
+        version: '1.0.0',
+        description: 'API for managing business directory listings',
+        contact: {
+          name: 'API Support',
+          email: 'support@example.com'
+        }
+      },
+      servers: [
+        {
+          url: process.env.API_BASE_URL || 'http://localhost:3030',
+          description: 'Development server'
+        }
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          }
+        },
+        schemas: {
+          Listing: {
+            type: 'object',
+            required: ['title', 'slug', 'status'],
+            properties: {
+              id: { type: 'integer', example: 1 },
+              title: { type: 'string', example: 'Acme Professional Services' },
+              slug: { type: 'string', example: 'acme-professional-services' },
+              websiteUrl: { type: 'string', format: 'uri', example: 'https://acme.example.com' },
+              contactEmail: { type: 'string', format: 'email' },
+              contactPhone: { type: 'string', example: '+1-555-0123' },
+              summary: { type: 'string' },
+              status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+              addresses: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/Address' }
+              }
+            }
+          },
+          Address: {
+            type: 'object',
+            required: ['addressLine1', 'city', 'region', 'country'],
+            properties: {
+              addressLine1: { type: 'string' },
+              city: { type: 'string' },
+              region: { type: 'string' },
+              postalCode: { type: 'string' },
+              country: { type: 'string', minLength: 2, maxLength: 2 }
+            }
+          },
+          Error: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              code: { type: 'string' },
+              details: { type: 'array', items: { type: 'object' } }
+            }
+          }
+        }
+      },
+      tags: [
+        { name: 'Admin - Listings', description: 'Admin endpoints for managing listings' },
+        { name: 'Admin - Categories', description: 'Admin endpoints for managing categories' },
+        { name: 'Admin - Directories', description: 'Admin endpoints for managing directories' },
+        { name: 'Public', description: 'Public endpoints for directory browsing' },
+        { name: 'Crawler', description: 'Endpoints for automated listing ingestion' }
+      ]
+    },
+    apis: ['./src/routes/**/*.ts']
+  };
+
+  export const swaggerSpec = swaggerJsdoc(options);
+
+  # In server.ts:
+  import swaggerUi from 'swagger-ui-express';
+  import { swaggerSpec } from './swagger';
+
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Mega Directory API Docs'
+  }));
+
+  # routes/admin/listings.ts (with JSDoc annotations):
+  /**
+   * @openapi
+   * /v1/admin/listings:
+   *   get:
+   *     tags:
+   *       - Admin - Listings
+   *     summary: Get all listings
+   *     description: Retrieve paginated list of all listings with addresses and categories
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 20
+   *       - in: query
+   *         name: status
+   *         schema:
+   *           type: string
+   *           enum: [PENDING, APPROVED, REJECTED]
+   *     responses:
+   *       200:
+   *         description: Successful response
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Listing'
+   *                 meta:
+   *                   type: object
+   *                   properties:
+   *                     page: { type: integer }
+   *                     limit: { type: integer }
+   *                     total: { type: integer }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.get('/', adminAuth, asyncHandler(async (req, res) => {
+    // Implementation
+  }));
+
+  /**
+   * @openapi
+   * /v1/admin/listings:
+   *   post:
+   *     tags:
+   *       - Admin - Listings
+   *     summary: Create new listing
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/Listing'
+   *           example:
+   *             title: "Acme Professional Services"
+   *             slug: "acme-professional-services"
+   *             websiteUrl: "https://acme.example.com"
+   *             status: "PENDING"
+   *             addresses:
+   *               - addressLine1: "123 Main St"
+   *                 city: "New York"
+   *                 region: "NY"
+   *                 postalCode: "10001"
+   *                 country: "US"
+   *     responses:
+   *       201:
+   *         description: Listing created
+   *       400:
+   *         description: Validation error
+   *       409:
+   *         description: Duplicate slug
+   */
+  router.post('/', adminAuth, validateBody(createListingSchema), asyncHandler(async (req, res) => {
+    // Implementation
+  }));
+
+  Success criteria:
+  - Swagger UI accessible at /api-docs
+  - All endpoints documented with JSDoc
+  - Request/response schemas defined
+  - Authentication requirements documented
+  - Example requests provided
+  - Error responses documented
+  - Can generate client SDKs from spec
+  - Documentation kept in sync with code
+
+dependencies: [61, 62, 63]

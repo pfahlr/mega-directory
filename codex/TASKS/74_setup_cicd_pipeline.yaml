@@ -1,0 +1,95 @@
+id: 74
+filename: 74_setup_cicd_pipeline.yaml
+title: Setup CI/CD Pipeline
+description: >
+  Implement continuous integration and deployment pipeline using GitHub Actions.
+
+  Features:
+  - Automated testing on every push/PR
+  - TypeScript compilation check
+  - Linting
+  - Database migrations testing
+  - Automated deployment to staging/production
+
+  Implementation:
+  - Create .github/workflows/ci.yml
+  - Run tests with PostgreSQL service
+  - Run linter and type checking
+  - Test database migrations
+  - Deploy on merge to main
+
+  Example:
+  # .github/workflows/ci.yml
+  name: CI
+
+  on: [push, pull_request]
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+
+      services:
+        postgres:
+          image: postgres:16
+          env:
+            POSTGRES_PASSWORD: password
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - uses: actions/setup-node@v3
+          with:
+            node-version: '20'
+            cache: 'npm'
+
+        - name: Install dependencies
+          run: npm ci
+
+        - name: Generate Prisma Client
+          run: npx prisma generate
+
+        - name: Run migrations
+          run: npx prisma migrate deploy
+          env:
+            DATABASE_URL: postgresql://postgres:password@localhost:5432/test
+
+        - name: Run tests
+          run: npm test
+          env:
+            DATABASE_URL: postgresql://postgres:password@localhost:5432/test
+
+        - name: Lint
+          run: npm run lint
+
+        - name: Type check
+          run: npm run type-check
+
+        - name: Upload coverage
+          uses: codecov/codecov-action@v3
+          if: always()
+
+  # .github/workflows/deploy.yml
+  name: Deploy
+
+  on:
+    push:
+      branches: [main]
+
+  jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - name: Deploy to production
+          run: |
+            # Add deployment commands here
+            # e.g., deploy to Railway, Vercel, etc.
+
+dependencies: [60, 62, 73]

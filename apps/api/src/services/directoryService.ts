@@ -96,6 +96,27 @@ export async function getAllDirectories(
   ]);
 
   return createPaginatedResponse(data, page, limit, totalCount);
+=======
+export async function getAllDirectories(): Promise<DirectoryWithRelations[]> {
+  return await prisma.directory.findMany({
+    include: {
+      category: true,
+      location: {
+        include: {
+          cityRecord: {
+            include: {
+              state: {
+                include: {
+                  country: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  }) as any;
 }
 
 /**
@@ -135,6 +156,28 @@ export async function getActiveDirectories(
   ]);
 
   return createPaginatedResponse(data, page, limit, totalCount);
+
+export async function getActiveDirectories(): Promise<DirectoryWithRelations[]> {
+  return await prisma.directory.findMany({
+    where: { status: 'ACTIVE' },
+    include: {
+      category: true,
+      location: {
+        include: {
+          cityRecord: {
+            include: {
+              state: {
+                include: {
+                  country: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  }) as any;
 }
 
 /**
@@ -149,7 +192,7 @@ export async function getDirectoryById(id: number): Promise<DirectoryWithRelatio
         include: {
           cityRecord: {
             include: {
-              stateRecord: {
+              state: {
                 include: {
                   country: true,
                 },
@@ -305,7 +348,7 @@ export async function updateDirectory(
       },
     });
 
-    return directory;
+    return directory as any;
   } catch (error: any) {
     if (error.code === 'P2025') {
       throw new NotFoundError('Directory', id);

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { AppError } from '../errors';
@@ -13,7 +13,7 @@ import { AppError } from '../errors';
  * - Zod validation errors
  * - Unknown errors (programming errors)
  */
-export const errorHandler: ErrorRequestHandler = (
+export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
@@ -60,7 +60,7 @@ export const errorHandler: ErrorRequestHandler = (
     return res.status(400).json({
       error: 'Validation failed',
       code: 'VALIDATION_ERROR',
-      details: err.errors.map(e => ({
+      details: err.issues.map((e: any) => ({
         field: e.path.join('.'),
         message: e.message,
         code: e.code

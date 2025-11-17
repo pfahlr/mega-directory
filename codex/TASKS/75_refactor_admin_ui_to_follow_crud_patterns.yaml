@@ -1,0 +1,643 @@
+id: 75
+filename: 75_refactor_admin_ui_to_follow_crud_patterns.yaml
+title: Refactor Admin UI to Follow CRUD Patterns
+priority: 🔴 Critical
+impact: High
+effort: Medium
+dependencies: []
+
+description: >
+  The admin UI currently has scalability issues where entity management pages
+  (particularly directories) display ALL edit forms below the create form on
+  a single page. This is not scalable and creates poor UX.
+
+  Current problematic pattern:
+  - Add Directory page shows the create form at the top
+  - Below it, displays edit forms for EVERY existing directory
+  - This becomes unusable with dozens or hundreds of directories
+
+  Required pattern for all CRUD entities:
+  1. List Page (paginated) - shows table/cards with basic info
+  2. Create Page - only the add form
+  3. Edit Page - single edit form for selected entity
+  4. Delete Handler - confirmation and deletion
+
+  Entities requiring this pattern:
+  - Directory Pages (currently broken)
+  - Listings (mostly correct, but verify)
+  - Categories
+  - Locations (Countries, States, Cities)
+
+  Special case (DO NOT CHANGE):
+  - "Newly Added Listings" page - intentionally shows 10 edit forms per page
+    for quick admin review workflow. This is a special approval interface,
+    not the main listings management page.
+
+problem_statement: >
+  The "Add Directory" page in the admin UI displays edit forms for all
+  existing directories below the create form. With many directories, this:
+  - Creates massive page load times
+  - Makes the page unusable (too much scrolling)
+  - Wastes memory rendering all forms
+  - Makes it hard to find specific directories to edit
+  - Violates standard CRUD UI patterns
+
+current_state: |
+  # apps/admin/views/directories/add.ejs (or similar)
+  <h1>Add New Directory</h1>
+  <form action="/directories" method="POST">
+    <!-- Create form fields -->
+  </form>
+
+  <h2>Existing Directories</h2>
+  <% directories.forEach(dir => { %>
+    <form action="/directories/<%= dir.id %>" method="POST">
+      <!-- Full edit form for EVERY directory -->
+      <input name="title" value="<%= dir.title %>">
+      <input name="slug" value="<%= dir.slug %>">
+      <!-- ... all fields ... -->
+      <button type="submit">Update</button>
+    </form>
+  <% }) %>
+
+  This pattern is repeated for other entities.
+
+desired_state: |
+  # Proper CRUD structure for each entity
+
+  ## 1. List Page (e.g., /admin/directories)
+  - Paginated table/card view
+  - Shows: ID, Title, Status, Category, Location, Actions
+  - Actions: [Edit] [Delete] buttons
+  - "Add New Directory" button at top
+  - Filter/search capabilities
+  - 10-50 items per page
+
+  ## 2. Create Page (e.g., /admin/directories/new)
+  - Only the create form
+  - All required fields
+  - "Save" and "Cancel" buttons
+  - Redirects to list page on success
+
+  ## 3. Edit Page (e.g., /admin/directories/:id/edit)
+  - Single edit form for the selected directory
+  - Pre-populated with current values
+  - "Update" and "Cancel" buttons
+  - Redirects to list page on success
+
+  ## 4. Delete Handler (e.g., POST /admin/directories/:id/delete)
+  - Confirmation dialog/page
+  - Handles cascading deletes or shows warnings
+  - Redirects to list page on success
+
+implementation_plan:
+
+  phase_1_directories:
+    priority: 🔴 Critical
+    steps:
+      - step: Create directories list page
+        details: |
+          Create /admin/directories (GET) route and view
+          - Display paginated table of directories
+          - Columns: ID, Title, Slug, Status, Category, Location
+          - Actions column with Edit/Delete buttons
+          - "Add New Directory" button links to /admin/directories/new
+          - Pagination controls (10 per page default)
+          - Optional: search/filter by status or category
+
+      - step: Create directories create page
+        details: |
+          Create /admin/directories/new (GET) route and view
+          - Only shows the create form
+          - All fields: title, slug, subdomain, subdirectory, category, location, status
+          - POST to /admin/directories
+          - Success: redirect to /admin/directories with success message
+          - Error: re-render form with validation errors
+
+      - step: Create directories edit page
+        details: |
+          Create /admin/directories/:id/edit (GET) route and view
+          - Load single directory by ID
+          - Pre-populate edit form with current values
+          - POST to /admin/directories/:id
+          - Success: redirect to /admin/directories with success message
+          - Error: re-render form with validation errors
+
+      - step: Create directories delete handler
+        details: |
+          Create /admin/directories/:id/delete (POST) route
+          - Confirm directory exists
+          - Check for associated listings (warn or prevent)
+          - Delete directory
+          - Success: redirect to /admin/directories with success message
+          - Error: redirect with error message
+
+      - step: Update navigation and links
+        details: |
+          Update admin navigation to point to /admin/directories
+          Update any other links pointing to old directory management page
+          Remove old combined add/edit page
+
+  phase_2_categories:
+    priority: 🟡 Important
+    steps:
+      - step: Create categories list page
+        route: GET /admin/categories
+        view: List all categories with Edit/Delete actions
+
+      - step: Create categories create page
+        route: GET /admin/categories/new
+        view: Create form only
+
+      - step: Create categories edit page
+        route: GET /admin/categories/:id/edit
+        view: Single edit form
+
+      - step: Create categories delete handler
+        route: POST /admin/categories/:id/delete
+        view: Delete with cascade warnings
+
+  phase_3_locations:
+    priority: 🟡 Important
+    steps:
+      - step: Create countries list page
+        route: GET /admin/locations/countries
+        view: Paginated list with Edit/Delete
+
+      - step: Create states list page
+        route: GET /admin/locations/states
+        view: Paginated list with Edit/Delete, filter by country
+
+      - step: Create cities list page
+        route: GET /admin/locations/cities
+        view: Paginated list with Edit/Delete, filter by state
+
+      - step: Implement CRUD pages for each location type
+        details: Follow same pattern as directories
+
+  phase_4_verify_listings:
+    priority: 🟢 Nice-to-Have
+    steps:
+      - step: Verify listings follow CRUD pattern
+        details: |
+          Check if listings already follow proper CRUD:
+          - /admin/listings - list page
+          - /admin/listings/new - create page
+          - /admin/listings/:id/edit - edit page
+          - /admin/listings/:id/delete - delete handler
+
+      - step: Keep special "newly added" page
+        details: |
+          DO NOT CHANGE: /admin/listings/pending or /admin/review
+          This page intentionally shows 10 edit forms per page
+          for quick approval workflow. This is correct behavior.
+
+example_implementation:
+
+  directories_list_view: |
+    <!-- apps/admin/views/directories/index.ejs -->
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Directories - Admin</title>
+    </head>
+    <body>
+      <h1>Directory Pages</h1>
+
+      <div class="actions">
+        <a href="/admin/directories/new" class="btn btn-primary">
+          Add New Directory
+        </a>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Location</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% directories.forEach(dir => { %>
+            <tr>
+              <td><%= dir.id %></td>
+              <td><%= dir.title %></td>
+              <td><%= dir.slug %></td>
+              <td><span class="badge <%= dir.status.toLowerCase() %>">
+                <%= dir.status %>
+              </span></td>
+              <td><%= dir.category?.name || 'N/A' %></td>
+              <td><%= dir.location?.city?.name || 'N/A' %></td>
+              <td>
+                <a href="/admin/directories/<%= dir.id %>/edit"
+                   class="btn btn-sm btn-secondary">Edit</a>
+                <form action="/admin/directories/<%= dir.id %>/delete"
+                      method="POST" style="display:inline;"
+                      onsubmit="return confirm('Delete this directory?');">
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <% if (page > 1) { %>
+          <a href="?page=<%= page - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <span>Page <%= page %> of <%= totalPages %></span>
+        <% if (page < totalPages) { %>
+          <a href="?page=<%= page + 1 %>">Next &raquo;</a>
+        <% } %>
+      </div>
+    </body>
+    </html>
+
+  directories_create_view: |
+    <!-- apps/admin/views/directories/new.ejs -->
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Add Directory - Admin</title>
+    </head>
+    <body>
+      <h1>Add New Directory</h1>
+
+      <form action="/admin/directories" method="POST">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" name="title" id="title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="slug">Slug</label>
+          <input type="text" name="slug" id="slug" required>
+        </div>
+
+        <div class="form-group">
+          <label for="subdomain">Subdomain</label>
+          <input type="text" name="subdomain" id="subdomain">
+        </div>
+
+        <div class="form-group">
+          <label for="subdirectory">Subdirectory</label>
+          <input type="text" name="subdirectory" id="subdirectory">
+        </div>
+
+        <div class="form-group">
+          <label for="categoryId">Category</label>
+          <select name="categoryId" id="categoryId" required>
+            <option value="">Select a category</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cityId">Location (City)</label>
+          <select name="cityId" id="cityId" required>
+            <option value="">Select a city</option>
+            <% cities.forEach(city => { %>
+              <option value="<%= city.id %>">
+                <%= city.name %>, <%= city.state?.code || '' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select name="status" id="status" required>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Create Directory</button>
+          <a href="/admin/directories" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </body>
+    </html>
+
+  directories_edit_view: |
+    <!-- apps/admin/views/directories/edit.ejs -->
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Edit Directory - Admin</title>
+    </head>
+    <body>
+      <h1>Edit Directory: <%= directory.title %></h1>
+
+      <form action="/admin/directories/<%= directory.id %>" method="POST">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" name="title" id="title"
+                 value="<%= directory.title %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="slug">Slug</label>
+          <input type="text" name="slug" id="slug"
+                 value="<%= directory.slug %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="subdomain">Subdomain</label>
+          <input type="text" name="subdomain" id="subdomain"
+                 value="<%= directory.subdomain || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="subdirectory">Subdirectory</label>
+          <input type="text" name="subdirectory" id="subdirectory"
+                 value="<%= directory.subdirectory || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="categoryId">Category</label>
+          <select name="categoryId" id="categoryId" required>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>"
+                      <%= cat.id === directory.categoryId ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cityId">Location (City)</label>
+          <select name="cityId" id="cityId" required>
+            <% cities.forEach(city => { %>
+              <option value="<%= city.id %>"
+                      <%= city.id === directory.cityId ? 'selected' : '' %>>
+                <%= city.name %>, <%= city.state?.code || '' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select name="status" id="status" required>
+            <option value="DRAFT"
+                    <%= directory.status === 'DRAFT' ? 'selected' : '' %>>
+              Draft
+            </option>
+            <option value="PUBLISHED"
+                    <%= directory.status === 'PUBLISHED' ? 'selected' : '' %>>
+              Published
+            </option>
+            <option value="ARCHIVED"
+                    <%= directory.status === 'ARCHIVED' ? 'selected' : '' %>>
+              Archived
+            </option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Update Directory</button>
+          <a href="/admin/directories" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </body>
+    </html>
+
+  server_routes_example: |
+    // apps/admin/src/server.ts (or routes file)
+
+    // List directories (paginated)
+    app.get('/admin/directories', adminAuth, async (req, res) => {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = 10;
+      const offset = (page - 1) * limit;
+
+      const [directories, total] = await Promise.all([
+        prisma.directory.findMany({
+          skip: offset,
+          take: limit,
+          include: {
+            category: true,
+            location: {
+              include: {
+                city: {
+                  include: { state: true }
+                }
+              }
+            }
+          },
+          orderBy: { updatedAt: 'desc' }
+        }),
+        prisma.directory.count()
+      ]);
+
+      res.render('directories/index', {
+        directories,
+        page,
+        totalPages: Math.ceil(total / limit)
+      });
+    });
+
+    // Show create form
+    app.get('/admin/directories/new', adminAuth, async (req, res) => {
+      const [categories, cities] = await Promise.all([
+        prisma.category.findMany({ orderBy: { name: 'asc' } }),
+        prisma.city.findMany({
+          include: { state: true },
+          orderBy: { name: 'asc' }
+        })
+      ]);
+
+      res.render('directories/new', { categories, cities });
+    });
+
+    // Create directory
+    app.post('/admin/directories', adminAuth, async (req, res) => {
+      try {
+        await prisma.directory.create({
+          data: {
+            title: req.body.title,
+            slug: req.body.slug,
+            subdomain: req.body.subdomain || null,
+            subdirectory: req.body.subdirectory || null,
+            categoryId: parseInt(req.body.categoryId),
+            cityId: parseInt(req.body.cityId),
+            status: req.body.status
+          }
+        });
+        res.redirect('/admin/directories?success=created');
+      } catch (error) {
+        console.error('Create directory error:', error);
+        res.status(500).send('Error creating directory');
+      }
+    });
+
+    // Show edit form
+    app.get('/admin/directories/:id/edit', adminAuth, async (req, res) => {
+      const [directory, categories, cities] = await Promise.all([
+        prisma.directory.findUnique({
+          where: { id: parseInt(req.params.id) },
+          include: {
+            category: true,
+            location: {
+              include: {
+                city: {
+                  include: { state: true }
+                }
+              }
+            }
+          }
+        }),
+        prisma.category.findMany({ orderBy: { name: 'asc' } }),
+        prisma.city.findMany({
+          include: { state: true },
+          orderBy: { name: 'asc' }
+        })
+      ]);
+
+      if (!directory) {
+        return res.status(404).send('Directory not found');
+      }
+
+      res.render('directories/edit', { directory, categories, cities });
+    });
+
+    // Update directory
+    app.post('/admin/directories/:id', adminAuth, async (req, res) => {
+      try {
+        await prisma.directory.update({
+          where: { id: parseInt(req.params.id) },
+          data: {
+            title: req.body.title,
+            slug: req.body.slug,
+            subdomain: req.body.subdomain || null,
+            subdirectory: req.body.subdirectory || null,
+            categoryId: parseInt(req.body.categoryId),
+            cityId: parseInt(req.body.cityId),
+            status: req.body.status
+          }
+        });
+        res.redirect('/admin/directories?success=updated');
+      } catch (error) {
+        console.error('Update directory error:', error);
+        res.status(500).send('Error updating directory');
+      }
+    });
+
+    // Delete directory
+    app.post('/admin/directories/:id/delete', adminAuth, async (req, res) => {
+      try {
+        // Check for associated listings
+        const listingsCount = await prisma.listing.count({
+          where: {
+            directories: {
+              some: { directoryId: parseInt(req.params.id) }
+            }
+          }
+        });
+
+        if (listingsCount > 0) {
+          return res.redirect(
+            `/admin/directories?error=has_listings&count=${listingsCount}`
+          );
+        }
+
+        await prisma.directory.delete({
+          where: { id: parseInt(req.params.id) }
+        });
+
+        res.redirect('/admin/directories?success=deleted');
+      } catch (error) {
+        console.error('Delete directory error:', error);
+        res.status(500).send('Error deleting directory');
+      }
+    });
+
+testing_approach:
+  manual_testing:
+    - step: Test directories CRUD
+      checklist:
+        - Navigate to /admin/directories
+        - Verify paginated list displays
+        - Click "Add New Directory"
+        - Fill out create form and submit
+        - Verify redirected to list with new directory
+        - Click "Edit" on a directory
+        - Modify fields and save
+        - Verify changes persist
+        - Click "Delete" on a test directory
+        - Confirm deletion works
+
+    - step: Test categories CRUD
+      checklist:
+        - Same pattern as directories
+        - Verify all CRUD operations work
+
+    - step: Test locations CRUD
+      checklist:
+        - Test countries, states, cities separately
+        - Verify filtering (cities by state, etc.)
+
+    - step: Verify listings
+      checklist:
+        - Confirm /admin/listings follows CRUD pattern
+        - Verify "newly added/pending" special page still works
+        - This page should still show multiple edit forms
+
+  automated_testing:
+    - Write integration tests for each entity's CRUD routes
+    - Test pagination logic
+    - Test delete cascade warnings
+    - Test validation errors
+
+success_criteria:
+  - All entity management follows standard CRUD pattern
+  - List pages show paginated results (10-50 per page)
+  - Create pages only show create form
+  - Edit pages show single edit form for selected entity
+  - Delete handlers properly cascade or warn
+  - Navigation is intuitive and consistent
+  - No pages render dozens/hundreds of forms
+  - Page load times are fast (<500ms)
+  - Admin UI is scalable to thousands of entities
+
+notes:
+  - This is a critical UX and scalability fix
+  - Current pattern likely came from rapid prototyping
+  - Proper CRUD is web development standard
+  - Makes admin UI much more maintainable
+  - Reduces server memory and bandwidth usage
+  - Improves admin user experience significantly
+
+files_to_modify:
+  - apps/admin/views/directories/*.ejs (create new structure)
+  - apps/admin/src/server.ts (update routes)
+  - apps/admin/views/categories/*.ejs (create new structure)
+  - apps/admin/views/locations/*.ejs (create new structure)
+  - apps/admin/views/listings/*.ejs (verify/fix if needed)
+  - apps/admin/views/partials/nav.ejs (update navigation links)
+
+estimated_time: 3-5 days
+  - Day 1: Refactor directories (most important)
+  - Day 2: Refactor categories
+  - Day 3: Refactor locations (countries, states, cities)
+  - Day 4: Verify listings, add pagination component
+  - Day 5: Testing, polish, documentation
+
+related_tasks:
+  - Task 65: Implement Pagination (this task uses pagination)
+  - Task 64: API Documentation (document new routes)
+  - Task 60: Automated Testing (write tests for CRUD routes)

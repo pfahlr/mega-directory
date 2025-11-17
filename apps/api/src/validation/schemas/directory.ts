@@ -22,9 +22,7 @@ export const createDirectorySchema = z.object({
   description: z.string().max(1000).optional().nullable(),
   categoryId: z.number().int().positive('Category ID must be a positive integer'),
   cityId: z.number().int().positive('City ID must be a positive integer'),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED'], {
-    message: 'Status must be DRAFT, PUBLISHED, or ARCHIVED'
-  }).optional().default('DRAFT')
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional().default('DRAFT')
 });
 
 /**
