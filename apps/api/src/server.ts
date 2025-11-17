@@ -653,9 +653,16 @@ function registerAdminRoutes(app: ExpressApp, adminAuth: RequestHandler) {
 }
 
 function registerAdminCategoryRoutes(app: ExpressApp, adminAuth: RequestHandler) {
-  app.get('/v1/admin/categories', adminAuth, (_req: Request, res: Response) => {
-    const store = getAppLocals(app).adminStore;
-    res.json({ data: store.categories.slice() });
+  app.get('/v1/admin/categories', adminAuth, async (_req: Request, res: Response) => {
+    try {
+      const categories = await prisma.category.findMany({
+        orderBy: { name: 'asc' },
+      });
+      res.json({ data: categories });
+    } catch (error) {
+      console.error('[admin] Failed to fetch categories:', error);
+      res.status(500).json({ error: 'Failed to fetch categories' });
+    }
   });
 
   app.get('/v1/admin/categories/:categoryId', adminAuth, (req: Request, res: Response) => {
@@ -671,102 +678,78 @@ function registerAdminCategoryRoutes(app: ExpressApp, adminAuth: RequestHandler)
     return res.json({ data: record });
   });
 
-  app.post('/v1/admin/categories', adminAuth, (req: Request, res: Response) => {
-    const validation = validateCategoryPayload(req.body, 'create');
-    if (!validation.valid) {
-      return res.status(400).json({ error: 'Validation failed', details: validation.errors });
+  app.post('/v1/admin/categories', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const { name, slug, description } = req.body;
+
+      if (!name || !slug) {
+        return res.status(400).json({ error: 'name and slug are required' });
+      }
+
+      const category = await prisma.category.create({
+        data: { name, slug, description },
+      });
+
+      res.status(201).json({ data: category });
+    } catch (error: any) {
+      console.error('[admin] Failed to create category:', error);
+
+      if (error.code === 'P2002') {
+        return res.status(409).json({ error: 'Category with this slug already exists' });
+      }
+
+      res.status(500).json({ error: 'Failed to create category' });
     }
-    const store = getAppLocals(app).adminStore;
-    if (store.categories.some((entry) => entry.slug === validation.value.slug)) {
-      return res
-        .status(400)
-        .json({ error: 'Validation failed', details: ['slug already exists'] });
-    }
-    const now = new Date().toISOString();
-    const record: CategoryRecord = {
-      id: store.nextCategoryId++,
-      name: validation.value.name!,
-      slug: validation.value.slug!,
-      description: validation.value.description ?? null,
-      metaTitle: validation.value.metaTitle ?? null,
-      metaDescription: validation.value.metaDescription ?? null,
-      isActive: validation.value.isActive ?? true,
-      createdAt: now,
-      updatedAt: now
-    };
-    store.categories.push(record);
-    return res.status(201).json({ data: record });
   });
 
-  app.put('/v1/admin/categories/:categoryId', adminAuth, (req: Request, res: Response) => {
-    const categoryId = parseIdParam(req.params?.categoryId);
-    if (!categoryId) {
-      return res.status(400).json({ error: 'Invalid category id' });
+  app.put('/v1/admin/categories/:id', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const { name, slug, description } = req.body;
+
+      const category = await prisma.category.update({
+        where: { id },
+        data: {
+          ...(name && { name }),
+          ...(slug && { slug }),
+          ...(description !== undefined && { description }),
+        },
+      });
+
+      res.json({ data: category });
+    } catch (error: any) {
+      console.error('[admin] Failed to update category:', error);
+
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+
+      res.status(500).json({ error: 'Failed to update category' });
     }
-    const store = getAppLocals(app).adminStore;
-    const record = store.categories.find((entry) => entry.id === categoryId);
-    if (!record) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-    const validation = validateCategoryPayload(req.body, 'update');
-    if (!validation.valid) {
-      return res.status(400).json({ error: 'Validation failed', details: validation.errors });
-    }
-    if (
-      validation.value.slug &&
-      store.categories.some((entry) => entry.slug === validation.value.slug && entry.id !== record.id)
-    ) {
-      return res
-        .status(400)
-        .json({ error: 'Validation failed', details: ['slug already exists'] });
-    }
-    if (validation.value.name !== undefined) {
-      record.name = validation.value.name;
-    }
-    if (validation.value.slug) {
-      record.slug = validation.value.slug;
-    }
-    if (validation.value.description !== undefined) {
-      record.description = validation.value.description;
-    }
-    if (validation.value.metaTitle !== undefined) {
-      record.metaTitle = validation.value.metaTitle;
-    }
-    if (validation.value.metaDescription !== undefined) {
-      record.metaDescription = validation.value.metaDescription;
-    }
-    if (validation.value.isActive !== undefined) {
-      record.isActive = validation.value.isActive;
-    }
-    record.updatedAt = new Date().toISOString();
-    return res.json({ data: record });
   });
 
-  app.delete('/v1/admin/categories/:categoryId', adminAuth, (req: Request, res: Response) => {
-    const categoryId = parseIdParam(req.params?.categoryId);
-    if (!categoryId) {
-      return res.status(400).json({ error: 'Invalid category id' });
-    }
-    const store = getAppLocals(app).adminStore;
-    const index = store.categories.findIndex((entry) => entry.id === categoryId);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-    store.categories.splice(index, 1);
-    const timestamp = new Date().toISOString();
-    store.listings.forEach((listing) => {
-      if (listing.categoryIds.includes(categoryId)) {
-        listing.categoryIds = listing.categoryIds.filter((id) => id !== categoryId);
-        listing.updatedAt = timestamp;
+  app.delete('/v1/admin/categories/:id', adminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+
+      await prisma.category.delete({
+        where: { id },
+      });
+
+      res.status(204).send();
+    } catch (error: any) {
+      console.error('[admin] Failed to delete category:', error);
+
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'Category not found' });
       }
-    });
-    store.directories.forEach((directory) => {
-      if (directory.categoryIds.includes(categoryId)) {
-        directory.categoryIds = directory.categoryIds.filter((id) => id !== categoryId);
-        directory.updatedAt = timestamp;
+
+      if (error.code === 'P2003') {
+        return res.status(409).json({ error: 'Cannot delete category with associated listings' });
       }
-    });
-    return res.status(204).json({});
+
+      res.status(500).json({ error: 'Failed to delete category' });
+    }
   });
 }
 
