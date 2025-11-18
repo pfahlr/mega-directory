@@ -7,6 +7,7 @@
   "types": "dist/server.d.ts",
   "scripts": {
     "postinstall": "prisma generate --schema=../../db/schema.prisma",
+    "prebuild": "prisma generate --schema=../../db/schema.prisma",
     "dev": "npm run build && node dist/server.js",
     "dev:watch": "tsc -p tsconfig.json --watch",
     "build": "tsc -p tsconfig.json",
