@@ -15,6 +15,7 @@ declare module 'express' {
     statusCode: number;
     status(code: number): this;
     json(body: any): this;
+    send(body: any): this;
     set(field: string, value: string): this;
     setHeader(name: string, value: string | number | string[]): this;
     cookie(name: string, value: string, options?: any): this;
