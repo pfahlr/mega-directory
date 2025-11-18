@@ -49,6 +49,41 @@ enum LlmTargetType {
   SUBCATEGORY
 }
 
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+
+enum ReportReason {
+  SPAM
+  INCORRECT_INFO
+  INAPPROPRIATE
+  DUPLICATE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum ImageFormat {
+  WEBP
+  AVIF
+  JPG
+  PNG
+}
+
+
 model Country {
   id             Int              @id
   name           String
@@ -317,6 +352,9 @@ model Listing {
   cityRecord      City?              @relation("ListingCity", fields: [cityId], references: [id])
   postalCodeRecord PostalCode?       @relation("ListingPostalCode", fields: [postalCodeId], references: [id])
   listItems       ListItem[]
+  votes           Vote[]
+  reports         Report[]
+  reviews         Review[]
 
   @@index([directoryId])
   @@index([status])
@@ -419,6 +457,11 @@ model User {
   sessions         Session[]
   magicLinks       MagicLink[]
   userLists        UserList[]
+  votes            Vote[]
+  reports          Report[] @relation("ReportSubmitter")
+  resolvedReports  Report[] @relation("ReportResolver")
+  reviews          Review[]
+  moderatedReviews Review[] @relation("ReviewModerator")
 
   @@unique([email], name: "email_unique", map: "users_email_key")
   @@index([email])
@@ -495,6 +538,93 @@ model ListItem {
   @@index([listId])
   @@index([listingId])
   @@index([position])
+}
+
+model Vote {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  listingId  Int
+  voteType   VoteType
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([listingId])
+  @@index([userId])
+  @@index([voteType])
+}
+
+model Report {
+  id          Int          @id @default(autoincrement())
+  userId      Int?
+  listingId   Int
+  reason      ReportReason
+  details     String?      @db.VarChar(1000)
+  status      ReportStatus @default(PENDING)
+  adminNotes  String?      @db.VarChar(2000)
+  resolvedBy  Int?
+  resolvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  ipAddress   String?      @db.VarChar(45)
+
+  user       User?    @relation("ReportSubmitter", fields: [userId], references: [id], onDelete: SetNull)
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  resolver   User?    @relation("ReportResolver", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([resolvedBy])
+}
+
+model Review {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  listingId     Int
+  rating        Int?
+  text          String       @db.VarChar(5000)
+  status        ReviewStatus @default(PENDING)
+  spamScore     Decimal?     @db.Decimal(3, 2)
+  spamDetails   Json?
+  moderatedBy   Int?
+  moderatedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  ipAddress     String?      @db.VarChar(45)
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  moderator User?          @relation("ReviewModerator", fields: [moderatedBy], references: [id], onDelete: SetNull)
+  images    ReviewImage[]
+
+  @@unique([userId, listingId])
+  @@index([listingId])
+  @@index([userId])
+  @@index([status])
+  @@index([spamScore])
+  @@index([createdAt])
+}
+
+model ReviewImage {
+  id               Int         @id @default(autoincrement())
+  reviewId         Int
+  originalFilename String      @db.VarChar(255)
+  storedFilename   String      @db.VarChar(255)
+  url              String      @db.VarChar(500)
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  format           ImageFormat
+  uploadedAt       DateTime    @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([uploadedAt])
 }
 
 model LlmFieldConfig {
