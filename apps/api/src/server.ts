@@ -1,4 +1,5 @@
 import express, { type Express } from 'express';
+import cookieParser from 'cookie-parser';
 import { DEFAULT_PORTS, PROJECT_NAME } from '@mega-directory/config';
 import { createLogger, createRequestLogger, type Logger } from './logger';
 import { initializePrisma, disconnectPrisma } from './db';
@@ -13,6 +14,8 @@ import { createCrawlerRouter } from './routes/crawler';
 import type { AuthConfig } from './middleware/auth';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
+import { startSessionCleanup } from './jobs/sessionCleanup';
+import { startMagicLinkCleanup } from './jobs/magicLinkCleanup';
 
 const DEFAULT_PORT = DEFAULT_PORTS.api;
 const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
@@ -131,6 +134,7 @@ export function createServer(options: CreateServerOptions = {}): Express {
   app.use(requestIdMiddleware); // Must be first to add request ID
   app.use(createRequestLogger(logger));
   app.use(express.json());
+  app.use(cookieParser());
 
   // Global rate limiting
   app.use(globalRateLimiter);
@@ -236,6 +240,10 @@ export function startServer() {
     .then(() => {
       // Initialize Redis cache
       initializeRedis(cache, locals.logger);
+
+      // Start cleanup jobs
+      startSessionCleanup();
+      startMagicLinkCleanup();
 
       app.listen(port, () => {
         locals.logger.info(

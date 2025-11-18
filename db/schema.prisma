@@ -23,6 +23,7 @@ enum DirectoryStatus {
 }
 
 enum UserRole {
+  PUBLIC
   ADMIN
   EDITOR
   MODERATOR
@@ -397,11 +398,15 @@ model FeaturedSlot {
 
 model User {
   id             Int        @id @default(autoincrement())
-  email          String     @unique
-  passwordHash   String
+  username       String     @unique @db.VarChar(50)
+  email          String?    @db.VarChar(255)
+  emailVerified  Boolean    @default(false)
+  passwordHash   String?    @db.VarChar(255)
+  photo          String?    @db.VarChar(500)
+  about          String?    @db.VarChar(1024)
   displayName    String?
-  role           UserRole   @default(ADMIN)
-  status         UserStatus @default(INVITED)
+  role           UserRole   @default(PUBLIC)
+  status         UserStatus @default(ACTIVE)
   apiTokenHash   String?
   lastLoginAt    DateTime?
   lastPasswordAt DateTime?
@@ -410,6 +415,47 @@ model User {
   updatedAt      DateTime   @updatedAt
 
   approvedListings Listing[] @relation("ListingApprovedBy")
+  sessions         Session[]
+  magicLinks       MagicLink[]
+
+  @@unique([email], name: "email_unique", map: "users_email_key")
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+}
+
+model Session {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  tokenHash  String   @db.VarChar(255)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.VarChar(500)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model MagicLink {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  code       String    @unique @db.VarChar(12)
+  email      String    @db.VarChar(255)
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+  ipAddress  String?   @db.VarChar(45)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([code])
+  @@index([expiresAt])
+  @@index([email])
 }
 
 model LlmFieldConfig {
