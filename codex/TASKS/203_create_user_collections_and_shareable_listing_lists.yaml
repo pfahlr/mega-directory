@@ -2,12 +2,500 @@ id: 203
 filename: 203_create_user_collections_and_shareable_listing_lists.yaml
 title: Create User Collections and Shareable Listing Lists
 description: >
-    Users can save listings into named lists
-    - Users create/edit/delete multiple personal lists
-    - Each list has a slug and is publicly viewable at /[username]/[slug]
-    - Listings can be added/removed via AJAX
-    - Add export buttons CSV, KML, GPX format support
-    - Create database schema lists, list_items
-    - Endpoints GET/POST/DELETE for lists and items
-    - Write tests for unique slugs per user, list membership validation, export functions
+  Enable users to create, manage, and share custom collections of listings.
+  Collections are publicly accessible via /username/slug URLs and can be
+  exported in multiple geographic formats (CSV, KML, GPX).
+
+objectives:
+  - Users can create multiple named lists of saved listings
+  - Each list has a unique slug per user for sharing
+  - Lists are publicly viewable at /[username]/[slug] or unlisted (link-only)
+  - Add/remove listings via AJAX for seamless interaction
+  - Export lists in CSV, KML, and GPX formats
+  - Support location-aware and location-agnostic list types
+  - Handle slug collisions with numeric suffixes
+
+database_schema:
+  user_lists_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - user_id: integer, foreign key to users(id), on delete cascade, not null
+      - title: string(200), not null
+      - description: text(2000), nullable
+      - url_slug: string(100), not null
+      - unlisted: boolean, default false (if true, only accessible via direct link)
+      - location_agnostic: boolean, default false (if false, show map view)
+      - created_at: timestamp, not null, default now()
+      - updated_at: timestamp, not null, default now()
+    indexes:
+      - unique: (user_id, url_slug) (slug unique per user)
+      - index: user_id
+      - index: unlisted (for discovery features)
+      - index: created_at
+    constraints:
+      - title: min 1 char, max 200 chars
+      - description: max 2000 chars
+      - url_slug: must match pattern ^[a-z0-9-]+$ (lowercase, numbers, hyphen only)
+
+  list_items_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - list_id: integer, foreign key to user_lists(id), on delete cascade, not null
+      - listing_id: integer, foreign key to listings(id), on delete cascade, not null
+      - position: integer, not null, default 0 (for manual ordering)
+      - notes: text(500), nullable (user's notes about this listing)
+      - added_at: timestamp, not null, default now()
+    indexes:
+      - unique: (list_id, listing_id) (listing can only be in list once)
+      - index: list_id
+      - index: listing_id
+      - index: position
+    constraints:
+      - Max 255 items per list (enforced in application logic)
+      - position >= 0
+
+username_generation:
+  strategy: Random adjective + noun + 3-digit number
+  wordlists:
+    adjectives_source: https://raw.githubusercontent.com/imsky/wordlists/master/adjectives/descriptive_adjectives.txt
+    nouns_source: https://raw.githubusercontent.com/imsky/wordlists/master/nouns/common_nouns.txt
+  format: "{adjective}-{noun}-{number}"
+  example: "happy-penguin-742", "clever-mountain-205", "bright-river-931"
+  number_range: 100-999 (3 digits)
+  validation:
+    - Total username length must be <= 50 characters
+    - If generated username exceeds limit, regenerate with shorter words
+    - Check uniqueness before assigning
+    - Retry up to 10 times before falling back to UUID-based username
+  collision_handling:
+    - Generate random until unique found
+    - If 10 attempts fail: use "user-{uuid4_first_8}"
+
+list_privacy:
+  public_lists:
+    unlisted: false
+    behavior:
+      - Appears in user's public profile /{username}
+      - May be featured on directory pages (if curated by admin)
+      - Indexed by search engines
+      - Shareable via URL
+
+  unlisted_lists:
+    unlisted: true
+    behavior:
+      - Only accessible via direct link /{username}/{slug}
+      - Does not appear in user's public profile
+      - Not indexed by search engines (noindex meta tag)
+      - Shareable via URL but not discoverable
+      - Useful for private collections shared with specific people
+
+list_limits:
+  max_lists_per_user: none (unlimited)
+  max_items_per_list: 255
+  enforcement:
+    - Check item count before adding new listing
+    - Return 400 Bad Request if limit exceeded
+    - Show warning in UI at 250 items
+
+slug_collision_handling:
+  strategy: Append numeric suffix
+  examples:
+    - First list: "my-favorites" → my-favorites
+    - Second list with same title: "my-favorites" → my-favorites-1
+    - Third: "my-favorites" → my-favorites-2
+  implementation:
+    - Generate base slug from title (lowercase, replace spaces with hyphens)
+    - Check if slug exists for user
+    - If exists, append -1 and check again
+    - Increment suffix until unique slug found
+    - Max suffix: -999 (if reached, return error)
+
+export_formats:
+  csv:
+    filename: "{list-slug}-{date}.csv"
+    columns:
+      - name (listing title)
+      - description
+      - address (full formatted address)
+      - latitude
+      - longitude
+      - website
+      - phone
+      - categories (comma-separated)
+      - notes (user's notes from list_items.notes)
+    encoding: UTF-8
+    mime_type: text/csv
+    headers: Content-Disposition: attachment; filename="{list-slug}.csv"
+
+  kml:
+    filename: "{list-slug}-{date}.kml"
+    format: KML 2.2 (Keyhole Markup Language)
+    projection: WGS84 (EPSG:4326)
+    structure: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <kml xmlns="http://www.opengis.net/kml/2.2">
+        <Document>
+          <name>{list title}</name>
+          <description>{list description}</description>
+          {for each listing:}
+          <Placemark>
+            <name>{listing name}</name>
+            <description>{listing description}</description>
+            <Point>
+              <coordinates>{longitude},{latitude},0</coordinates>
+            </Point>
+          </Placemark>
+        </Document>
+      </kml>
+    mime_type: application/vnd.google-earth.kml+xml
+    use_cases: Google Earth, Google Maps import
+    point_formatting: longitude,latitude,altitude (altitude always 0)
+
+  gpx:
+    filename: "{list-slug}-{date}.gpx"
+    format: GPX 1.1 (GPS Exchange Format)
+    projection: WGS84 (EPSG:4326)
+    structure: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <gpx version="1.1" creator="{site name}"
+           xmlns="http://www.topografix.com/GPX/1/1">
+        <metadata>
+          <name>{list title}</name>
+          <desc>{list description}</desc>
+          <time>{export timestamp}</time>
+        </metadata>
+        {for each listing:}
+        <wpt lat="{latitude}" lon="{longitude}">
+          <name>{listing name}</name>
+          <desc>{listing description}</desc>
+          <type>{primary category}</type>
+        </wpt>
+      </gpx>
+    mime_type: application/gpx+xml
+    use_cases: GPS devices, hiking apps, Garmin, outdoor navigation
+    coordinates_order: lat/lon as attributes (different from KML)
+
+  default_projection_details:
+    coordinate_system: WGS84 (World Geodetic System 1984)
+    epsg_code: 4326
+    format: Decimal degrees
+    precision: 6 decimal places (~0.1 meter accuracy)
+    hemisphere: Use signed numbers (negative for South/West)
+
+cascade_behavior:
+  when_listing_deleted:
+    action: CASCADE DELETE
+    effect: Automatically remove list_items entries when listing is deleted
+    rationale: Broken references don't make sense in collections
+
+  when_list_deleted:
+    action: CASCADE DELETE
+    effect: Automatically remove all list_items when list is deleted
+    rationale: Items belong to the list, no orphaned items
+
+  when_user_deleted:
+    action: CASCADE DELETE
+    effect: Delete all user's lists and their items
+    rationale: User data privacy - remove all associated data
+
+api_endpoints:
+  GET /v1/lists:
+    description: Get all lists for current user
+    requires_auth: true
+    query_params:
+      include_unlisted: boolean (default: true)
+    response:
+      lists: array of list objects
+        - id: integer
+        - title: string
+        - description: string
+        - url_slug: string
+        - unlisted: boolean
+        - location_agnostic: boolean
+        - item_count: integer
+        - created_at: timestamp
+        - updated_at: timestamp
+
+  GET /v1/lists/:id:
+    description: Get single list with all items
+    requires_auth: optional (owner sees unlisted, others need public)
+    response:
+      list: {...list object}
+      items: array
+        - listing_id: integer
+        - listing: {...listing object with addresses, categories}
+        - position: integer
+        - notes: string
+        - added_at: timestamp
+
+  POST /v1/lists:
+    description: Create new list
+    requires_auth: true
+    request:
+      title: string (required, 1-200 chars)
+      description: string (optional, max 2000 chars)
+      url_slug: string (optional, auto-generated from title if not provided)
+      unlisted: boolean (default: false)
+      location_agnostic: boolean (default: false)
+    response:
+      list: {...created list object}
+
+  PUT /v1/lists/:id:
+    description: Update list metadata
+    requires_auth: true (must be owner)
+    request:
+      title: string (optional)
+      description: string (optional)
+      unlisted: boolean (optional)
+      location_agnostic: boolean (optional)
+    response:
+      list: {...updated list object}
+
+  DELETE /v1/lists/:id:
+    description: Delete list and all items
+    requires_auth: true (must be owner)
+    response:
+      success: boolean
+
+  POST /v1/lists/:id/items:
+    description: Add listing to list
+    requires_auth: true (must be owner)
+    request:
+      listing_id: integer (required)
+      position: integer (optional, default: end of list)
+      notes: string (optional, max 500 chars)
+    validation:
+      - List exists and user owns it
+      - Listing exists
+      - List has < 255 items
+      - Listing not already in list
+    response:
+      item: {...created list_item object}
+
+  PUT /v1/lists/:id/items/:listing_id:
+    description: Update item position or notes
+    requires_auth: true (must be owner)
+    request:
+      position: integer (optional)
+      notes: string (optional)
+    response:
+      item: {...updated list_item object}
+
+  DELETE /v1/lists/:id/items/:listing_id:
+    description: Remove listing from list
+    requires_auth: true (must be owner)
+    response:
+      success: boolean
+
+  POST /v1/lists/:id/reorder:
+    description: Bulk reorder list items
+    requires_auth: true (must be owner)
+    request:
+      item_ids: array of listing_ids in desired order
+    validation:
+      - All item_ids belong to this list
+      - No duplicates
+    response:
+      success: boolean
+
+  GET /v1/lists/:id/export:
+    description: Export list in specified format
+    requires_auth: optional (if unlisted, must be owner or have direct link)
+    query_params:
+      format: enum('csv', 'kml', 'gpx'), required
+    response:
+      - File download with appropriate mime type
+      - Filename: {list-slug}-{YYYY-MM-DD}.{format}
+
+frontend_implementation:
+  user_profile_page:
+    path: /{username}
+    components:
+      - User info (photo, username, about, joined date)
+      - List of public lists (unlisted=false only)
+      - Each list shows: title, description, item count, last updated
+      - Link to each list: /{username}/{slug}
+    access: Public (anyone can view)
+
+  list_detail_page:
+    path: /{username}/{slug}
+    components:
+      - List header (title, description, owner, item count)
+      - Export buttons (CSV, KML, GPX)
+      - If location_agnostic=false: Map view showing all listings
+      - List view: Cards for each listing
+      - If owner: Edit/delete buttons, add listing button
+      - If owner: Drag-and-drop reordering
+      - If not owner: "Duplicate this list" button (creates copy)
+    access:
+      - Public lists: anyone can view
+      - Unlisted lists: only with direct link (owner or anyone with URL)
+
+  list_management_page:
+    path: /my/lists
+    requires_auth: true
+    components:
+      - "Create new list" button
+      - Table/grid of user's lists (both public and unlisted)
+      - Each list: title, visibility badge, item count, edit/delete buttons
+      - Quick actions: duplicate, export, share link
+
+  add_to_list_modal:
+    trigger: Click "Save" button on listing card
+    components:
+      - "Create new list" option
+      - List of user's existing lists with checkboxes
+      - Shows which lists already contain this listing (checked, disabled)
+      - "Add to list" button
+      - Optional notes field
+    behavior:
+      - AJAX call to POST /v1/lists/:id/items
+      - Show success toast
+      - Update UI without page reload
+
+  create_list_modal:
+    components:
+      - Title input (required)
+      - Description textarea (optional)
+      - URL slug input (auto-generated, editable)
+      - Visibility toggle: Public / Unlisted
+      - Location toggle: Show on map / List only
+      - "Create" button
+    behavior:
+      - Validate slug uniqueness for user
+      - Auto-generate slug from title if not provided
+      - Handle collisions with -1, -2, etc.
+      - AJAX create and show success
+
+  list_export_ui:
+    location: List detail page header
+    components:
+      - "Export" dropdown button
+      - Options: CSV, KML, GPX
+      - Click downloads file directly
+    behavior:
+      - Call GET /v1/lists/:id/export?format={format}
+      - Browser downloads file
+      - Show brief "Downloading..." indicator
+
+ui_features:
+  drag_and_drop_reordering:
+    library: @dnd-kit/core or similar
+    behavior:
+      - Only available to list owner
+      - Drag listing cards to reorder
+      - Visual feedback during drag
+      - On drop: call POST /v1/lists/:id/reorder
+      - Optimistic UI update
+
+  bulk_operations:
+    features:
+      - Select multiple listings (checkbox mode)
+      - Remove selected from list
+      - Move selected to another list
+      - Export selected only (future)
+
+  list_templates:
+    future_feature: true
+    description: Pre-made list templates users can clone
+    examples:
+      - "Best Coffee Shops"
+      - "Dog-Friendly Restaurants"
+      - "Free Activities"
+
+discovery_features:
+  featured_lists:
+    description: Admin-curated lists featured on directory pages
+    implementation:
+      - Add featured_lists junction table
+      - Admin selects lists to feature on specific directories
+      - Show featured lists on directory page sidebar
+      - "Curated by {username}" attribution
+
+  popular_lists:
+    description: Most-viewed public lists
+    metrics:
+      - Track views in list_views table (list_id, view_date)
+      - Show trending lists on homepage
+      - Filter by category/location relevance
+
+  user_following:
+    future_feature: true
+    description: Users can follow other users to see their new lists
+
+validation_rules:
+  list_title:
+    - Required
+    - Min 1 character
+    - Max 200 characters
+    - No special restrictions (allow emojis, unicode)
+
+  list_description:
+    - Optional
+    - Max 2000 characters
+
+  url_slug:
+    - Auto-generated from title if not provided
+    - Lowercase only
+    - Replace spaces with hyphens
+    - Remove special characters (keep alphanumeric and hyphens only)
+    - Max 100 characters
+    - Must be unique per user
+    - Handle collisions with numeric suffix
+
+  list_notes:
+    - Optional
+    - Max 500 characters
+    - Plain text only (no HTML)
+
+testing_requirements:
+  list_crud:
+    - User can create list with title only (minimal)
+    - User can create list with all fields
+    - Auto-generated slug is valid and unique
+    - Slug collision appends -1 correctly
+    - User can update list metadata
+    - User can delete list (cascades to items)
+    - Non-owner cannot edit/delete list
+
+  list_items:
+    - User can add listing to list
+    - Duplicate listing is rejected
+    - 256th listing is rejected (255 limit)
+    - User can remove listing from list
+    - Removing listing updates item count
+    - User can add notes to listing in list
+    - User can update notes
+    - Reordering updates positions correctly
+
+  privacy:
+    - Public lists appear in user profile
+    - Unlisted lists do not appear in profile
+    - Unlisted lists accessible via direct link
+    - Non-owner cannot access unlisted list without link
+    - Owner can access all their lists
+
+  exports:
+    - CSV export includes all required columns
+    - KML export is valid KML 2.2 format
+    - GPX export is valid GPX 1.1 format
+    - Coordinates in correct format for each
+    - Exported files have correct mime types
+    - Filenames are properly formatted
+
+  username_generation:
+    - Generated username is unique
+    - Username matches expected format
+    - Collision handling works (retries)
+    - Fallback to UUID works after 10 failures
+
+  cascade_deletes:
+    - Deleting listing removes from all lists
+    - Deleting list removes all items
+    - Deleting user removes all lists and items
+
 dependencies: [201]
+blockers: []
+estimated_effort: 4-5 days
+priority: high
+status: pending

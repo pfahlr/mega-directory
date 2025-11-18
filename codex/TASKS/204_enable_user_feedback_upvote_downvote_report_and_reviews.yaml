@@ -1,13 +1,663 @@
 id: 204
 filename: 204_enable_user_feedback_upvote_downvote_report_and_reviews.yaml
-title: Enable User Feedback Upvote/Downvote, Report, and Reviews
+title: Enable User Feedback - Upvote/Downvote, Report, and Reviews
 description: >
-    Enable feedback mechanics across listings
-    - Upvote/downvote with single user vote limit
-    - Reports reason + user reference + timestamp
-    - Optional user reviews with basic text + image uploads (MVP optional)
-    - Admin review interface for reported items
-    - Database votes, reports, (optional) reviews
-    - Secure API POST /vote, /report; GET /admin/reports
-    - Write tests for vote integrity, report submission, admin queue review
+  Enable comprehensive user feedback mechanisms across all listings including
+  voting, reporting, and optional reviews with image uploads. Implement spam
+  detection, moderation workflows, and admin review interfaces.
+
+objectives:
+  - Upvote/downvote system with single vote per user per listing
+  - Report mechanism with predefined reasons and admin workflow
+  - Optional user reviews with text and image uploads
+  - AI-powered spam detection for reviews
+  - CAPTCHA protection on login/register
+  - Configurable review moderation (pre-approval or post-moderation)
+  - Admin interface for managing reports and reviews
+
+database_schema:
+  votes_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - user_id: integer, foreign key to users(id), on delete cascade, not null
+      - listing_id: integer, foreign key to listings(id), on delete cascade, not null
+      - vote_type: enum('upvote', 'downvote'), not null
+      - created_at: timestamp, not null, default now()
+      - updated_at: timestamp, not null, default now()
+    indexes:
+      - unique: (user_id, listing_id) (one vote per user per listing)
+      - index: listing_id (for counting votes)
+      - index: user_id
+      - index: vote_type
+    constraints:
+      - vote_type must be 'upvote' or 'downvote'
+    computed_fields:
+      - Add virtual column to listings table for vote counts
+      - upvote_count: count(votes where vote_type='upvote')
+      - downvote_count: count(votes where vote_type='downvote')
+      - net_score: upvote_count - downvote_count
+
+  reports_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - user_id: integer, foreign key to users(id), on delete set null, nullable
+      - listing_id: integer, foreign key to listings(id), on delete cascade, not null
+      - reason: enum('spam', 'incorrect_info', 'inappropriate', 'duplicate', 'other'), not null
+      - details: text(1000), nullable (additional details from user)
+      - status: enum('pending', 'reviewing', 'resolved', 'dismissed'), default 'pending'
+      - admin_notes: text(2000), nullable (admin's investigation notes)
+      - resolved_by: integer, foreign key to users(id), on delete set null, nullable
+      - resolved_at: timestamp, nullable
+      - created_at: timestamp, not null, default now()
+      - ip_address: string(45), nullable
+    indexes:
+      - index: listing_id
+      - index: user_id
+      - index: status
+      - index: created_at
+      - index: resolved_by
+    constraints:
+      - reason must be one of predefined types
+      - status transitions: pending → reviewing → resolved/dismissed
+
+  reviews_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - user_id: integer, foreign key to users(id), on delete cascade, not null
+      - listing_id: integer, foreign key to listings(id), on delete cascade, not null
+      - rating: integer, nullable (1-5 stars, null if review without rating)
+      - text: text(5000), not null
+      - images: json, nullable (array of image URLs)
+      - status: enum('pending', 'approved', 'rejected', 'flagged'), default 'pending' or 'approved'
+      - spam_score: decimal(3,2), nullable (0.00-1.00, from AI detection)
+      - spam_details: json, nullable (AI detection details)
+      - moderated_by: integer, foreign key to users(id), on delete set null, nullable
+      - moderated_at: timestamp, nullable
+      - created_at: timestamp, not null, default now()
+      - updated_at: timestamp, not null, default now()
+      - ip_address: string(45), nullable
+    indexes:
+      - unique: (user_id, listing_id) (one review per user per listing)
+      - index: listing_id
+      - index: user_id
+      - index: status
+      - index: spam_score
+      - index: created_at
+    constraints:
+      - rating: null or between 1-5
+      - text: min 10 chars, max 5000 chars
+      - images: max 5 images per review
+
+  review_images_table:
+    description: Separate table for better image management
+    fields:
+      - id: integer, primary key, auto-increment
+      - review_id: integer, foreign key to reviews(id), on delete cascade, not null
+      - original_filename: string(255), not null
+      - stored_filename: string(255), not null (UUID-based)
+      - url: string(500), not null (CDN or storage URL)
+      - size_bytes: integer, not null
+      - width: integer, nullable
+      - height: integer, nullable
+      - format: enum('webp', 'avif', 'jpg', 'png'), not null
+      - uploaded_at: timestamp, not null, default now()
+    indexes:
+      - index: review_id
+      - index: uploaded_at
+
+  site_settings_table:
+    description: Configuration options for review moderation
+    fields:
+      - id: integer, primary key, auto-increment
+      - key: string(100), unique, not null
+      - value: text, not null
+      - type: enum('boolean', 'string', 'integer', 'json'), not null
+      - description: text, nullable
+      - updated_at: timestamp, not null, default now()
+    configuration_keys:
+      - review_moderation_mode: 'pre_approval' | 'post_moderation'
+      - review_spam_threshold: 0.75 (reviews with spam_score >= this are auto-rejected)
+      - require_captcha_on_login: true | false
+      - require_captcha_on_register: true | false
+      - max_review_images: 5
+      - review_image_max_size_kb: 512
+      - review_image_target_size_kb: 80
+      - review_image_max_dimensions: '1200x1200'
+      - review_image_output_format: 'webp' | 'avif' | 'jpg'
+      - review_image_quality: 85
+
+voting_system:
+  vote_behavior:
+    upvote:
+      - User clicks upvote arrow on listing card
+      - If no previous vote: create vote with type='upvote'
+      - If previous upvote: remove vote (toggle off)
+      - If previous downvote: change to upvote
+      - Update vote counts immediately (optimistic UI)
+
+    downvote:
+      - User clicks downvote arrow on listing card
+      - If no previous vote: create vote with type='downvote'
+      - If previous downvote: remove vote (toggle off)
+      - If previous upvote: change to downvote
+      - Update vote counts immediately (optimistic UI)
+
+  vote_display:
+    public_counts:
+      - Show total upvote count on listing cards
+      - Show total downvote count on listing cards
+      - Show net score (upvotes - downvotes) prominently
+      - Use color coding: positive=green, negative=red, neutral=gray
+      - Show user's current vote state (upvoted/downvoted/neither)
+
+    sorting_options:
+      - Sort by net_score (highest first)
+      - Sort by upvote_count (most upvoted)
+      - Sort by controversial (high total votes, low net score)
+      - Sort by recent upvotes (time-weighted)
+
+  rate_limiting:
+    per_user: 100 votes per hour (prevent abuse)
+    per_ip: 500 votes per hour
+
+reporting_system:
+  report_reasons:
+    spam:
+      label: "Spam or Fake Listing"
+      description: "This listing appears to be spam, fake, or fraudulent"
+
+    incorrect_info:
+      label: "Incorrect Information"
+      description: "Address, hours, contact info, or other details are wrong"
+
+    inappropriate:
+      label: "Inappropriate Content"
+      description: "Contains offensive, illegal, or inappropriate content"
+
+    duplicate:
+      label: "Duplicate Listing"
+      description: "This listing is a duplicate of another listing"
+      details_required: true (must provide ID of original)
+
+    other:
+      label: "Other Issue"
+      description: "Other reason not listed above"
+      details_required: true
+
+  report_workflow:
+    submission:
+      - User clicks "Report" button on listing
+      - Modal shows report reasons
+      - User selects reason and optionally provides details
+      - System validates (reason required, details if required reason)
+      - Create report with status='pending'
+      - Show confirmation: "Thank you for reporting. We'll review this."
+
+    admin_review:
+      - Admin sees all reports in /admin/reports queue
+      - Reports sorted by created_at (oldest first)
+      - Can filter by status, reason, listing
+      - Admin clicks "Review" to see report details
+      - Shows: listing details, report reason, user details, similar reports
+      - Admin actions available:
+
+        approve_and_delete:
+          label: "Delete Listing"
+          effect: Marks report as resolved, deletes listing
+          requires_confirmation: true
+
+        approve_and_edit:
+          label: "Edit Listing"
+          effect: Marks report as resolved, opens edit form
+
+        dismiss:
+          label: "Dismiss Report"
+          effect: Marks report as dismissed (not an issue)
+          requires_notes: optional
+
+        contact_owner:
+          label: "Contact Listing Owner"
+          effect: Send email to owner, keep report pending
+
+        ban_reporter:
+          label: "Ban Reporter"
+          effect: Ban user who submitted report (for false reports)
+          requires_confirmation: true
+
+    auto_actions:
+      - If listing gets 10 reports with same reason: auto-hide listing, alert admin
+      - If user submits 10 reports that all get dismissed: flag user for review
+
+review_system:
+  moderation_modes:
+    pre_approval:
+      default_status: 'pending'
+      behavior:
+        - Reviews not shown publicly until approved by admin
+        - User sees "Your review is pending approval" message
+        - Admin must approve each review manually
+        - Spam-detected reviews auto-rejected
+      use_case: Strict quality control, prevent spam
+
+    post_moderation:
+      default_status: 'approved'
+      behavior:
+        - Reviews shown immediately after submission
+        - Admin can review and remove later if needed
+        - High spam score reviews auto-flagged for review
+        - Users can flag reviews for moderation
+      use_case: Faster user experience, community self-moderation
+
+  review_content_validation:
+    text_requirements:
+      - Plain text only (no HTML allowed)
+      - Min 10 characters
+      - Max 5000 characters
+      - No URLs or links (stripped/rejected)
+      - No HTML entities or markup
+
+    spam_detection:
+      provider: OpenRouter AI (free tier)
+      model: "meta-llama/llama-3.2-3b-instruct:free"
+      prompt: |
+        Analyze the following review for spam content. Look for:
+        - Obfuscated URLs (e.g., "example dot com", "www example")
+        - Obfuscated emails (e.g., "contact at example dot com")
+        - Obfuscated phone numbers (e.g., "five five five one two one two")
+        - Promotional content or advertisements
+        - Off-topic content
+        - Repetitive or low-quality text
+
+        Review text: {review_text}
+
+        Respond with a JSON object:
+        {
+          "is_spam": true/false,
+          "confidence": 0.0-1.0,
+          "reasons": ["reason1", "reason2"],
+          "extracted_urls": ["url1"],
+          "extracted_emails": ["email1"],
+          "extracted_phones": ["phone1"]
+        }
+
+      processing:
+        - Call OpenRouter API with review text
+        - Parse JSON response
+        - Store spam_score = confidence
+        - Store spam_details = full response
+        - If is_spam && confidence >= threshold: reject or flag
+        - If confidence < threshold: approve (or pending if pre-approval mode)
+
+      threshold: 0.75 (configurable in site_settings)
+      fallback: If API fails, default to approved (don't block legitimate reviews)
+
+  review_editing_deletion:
+    editing:
+      - Users can edit their own reviews within 24 hours
+      - Edited reviews re-run spam detection
+      - Edited reviews reset to pending if in pre-approval mode
+      - Show "Edited" badge on edited reviews
+
+    deletion:
+      - Users can delete their own reviews anytime
+      - Soft delete: mark as deleted, keep in database
+      - Admin can permanently delete reviews
+      - Deleting review also deletes associated images
+
+captcha_protection:
+  provider: hCaptcha (free, privacy-focused alternative to reCAPTCHA)
+  implementation: "@hcaptcha/react-hcaptcha"
+  site_key: ENV.HCAPTCHA_SITE_KEY
+  secret_key: ENV.HCAPTCHA_SECRET_KEY
+
+  locations:
+    login:
+      enabled: configurable (site_settings)
+      trigger: Show on login form
+      validation: Verify token on POST /v1/auth/login
+
+    register:
+      enabled: configurable (site_settings)
+      trigger: Show on registration form
+      validation: Verify token on POST /v1/auth/register
+
+    review_submission:
+      enabled: always (prevent spam reviews)
+      trigger: Show on review form submit
+      validation: Verify token on POST /v1/reviews
+
+  verification:
+    endpoint: https://hcaptcha.com/siteverify
+    request:
+      secret: HCAPTCHA_SECRET_KEY
+      response: token_from_client
+      sitekey: HCAPTCHA_SITE_KEY (optional)
+    validation:
+      - Call hCaptcha verify endpoint
+      - Check response.success === true
+      - If false: return 400 "CAPTCHA verification failed"
+      - If true: proceed with request
+
+image_upload_processing:
+  upload_flow:
+    client_side:
+      - User selects up to 5 images
+      - Validate file types: webp, avif, png, jpg only
+      - Validate max file size: 512KB per image
+      - Show preview thumbnails
+      - Upload to signed S3 URL or direct to API
+
+    server_side:
+      - Receive image file
+      - Validate file type and size
+      - Generate UUID filename
+      - Process image:
+        1. Read image with sharp library
+        2. Get dimensions
+        3. If exceeds max dimensions (1200x1200): resize proportionally
+        4. Crop to square if needed (center crop)
+        5. Convert to target format (webp/avif/jpg per config)
+        6. Compress with quality setting (default 85)
+        7. Ensure final size < 80KB (reduce quality if needed)
+        8. Save to storage (local filesystem or S3)
+      - Store image record in review_images table
+      - Return image URL to client
+
+  storage_options:
+    local_filesystem:
+      path: /uploads/reviews/{year}/{month}/{uuid}.{ext}
+      serve: via nginx static file serving or express.static
+      pros: Simple, no external dependencies
+      cons: Not scalable, no CDN
+
+    aws_s3:
+      bucket: ENV.AWS_S3_BUCKET
+      path: reviews/{year}/{month}/{uuid}.{ext}
+      cdn: CloudFront distribution
+      access: Public read, signed upload URLs
+      pros: Scalable, CDN, reliable
+      cons: AWS costs, more complex
+
+  image_processing_library:
+    name: sharp
+    install: npm install sharp
+    example: |
+      import sharp from 'sharp';
+
+      const processedImage = await sharp(inputBuffer)
+        .resize(1200, 1200, {
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .webp({ quality: 85 })
+        .toBuffer();
+
+      // If still > 80KB, reduce quality
+      if (processedImage.length > 80000) {
+        processedImage = await sharp(inputBuffer)
+          .resize(1200, 1200, { fit: 'inside' })
+          .webp({ quality: 70 })
+          .toBuffer();
+      }
+
+api_endpoints:
+  POST /v1/votes:
+    description: Submit or update vote
+    requires_auth: true
+    rate_limit: 100/hour per user
+    request:
+      listing_id: integer
+      vote_type: 'upvote' | 'downvote' | null (null to remove vote)
+    response:
+      vote: {...vote object} | null (if removed)
+      listing_vote_counts:
+        upvote_count: integer
+        downvote_count: integer
+        net_score: integer
+
+  POST /v1/reports:
+    description: Submit report for listing
+    requires_auth: true
+    rate_limit: 10/hour per user, 50/hour per IP
+    request:
+      listing_id: integer
+      reason: enum
+      details: string (required for 'duplicate' and 'other')
+    validation:
+      - listing_id exists
+      - reason is valid
+      - details provided if required
+      - user hasn't already reported this listing
+    response:
+      success: boolean
+      message: "Thank you for reporting"
+
+  GET /v1/admin/reports:
+    description: Get all reports for admin review
+    requires_auth: true (admin only)
+    query_params:
+      status: enum (filter by status)
+      reason: enum (filter by reason)
+      page: integer
+      limit: integer
+    response:
+      reports: array
+      pagination: {...}
+
+  PUT /v1/admin/reports/:id:
+    description: Update report status
+    requires_auth: true (admin only)
+    request:
+      status: 'reviewing' | 'resolved' | 'dismissed'
+      admin_notes: string (optional)
+      action: 'delete_listing' | 'contact_owner' | 'ban_reporter' (optional)
+    response:
+      report: {...updated report}
+
+  POST /v1/reviews:
+    description: Submit review for listing
+    requires_auth: true
+    rate_limit: 5/hour per user
+    request:
+      listing_id: integer
+      rating: integer (1-5, optional)
+      text: string (10-5000 chars)
+      images: array of file uploads (max 5)
+      captcha_token: string (hCaptcha token)
+    validation:
+      - captcha_token is valid
+      - text is plain text, no URLs
+      - images meet size/format requirements
+      - user hasn't already reviewed this listing
+    processing:
+      - Run spam detection on text
+      - Process and upload images
+      - Set status based on moderation mode and spam score
+    response:
+      review: {...review object}
+      status: 'pending' | 'approved' | 'rejected'
+
+  PUT /v1/reviews/:id:
+    description: Edit own review
+    requires_auth: true (must be review author)
+    request:
+      rating: integer (optional)
+      text: string (optional)
+    validation:
+      - Review created < 24 hours ago
+      - User is review author
+    processing:
+      - Re-run spam detection
+      - Reset to pending if in pre-approval mode
+    response:
+      review: {...updated review}
+
+  DELETE /v1/reviews/:id:
+    description: Delete review
+    requires_auth: true (author or admin)
+    response:
+      success: boolean
+
+  GET /v1/listings/:id/reviews:
+    description: Get all approved reviews for listing
+    requires_auth: optional
+    query_params:
+      page: integer
+      limit: integer
+      sort: 'recent' | 'helpful' | 'rating_high' | 'rating_low'
+    response:
+      reviews: array (only approved reviews)
+      pagination: {...}
+      summary:
+        total_count: integer
+        average_rating: decimal
+        rating_distribution:
+          5: count
+          4: count
+          3: count
+          2: count
+          1: count
+
+  GET /v1/admin/reviews:
+    description: Get reviews for moderation
+    requires_auth: true (admin only)
+    query_params:
+      status: enum (filter)
+      high_spam_score: boolean (>= threshold)
+      page: integer
+    response:
+      reviews: array
+      pagination: {...}
+
+  PUT /v1/admin/reviews/:id:
+    description: Moderate review
+    requires_auth: true (admin only)
+    request:
+      status: 'approved' | 'rejected' | 'flagged'
+    response:
+      review: {...updated review}
+
+frontend_implementation:
+  vote_ui:
+    component: VoteButtons
+    appearance:
+      - Upvote arrow (green when active)
+      - Vote count in middle (color-coded by net score)
+      - Downvote arrow (red when active)
+    behavior:
+      - Click upvote: toggle upvote
+      - Click downvote: toggle downvote
+      - Optimistic UI update
+      - Show loading state during API call
+      - Revert on error
+
+  report_modal:
+    trigger: "Report" button on listing
+    components:
+      - Reason selector (radio buttons)
+      - Details textarea (shown for duplicate/other)
+      - Submit button
+    behavior:
+      - Validate selection
+      - Call POST /v1/reports
+      - Show success message
+      - Close modal
+
+  review_form:
+    location: Listing detail page
+    components:
+      - Star rating selector (1-5, optional)
+      - Text area (10-5000 chars, live counter)
+      - Image upload (max 5, drag-drop or click)
+      - Image previews with remove button
+      - hCaptcha widget
+      - Submit button
+    validation:
+      - Text min 10 chars
+      - No URLs detected (warn user)
+      - Captcha completed
+      - Max 5 images
+    behavior:
+      - Upload images first (get URLs)
+      - Submit review with image URLs
+      - Show pending/approved message
+      - Clear form on success
+
+  admin_report_queue:
+    path: /admin/reports
+    components:
+      - Filter dropdown (status, reason)
+      - Table of reports
+      - Each row: listing name, reporter, reason, date, actions
+      - Click row: expand details
+      - Action buttons: Delete Listing, Dismiss, Contact Owner, Ban User
+    behavior:
+      - Confirm destructive actions
+      - Update status optimistically
+      - Show success notifications
+
+  admin_review_moderation:
+    path: /admin/reviews
+    components:
+      - Filter: status, high spam score
+      - Table of reviews
+      - Each row: listing, reviewer, text preview, spam score, status, date
+      - Click row: expand to see full review and spam details
+      - Action buttons: Approve, Reject, Flag
+    behavior:
+      - Color code spam scores (green < 0.3, yellow 0.3-0.75, red >= 0.75)
+      - Show AI detection reasons
+      - Bulk actions for multiple reviews
+
+testing_requirements:
+  voting:
+    - User can upvote listing
+    - User can downvote listing
+    - User can toggle vote off
+    - User can change from upvote to downvote
+    - Vote counts update correctly
+    - One vote per user per listing enforced
+    - Rate limiting works (100/hour)
+
+  reporting:
+    - User can submit report with valid reason
+    - Details required for duplicate/other
+    - Duplicate reports prevented
+    - Admin can see all reports
+    - Admin can resolve/dismiss reports
+    - Auto-hide listing with 10 reports works
+
+  reviews:
+    - User can submit review (pre-approval mode)
+    - Review shows as pending
+    - Admin can approve/reject review
+    - Spam detection runs and scores correctly
+    - High spam score reviews auto-rejected
+    - URL detection prevents obfuscated URLs
+    - Phone/email detection works
+    - User can edit review within 24 hours
+    - User can delete their review
+    - Reviews show on listing page (approved only)
+
+  images:
+    - Images upload and process correctly
+    - Large images resized to max dimensions
+    - Images compressed to < 80KB
+    - Format conversion works (webp/avif/jpg)
+    - Max 5 images per review enforced
+    - Deleting review deletes images
+
+  captcha:
+    - hCaptcha shows on review form
+    - Invalid captcha rejects submission
+    - Valid captcha allows submission
+    - Configurable on login/register works
+
 dependencies: [201]
+blockers:
+  - hCaptcha account for site key and secret
+  - OpenRouter API key for spam detection
+  - Image storage solution (S3 or local filesystem)
+estimated_effort: 5-7 days
+priority: high
+status: pending
