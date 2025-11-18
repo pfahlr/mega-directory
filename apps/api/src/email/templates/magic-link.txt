@@ -1,0 +1,15 @@
+Log in to {{siteName}}
+
+Hello,
+
+Click the link below to log in to your account:
+{{magicLinkUrl}}
+
+This link will expire in 5 minutes.
+
+Your verification code is: {{code}}
+
+If you didn't request this email, you can safely ignore it.
+
+---
+This is an automated message from {{siteName}}. Please do not reply to this email.

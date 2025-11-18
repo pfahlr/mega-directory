@@ -15,6 +15,7 @@ import type { AuthConfig } from './middleware/auth';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
 import { startSessionCleanup } from './jobs/sessionCleanup';
+import { startMagicLinkCleanup } from './jobs/magicLinkCleanup';
 
 const DEFAULT_PORT = DEFAULT_PORTS.api;
 const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
@@ -240,8 +241,9 @@ export function startServer() {
       // Initialize Redis cache
       initializeRedis(cache, locals.logger);
 
-      // Start session cleanup job
+      // Start cleanup jobs
       startSessionCleanup();
+      startMagicLinkCleanup();
 
       app.listen(port, () => {
         locals.logger.info(

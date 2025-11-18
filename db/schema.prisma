@@ -416,6 +416,7 @@ model User {
 
   approvedListings Listing[] @relation("ListingApprovedBy")
   sessions         Session[]
+  magicLinks       MagicLink[]
 
   @@unique([email], name: "email_unique", map: "users_email_key")
   @@index([email])
@@ -437,6 +438,24 @@ model Session {
   @@index([userId])
   @@index([tokenHash])
   @@index([expiresAt])
+}
+
+model MagicLink {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  code       String    @unique @db.VarChar(12)
+  email      String    @db.VarChar(255)
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+  ipAddress  String?   @db.VarChar(45)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([code])
+  @@index([expiresAt])
+  @@index([email])
 }
 
 model LlmFieldConfig {
