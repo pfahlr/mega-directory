@@ -316,6 +316,7 @@ model Listing {
   stateRecord     StateProvince?     @relation("ListingState", fields: [stateId], references: [id])
   cityRecord      City?              @relation("ListingCity", fields: [cityId], references: [id])
   postalCodeRecord PostalCode?       @relation("ListingPostalCode", fields: [postalCodeId], references: [id])
+  listItems       ListItem[]
 
   @@index([directoryId])
   @@index([status])
@@ -417,6 +418,7 @@ model User {
   approvedListings Listing[] @relation("ListingApprovedBy")
   sessions         Session[]
   magicLinks       MagicLink[]
+  userLists        UserList[]
 
   @@unique([email], name: "email_unique", map: "users_email_key")
   @@index([email])
@@ -456,6 +458,43 @@ model MagicLink {
   @@index([code])
   @@index([expiresAt])
   @@index([email])
+}
+
+model UserList {
+  id                Int        @id @default(autoincrement())
+  userId            Int
+  title             String     @db.VarChar(200)
+  description       String?    @db.VarChar(2000)
+  urlSlug           String     @db.VarChar(100)
+  unlisted          Boolean    @default(false)
+  locationAgnostic  Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ListItem[]
+
+  @@unique([userId, urlSlug])
+  @@index([userId])
+  @@index([unlisted])
+  @@index([createdAt])
+}
+
+model ListItem {
+  id         Int      @id @default(autoincrement())
+  listId     Int
+  listingId  Int
+  position   Int      @default(0)
+  notes      String?  @db.VarChar(500)
+  addedAt    DateTime @default(now())
+
+  list    UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listing Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, listingId])
+  @@index([listId])
+  @@index([listingId])
+  @@index([position])
 }
 
 model LlmFieldConfig {
