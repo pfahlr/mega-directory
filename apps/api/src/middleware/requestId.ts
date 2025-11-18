@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 
 /**
@@ -18,7 +18,7 @@ declare global {
 
 export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Use client-provided request ID if available, otherwise generate one
-  const requestId = (req.headers['x-request-id'] as string) || randomUUID();
+  const requestId = (req.headers?.['x-request-id'] as string) || randomUUID();
 
   // Attach to request object
   req.id = requestId;

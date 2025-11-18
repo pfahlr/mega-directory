@@ -20,7 +20,7 @@ export function validateBody(schema: ZodSchema) {
           }))
         });
       }
-      return next(error);
+      return next(error as Error);
     }
   };
 }
@@ -44,7 +44,7 @@ export function validateQuery(schema: ZodSchema) {
           }))
         });
       }
-      return next(error);
+      return next(error as Error);
     }
   };
 }
@@ -68,7 +68,7 @@ export function validateParams(schema: ZodSchema) {
           }))
         });
       }
-      return next(error);
+      return next(error as Error);
     }
   };
 }

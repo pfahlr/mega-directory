@@ -1,11 +1,11 @@
-import express, { Request, Response } from 'express';
+import { Router } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { validateBody } from '../../middleware/validation';
 import { addressSchema } from '../../validation/schemas/listing';
 import * as listingService from '../../services/listingService';
 import { BadRequestError } from '../../errors';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * GET /v1/admin/addresses

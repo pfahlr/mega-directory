@@ -1,9 +1,9 @@
-import express, { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import * as listingService from '../../services/listingService';
 import { BadRequestError } from '../../errors';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @openapi
@@ -197,7 +197,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/ping', (req, res) => {
+router.post('/ping', (_req: Request, res: Response) => {
   res.json({ status: 'crawler-ok' });
 });
 

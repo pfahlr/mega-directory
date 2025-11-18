@@ -1,10 +1,10 @@
-import express, { Request, Response } from 'express';
+import { Router } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { validateBody } from '../../middleware/validation';
 import { createCategorySchema, updateCategorySchema } from '../../validation/schemas/category';
 import * as categoryService from '../../services/categoryService';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * GET /v1/admin/categories

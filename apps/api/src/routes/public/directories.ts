@@ -1,8 +1,8 @@
-import express, { Request, Response } from 'express';
+import { Router } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import * as directoryService from '../../services/directoryService';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * GET /v1/directories

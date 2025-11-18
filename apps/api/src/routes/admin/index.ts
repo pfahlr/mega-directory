@@ -1,5 +1,4 @@
-import express, { type Request, type Response } from 'express';
-import type { Router } from 'express-serve-static-core';
+import { Router, Request, Response } from 'express';
 import { requireAdminAuth, type AuthConfig } from '../../middleware/auth';
 import { adminRateLimiter } from '../../middleware/rateLimiter';
 import { createAuthRouter } from './auth';
@@ -11,8 +10,8 @@ import directoriesRouter from './directories';
 /**
  * Create admin routes with authentication
  */
-export function createAdminRouter(config: AuthConfig): Router {
-  const router = express.Router();
+export function createAdminRouter(config: AuthConfig) {
+  const router = Router();
   const adminAuth = requireAdminAuth(config);
 
   // Auth routes (no auth required)
@@ -25,7 +24,7 @@ export function createAdminRouter(config: AuthConfig): Router {
   router.use('/directories', adminRateLimiter, adminAuth, directoriesRouter);
 
   // Admin ping (protected)
-  router.get('/ping', adminRateLimiter, adminAuth, (req: Request, res: Response) => {
+  router.get('/ping', adminRateLimiter, adminAuth, (_req: Request, res: Response) => {
     res.json({ status: 'admin-ok' });
   });
 

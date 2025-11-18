@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { Prisma } from '@prisma/client';
 import {
   PrismaClientKnownRequestError,
   PrismaClientInitializationError,
