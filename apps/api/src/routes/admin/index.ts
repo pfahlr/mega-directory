@@ -7,6 +7,8 @@ import categoriesRouter from './categories';
 import listingsRouter from './listings';
 import addressesRouter from './addresses';
 import directoriesRouter from './directories';
+import reportsRouter from './reports';
+import reviewsRouter from './reviews';
 
 /**
  * Create admin routes with authentication
@@ -23,6 +25,8 @@ export function createAdminRouter(config: AuthConfig) {
   router.use('/listings', adminRateLimiter, adminAuth, listingsRouter);
   router.use('/addresses', adminRateLimiter, adminAuth, addressesRouter);
   router.use('/directories', adminRateLimiter, adminAuth, directoriesRouter);
+  router.use('/reports', adminRateLimiter, adminAuth, reportsRouter);
+  router.use('/reviews', adminRateLimiter, adminAuth, reviewsRouter);
 
   // Admin ping (protected)
   router.get('/ping', adminRateLimiter, adminAuth, (_req: Request, res: Response) => {
