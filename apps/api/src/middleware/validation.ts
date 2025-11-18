@@ -8,7 +8,7 @@ export function validateBody(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       req.body = await schema.parseAsync(req.body);
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
@@ -20,7 +20,7 @@ export function validateBody(schema: ZodSchema) {
           }))
         });
       }
-      next();
+      return next(error);
     }
   };
 }
@@ -32,7 +32,7 @@ export function validateQuery(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       req.query = await schema.parseAsync(req.query);
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
@@ -44,7 +44,7 @@ export function validateQuery(schema: ZodSchema) {
           }))
         });
       }
-      next();
+      return next(error);
     }
   };
 }
@@ -56,7 +56,7 @@ export function validateParams(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       req.params = await schema.parseAsync(req.params);
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
@@ -68,7 +68,7 @@ export function validateParams(schema: ZodSchema) {
           }))
         });
       }
-      next();
+      return next(error);
     }
   };
 }

@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientInitializationError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library';
 import { ZodError } from 'zod';
 import { AppError } from '../errors';
 
@@ -17,7 +22,7 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   // Log all errors for debugging
   console.error('Error caught by error handler:', {
@@ -32,12 +37,12 @@ export const errorHandler = (
   });
 
   // Handle Prisma errors
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  if (err instanceof PrismaClientKnownRequestError) {
     return handlePrismaError(err, res);
   }
 
   // Handle Prisma initialization errors
-  if (err instanceof Prisma.PrismaClientInitializationError) {
+  if (err instanceof PrismaClientInitializationError) {
     console.error('Prisma initialization error:', err);
     return res.status(503).json({
       error: 'Service temporarily unavailable',
@@ -46,7 +51,7 @@ export const errorHandler = (
   }
 
   // Handle Prisma validation errors
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  if (err instanceof PrismaClientValidationError) {
     console.error('Prisma validation error:', err);
     return res.status(400).json({
       error: 'Invalid request data',
@@ -105,7 +110,7 @@ export const errorHandler = (
 /**
  * Handle Prisma-specific errors and map them to appropriate HTTP status codes
  */
-function handlePrismaError(err: Prisma.PrismaClientKnownRequestError, res: Response) {
+function handlePrismaError(err: PrismaClientKnownRequestError, res: Response) {
   switch (err.code) {
     // Unique constraint violation
     case 'P2002': {
