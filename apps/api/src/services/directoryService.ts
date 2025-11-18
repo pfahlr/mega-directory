@@ -88,7 +88,7 @@ export async function getAllDirectories(
 
   const [data, totalCount] = await Promise.all([
     prisma.directory.findMany({
-      include,
+      include: include as any,
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -96,7 +96,7 @@ export async function getAllDirectories(
     prisma.directory.count(),
   ]);
 
-  return createPaginatedResponse(data, page, limit, totalCount);
+  return createPaginatedResponse(data as any, page, limit, totalCount);
 }
 
 /**
@@ -127,7 +127,7 @@ export async function getActiveDirectories(
   const [data, totalCount] = await Promise.all([
     prisma.directory.findMany({
       where: { status: 'ACTIVE' },
-      include,
+      include: include as any,
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -135,7 +135,7 @@ export async function getActiveDirectories(
     prisma.directory.count({ where: { status: 'ACTIVE' } }),
   ]);
 
-  return createPaginatedResponse(data, page, limit, totalCount);
+  return createPaginatedResponse(data as any, page, limit, totalCount);
 }
 
 /**
@@ -229,7 +229,7 @@ export async function getDirectoryBySlug(slug: string): Promise<DirectoryWithRel
     throw new NotFoundError('Directory');
   }
 
-  return directory;
+  return directory as any;
 }
 
 /**
@@ -241,19 +241,19 @@ export async function createDirectory(data: CreateDirectoryDto): Promise<Directo
       data: {
         title: data.title,
         slug: data.slug,
-        subdomain: data.subdomain,
-        subdirectory: data.subdirectory,
+        subdomain: (data.subdomain ?? null) as any,
+        subdirectory: (data.subdirectory ?? null) as any,
         categoryId: data.categoryId,
-        locationId: data.locationId,
+        locationId: (data.locationId ? parseInt(data.locationId, 10) : null) as any,
         locationAgnostic: data.locationAgnostic || false,
         status: data.status || 'DRAFT',
-        heroTitle: data.heroTitle,
-        heroSubtitle: data.heroSubtitle,
-        introMarkdown: data.introMarkdown,
-        metaTitle: data.metaTitle,
-        metaDescription: data.metaDescription,
-        metaKeywords: data.metaKeywords,
-        ogImageUrl: data.ogImageUrl,
+        heroTitle: data.heroTitle ?? null,
+        heroSubtitle: data.heroSubtitle ?? null,
+        introMarkdown: data.introMarkdown ?? null,
+        metaTitle: data.metaTitle ?? null,
+        metaDescription: data.metaDescription ?? null,
+        metaKeywords: data.metaKeywords ?? null,
+        ogImageUrl: data.ogImageUrl ?? null,
       },
       include: {
         category: true,
@@ -264,7 +264,7 @@ export async function createDirectory(data: CreateDirectoryDto): Promise<Directo
     // Invalidate caches
     await CacheInvalidation.directories();
 
-    return directory;
+    return directory as any;
   } catch (error: any) {
     if (error.code === 'P2002') {
       throw new ConflictError('Directory with this slug/subdomain already exists');
@@ -302,7 +302,7 @@ export async function updateDirectory(
         ...(data.metaDescription !== undefined && { metaDescription: data.metaDescription }),
         ...(data.metaKeywords !== undefined && { metaKeywords: data.metaKeywords }),
         ...(data.ogImageUrl !== undefined && { ogImageUrl: data.ogImageUrl }),
-      },
+      } as any,
       include: {
         category: true,
         location: true,

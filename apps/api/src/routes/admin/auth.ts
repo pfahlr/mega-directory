@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import express = require('express');
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { generateAdminToken, type AuthConfig } from '../../middleware/auth';
 import { BadRequestError, UnauthorizedError, InternalServerError } from '../../errors';
 import { authRateLimiter } from '../../middleware/rateLimiter';
 
-const router = Router();
+const router = express.Router();
 
 const DEFAULT_ADMIN_TOKEN_TTL_SECONDS = 60 * 15;
 

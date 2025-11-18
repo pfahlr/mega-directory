@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import express = require('express');
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { validateBody } from '../../middleware/validation';
 import { createDirectorySchema, updateDirectorySchema } from '../../validation/schemas/directory';
 import * as directoryService from '../../services/directoryService';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * GET /v1/admin/directories

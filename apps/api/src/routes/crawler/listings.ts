@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express';
+import express = require('express');
+import { Request, Response } from 'express';
 import { asyncHandler } from '../../middleware/asyncHandler';
 import * as listingService from '../../services/listingService';
 import { BadRequestError } from '../../errors';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * @openapi

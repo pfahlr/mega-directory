@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express = require('express');
 import { publicRateLimiter } from '../../middleware/rateLimiter';
 import directoriesRouter from './directories';
 
@@ -6,7 +6,7 @@ import directoriesRouter from './directories';
  * Create public routes
  */
 export function createPublicRouter() {
-  const router = Router();
+  const router = express.Router();
 
   router.use('/directories', publicRateLimiter, directoriesRouter);
 

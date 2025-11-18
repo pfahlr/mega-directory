@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import express = require('express');
+import { Request, Response } from 'express';
 import { requireAdminAuth, type AuthConfig } from '../../middleware/auth';
 import { adminRateLimiter } from '../../middleware/rateLimiter';
 import { createAuthRouter } from './auth';
@@ -11,7 +12,7 @@ import directoriesRouter from './directories';
  * Create admin routes with authentication
  */
 export function createAdminRouter(config: AuthConfig) {
-  const router = Router();
+  const router = express.Router();
   const adminAuth = requireAdminAuth(config);
 
   // Auth routes (no auth required)

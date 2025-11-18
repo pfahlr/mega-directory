@@ -1,5 +1,5 @@
 import os from 'os';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 const LEVEL_INDEX = {
   fatal: 0,
