@@ -4,6 +4,7 @@ declare module 'express' {
     method: string;
     body?: any;
     headers?: Record<string, string | undefined>;
+    cookies?: Record<string, string>;
     get(name: string): string | undefined;
     header(name: string): string | undefined;
     originalUrl?: string;
@@ -16,6 +17,8 @@ declare module 'express' {
     json(body: any): this;
     set(field: string, value: string): this;
     setHeader(name: string, value: string | number | string[]): this;
+    cookie(name: string, value: string, options?: any): this;
+    clearCookie(name: string, options?: any): this;
     on(event: string, handler: (...args: any[]) => void): this;
   }
 

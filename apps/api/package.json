@@ -31,7 +31,10 @@
   },
   "dependencies": {
     "@mega-directory/config": "file:../../packages/shared-config",
+    "@node-rs/argon2": "^2.0.2",
     "@prisma/client": "^6.19.0",
+    "@types/cookie-parser": "^1.4.10",
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
     "ioredis": "^5.8.2",
