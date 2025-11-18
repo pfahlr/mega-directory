@@ -2,10 +2,205 @@ id: 201
 filename: 201_phase2_user_auth_and_account_bootstrap.yaml
 title: Phase 2 User Auth and Account Bootstrap
 description: >
-    Implement user account bootstrapping workflow
-    - On interaction requiring login, auto-generate a user stub (UUID, anonymous username)
-    - Present token-based login link with option to set email, username, and password
-    - Support login via email (magic link or password if present)
-    - Prepare schema for password-less login, with future 2FA extensibility
-    - Ensure consistent user session management and backend token handling
+  Implement user account bootstrapping workflow with automatic account creation
+  on first interaction requiring authentication.
+
+objectives:
+  - Auto-generate user account on any interaction requiring login (save listing, upvote, create list)
+  - Present login flow via modal or redirect depending on context
+  - Support JWT-based session management
+  - Enable email-based authentication (magic link or password)
+  - Prepare for password-less login with future 2FA extensibility
+  - Implement CSRF protection for all authenticated endpoints
+
+database_schema:
+  users_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - username: string(50), unique, not null
+      - email: string(255), unique, nullable (initially null for anonymous users)
+      - email_verified: boolean, default false
+      - password_hash: string(255), nullable (argon2id hashed)
+      - photo: string(500), nullable (URL to profile photo)
+      - about: text(1024), nullable (user bio/description)
+      - created_at: timestamp, not null, default now()
+      - updated_at: timestamp, not null, default now()
+    indexes:
+      - unique: username
+      - unique: email (where email IS NOT NULL)
+      - index: created_at
+    constraints:
+      - username: must match pattern ^[a-z0-9_-]+$ (lowercase, numbers, underscore, hyphen only)
+      - about: max 1024 characters
+      - email: valid email format when not null
+
+  sessions_table:
+    fields:
+      - id: integer, primary key, auto-increment
+      - user_id: integer, foreign key to users(id), on delete cascade
+      - token_hash: string(255), not null (hashed JWT identifier)
+      - expires_at: timestamp, not null
+      - created_at: timestamp, not null, default now()
+      - ip_address: string(45), nullable (supports IPv6)
+      - user_agent: string(500), nullable
+    indexes:
+      - index: user_id
+      - index: token_hash
+      - index: expires_at
+
+authentication_flow:
+  anonymous_user_creation:
+    trigger: First interaction requiring authentication (save, upvote, create list)
+    process:
+      - Generate random username: adjective + noun + 3-digit number (from wordlist)
+      - Create user record with username only (email and password null)
+      - Generate JWT with user_id
+      - Store session in sessions table
+      - Return JWT to client
+    presentation:
+      - Use modal for in-page interactions (upvote, save)
+      - Use redirect for full-page actions (create list from directory page)
+
+  session_management:
+    mechanism: JWT (JSON Web Token)
+    token_contents:
+      - user_id: integer
+      - username: string
+      - email_verified: boolean
+      - iat: issued at timestamp
+      - exp: expiration timestamp (7 days from issue)
+    storage: httpOnly cookie with secure flag in production
+    refresh: Generate new token when >50% expired on each request
+    csrf_protection:
+      - Generate CSRF token on session creation
+      - Include in all state-changing requests (POST, PUT, DELETE, PATCH)
+      - Validate CSRF token in middleware before processing request
+
+  upgrade_to_authenticated:
+    process:
+      - User provides email address
+      - System sends magic link (or allows password creation)
+      - On verification, update user record with email and email_verified=true
+      - Maintain same user_id and username
+      - Update JWT with new email_verified status
+
+security_considerations:
+  - All passwords hashed with argon2id (see task 202)
+  - Sessions expire after 7 days of inactivity
+  - CSRF tokens required for all authenticated state changes
+  - Rate limiting on session creation (max 10 per IP per hour)
+  - Secure cookie flags: httpOnly, secure (prod), sameSite=strict
+  - Session cleanup job: remove expired sessions daily
+
+api_endpoints:
+  POST /v1/auth/anonymous:
+    description: Create anonymous user account
+    request: {}
+    response:
+      token: JWT string
+      user:
+        id: integer
+        username: string
+        email: null
+        email_verified: false
+    sets_cookie: auth_token (httpOnly, 7 day expiry)
+
+  POST /v1/auth/upgrade:
+    description: Upgrade anonymous account with email
+    requires_auth: true
+    request:
+      email: string (valid email)
+    response:
+      success: boolean
+      message: "Magic link sent to {email}" or "Email already in use"
+
+  POST /v1/auth/session:
+    description: Get current session info
+    requires_auth: true
+    request: {}
+    response:
+      user:
+        id: integer
+        username: string
+        email: string | null
+        email_verified: boolean
+        photo: string | null
+        about: string | null
+        created_at: timestamp
+
+  DELETE /v1/auth/session:
+    description: Logout / destroy session
+    requires_auth: true
+    request: {}
+    response:
+      success: boolean
+    clears_cookie: auth_token
+
+frontend_implementation:
+  auth_modal_component:
+    triggers:
+      - Click "Save listing" when not authenticated
+      - Click upvote/downvote when not authenticated
+      - Click "Create list" when not authenticated
+    content:
+      - Heading: "Sign in to continue"
+      - Option 1: "Continue as guest" (creates anonymous account)
+      - Option 2: "Sign in with email" (show email input)
+      - Privacy policy and terms links
+    behavior:
+      - On "Continue as guest": call POST /v1/auth/anonymous, store token, close modal, complete original action
+      - On "Sign in with email": show email input, call POST /v1/auth/magic-link (task 202)
+
+  auth_redirect_pages:
+    /login:
+      - Email input for magic link
+      - Optional password input if user has set password
+      - "Continue as guest" option
+      - Link to /register
+    /register:
+      - Email input
+      - Optional username override (default shown)
+      - "Start as anonymous" option
+      - Link to /login
+
+middleware:
+  optional_auth:
+    description: Middleware that checks for JWT but doesn't require it
+    usage: Public pages that show different content for logged-in users
+    behavior:
+      - If valid JWT present: attach user to req.user
+      - If no JWT or invalid: req.user = null
+      - Always proceed to next()
+
+  require_auth:
+    description: Middleware that requires valid JWT
+    usage: Protected endpoints (create list, vote, save)
+    behavior:
+      - If valid JWT present: attach user to req.user, proceed
+      - If no JWT or invalid: return 401 Unauthorized
+
+  csrf_protection:
+    description: Middleware that validates CSRF tokens
+    usage: All authenticated POST/PUT/DELETE/PATCH endpoints
+    behavior:
+      - Extract CSRF token from header or body
+      - Validate against session CSRF token
+      - If invalid: return 403 Forbidden
+      - If valid: proceed to next()
+
+testing_requirements:
+  - Anonymous account creation returns valid JWT
+  - JWT contains correct user_id and claims
+  - Session stored in database with expiration
+  - CSRF token generated and validated correctly
+  - Rate limiting prevents abuse (>10 sessions per hour per IP)
+  - Expired sessions rejected
+  - Session cleanup removes old sessions
+  - Modal appears on unauthenticated actions
+  - Anonymous user can upgrade to authenticated with email
+
 dependencies: []
+blockers: []
+estimated_effort: 2-3 days
+priority: high
+status: pending
