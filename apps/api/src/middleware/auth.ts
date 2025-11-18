@@ -44,7 +44,7 @@ function extractBearerToken(req: Request): string | null {
  * Middleware to require admin JWT authentication
  */
 export function requireAdminAuth(config: AuthConfig): RequestHandler {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const token = extractBearerToken(req);
     if (!token) {
       throw new UnauthorizedError('Admin token missing or invalid');
@@ -67,7 +67,7 @@ export function requireAdminAuth(config: AuthConfig): RequestHandler {
  * Middleware to require crawler bearer token authentication
  */
 export function requireCrawlerToken(config: AuthConfig): RequestHandler {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const token = extractBearerToken(req);
     if (!token || token !== config.crawlerBearerToken) {
       throw new UnauthorizedError('Crawler token missing or invalid');

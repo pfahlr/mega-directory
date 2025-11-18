@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express = require('express');
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { generateAdminToken, type AuthConfig } from '../../middleware/auth';
 import { BadRequestError, UnauthorizedError, InternalServerError } from '../../errors';
@@ -149,7 +149,7 @@ export function createAuthRouter(config: AuthConfig) {
  */
 router.get(
   '/ping',
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (_req, res) => {
     res.json({ status: 'admin-ok' });
   })
 );

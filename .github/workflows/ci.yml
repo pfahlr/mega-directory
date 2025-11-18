@@ -52,6 +52,19 @@ jobs:
         working-directory: apps/api
         run: npm ci
 
+      - name: Verify Prisma client generation
+        working-directory: apps/api
+        run: |
+          echo "Checking for Prisma client..."
+          if [ -d "node_modules/@prisma/client" ]; then
+            echo "✓ Prisma client found in node_modules"
+            ls -la node_modules/@prisma/client | head -20
+          else
+            echo "✗ Prisma client NOT found"
+            echo "Manually running prisma generate..."
+            npx prisma generate --schema=../../db/schema.prisma
+          fi
+
       - name: Install Admin dependencies
         working-directory: apps/admin
         run: npm ci
@@ -82,8 +95,7 @@ jobs:
 
       - name: Build API
         working-directory: apps/api
-        run: npm run build --if-present || echo "Build completed"
-        continue-on-error: true
+        run: npm run build
 
       - name: Build Web
         working-directory: apps/web

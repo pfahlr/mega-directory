@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express = require('express');
 import { asyncHandler } from '../../middleware/asyncHandler';
 import * as directoryService from '../../services/directoryService';
 

@@ -15,16 +15,28 @@ declare module 'express' {
     status(code: number): this;
     json(body: any): this;
     set(field: string, value: string): this;
+    setHeader(name: string, value: string | number | string[]): this;
     on(event: string, handler: (...args: any[]) => void): this;
   }
 
-  export type NextFunction = () => void;
+  export type NextFunction = (err?: any) => void;
   export type RequestHandler = (req: Request, res: Response, next: NextFunction) => any;
+  export type ErrorRequestHandler = (err: any, req: Request, res: Response, next: NextFunction) => any;
+
+  export interface Router {
+    use(...handlers: (RequestHandler | Router)[]): this;
+    use(path: string, ...handlers: (RequestHandler | Router)[]): this;
+    get(path: string, ...handlers: RequestHandler[]): this;
+    post(path: string, ...handlers: RequestHandler[]): this;
+    put(path: string, ...handlers: RequestHandler[]): this;
+    delete(path: string, ...handlers: RequestHandler[]): this;
+    patch(path: string, ...handlers: RequestHandler[]): this;
+  }
 
   export interface Express {
     locals: Record<string, unknown>;
-    use(...handlers: RequestHandler[]): this;
-    use(path: string, ...handlers: RequestHandler[]): this;
+    use(...handlers: (RequestHandler | ErrorRequestHandler | Router)[]): this;
+    use(path: string, ...handlers: (RequestHandler | ErrorRequestHandler | Router)[]): this;
     get(path: string, ...handlers: RequestHandler[]): this;
     post(path: string, ...handlers: RequestHandler[]): this;
     put(path: string, ...handlers: RequestHandler[]): this;
@@ -32,11 +44,12 @@ declare module 'express' {
     listen(port: number, callback?: () => void): { close(): void };
   }
 
-  interface ExpressFactory {
-    (): Express;
-    json(): RequestHandler;
+  function e(): Express;
+
+  namespace e {
+    export function json(): RequestHandler;
+    export function Router(): Router;
   }
 
-  const express: ExpressFactory;
-  export default express;
+  export = e;
 }

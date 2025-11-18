@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express = require('express');
 import { asyncHandler } from '../../middleware/asyncHandler';
 import { validateBody } from '../../middleware/validation';
 import { createDirectorySchema, updateDirectorySchema } from '../../validation/schemas/directory';

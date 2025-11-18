@@ -134,7 +134,7 @@ export function createRequestLogger(logger?: Logger): RequestLogger {
         path: req.originalUrl || req.url,
         statusCode: res.statusCode,
         durationMs: roundedDuration,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers?.['user-agent'],
         ip: req.ip || req.socket.remoteAddress,
       };
 
