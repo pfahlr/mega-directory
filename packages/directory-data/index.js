@@ -406,5 +406,5 @@ const directoryCatalog = [
   },
 ];
 
-module.exports = directoryCatalog;
-module.exports.directoryCatalog = directoryCatalog;
+export default directoryCatalog;
+export { directoryCatalog };
