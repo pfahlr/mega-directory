@@ -121,11 +121,18 @@ The `dev-bootstrap.sh` script uses these defaults:
 
 #### Custom Configuration (Optional)
 
-Create a `.env` file in the repository root:
+Create a `.env` file in the repository root (or copy from `.env.example`):
 
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/mega_directory
+DB_PORT=5432
+DB_HOST=localhost
+DB_USER=postgres
+DB_PASSWORD=password
+DB_NAME=mega_directory
+
+# Alternative: Use full DATABASE_URL (overrides individual DB_* settings)
+# DATABASE_URL=postgresql://postgres:password@localhost:5432/mega_directory
 
 # API Configuration
 API_PORT=3030
@@ -163,6 +170,57 @@ If your team uses SOPS:
 ```bash
 # Decrypt and load secrets
 eval "$(make sops-env-export)"
+```
+
+#### Running Multiple Development Instances
+
+To run multiple instances of Mega Directory on the same machine (e.g., for different projects or testing), configure unique ports for each service:
+
+**Instance 1 (default):**
+```bash
+./scripts/dev-bootstrap.sh
+# Uses: API_PORT=3030, ASTRO_PORT=3000, ADMIN_PORT=4000, DB_PORT=5432
+```
+
+**Instance 2 (custom ports):**
+```bash
+# Set environment variables before running
+export DB_PORT=5433
+export DB_NAME=mega_directory_2
+export API_PORT=3031
+export ASTRO_PORT=3001
+export ADMIN_PORT=4001
+
+# Run bootstrap script
+./scripts/dev-bootstrap.sh
+```
+
+**Or run with inline environment variables:**
+```bash
+DB_PORT=5433 DB_NAME=mega_directory_2 \
+API_PORT=3031 ASTRO_PORT=3001 ADMIN_PORT=4001 \
+./scripts/dev-bootstrap.sh
+```
+
+**With Docker Compose:**
+```bash
+# Instance 1
+docker compose up
+
+# Instance 2 (different terminal)
+DB_PORT=5433 DB_NAME=mega_directory_2 \
+API_PORT=3031 ASTRO_PORT=3001 \
+docker compose -p mega-directory-2 up
+```
+
+The bootstrap script will automatically display the configured ports:
+```
+[dev-bootstrap] Booting Mega Directory stack:
+  API       -> http://localhost:3031
+  Web       -> http://localhost:3001
+  Admin     -> http://localhost:4001
+  Database  -> localhost:5433/mega_directory_2
+  Crawler   -> posting to http://localhost:3031/v1/crawler/listings
 ```
 
 ### Step 5: Run Database Migrations
@@ -2263,19 +2321,59 @@ curl https://api.yourdomain.com/health
 
 ### Environment Variable Reference
 
+#### Service Ports
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_PORT` | 3030 | Express API server port |
+| `ASTRO_PORT` | 3000 | Astro web frontend port |
+| `ADMIN_PORT` | 4000 | Admin interface port |
+| `DB_PORT` | 5432 | PostgreSQL external port (for host access) |
+
+#### Database Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_HOST` | localhost | Database host address |
+| `DB_PORT` | 5432 | Database port |
+| `DB_USER` | postgres | Database username |
+| `DB_PASSWORD` | password | Database password |
+| `DB_NAME` | mega_directory | Database name |
+| `DATABASE_URL` | (computed) | Full connection string (overrides individual DB_* variables) |
+
+#### Authentication
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ADMIN_JWT_SECRET` | local-dev-secret | JWT signing secret |
+| `ADMIN_LOGIN_EMAIL` | admin@example.com | Admin login email |
+| `ADMIN_LOGIN_PASSCODE` | localpass | Admin login password |
+| `CRAWLER_BEARER_TOKEN` | crawler-dev-token | Crawler API authentication token |
+| `ADMIN_API_TOKEN` | admin-dev-token | Admin UI API token |
+
+#### Development Tools
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SKIP_CRAWLER` | (unset) | Set to 1 to skip crawler in dev-bootstrap.sh |
+| `DEV_BOOTSTRAP_FORCE_INSTALL` | (unset) | Set to 1 to force reinstall of dependencies |
+| `PYTHON_BIN` | python3 | Python interpreter to use |
+| `LOG_LEVEL` | debug | Application log level (debug, info, warn, error) |
+| `CRAWLER_LOG_LEVEL` | DEBUG | Crawler log level |
+
 See complete list in the main [README.md](./README.md#environment-variables) and [docs/development/setup.md](./docs/development/setup.md).
 
 ### Port Reference
 
-| Service | Default Port | Purpose |
-|---------|--------------|---------|
-| API | 3030 | Express API server |
-| Web | 3000 | Astro SSR frontend |
-| Admin | 4000 | Admin interface |
-| PostgreSQL | 5432 | Database |
-| Redis | 6379 | Cache (optional) |
-| Prometheus | 9090 | Metrics collection |
-| Node Exporter | 9100 | System metrics |
+| Service | Default Port | Environment Variable | Configurable |
+|---------|--------------|---------------------|--------------|
+| API | 3030 | `API_PORT` | ✅ Yes |
+| Web | 3000 | `ASTRO_PORT` | ✅ Yes |
+| Admin | 4000 | `ADMIN_PORT` | ✅ Yes |
+| PostgreSQL | 5432 | `DB_PORT` | ✅ Yes |
+| Redis | 6379 | `REDIS_PORT` | ⚠️ Not yet |
+| Prometheus | 9090 | - | ❌ No |
+| Node Exporter | 9100 | - | ❌ No |
 
 ### Support and Resources
 

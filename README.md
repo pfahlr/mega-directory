@@ -42,14 +42,28 @@ All sensitive configuration is stored in `env.json` (encrypted with SOPS). Loadi
 eval "$(make sops-env-export)"  # decrypts env.json and exports DATABASE_URL, JWT secrets, etc.
 ```
 
-You can also `make sops-decrypt > .env` and `source .env` if you prefer classic dotenv files. At a minimum you must supply `DATABASE_URL`, `ADMIN_JWT_SECRET`, `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSCODE`, and `CRAWLER_BEARER_TOKEN` before running the API or admin services.
+You can also `make sops-decrypt > .env` and `source .env` if you prefer classic dotenv files. Alternatively, copy `.env.example` to `.env` and customize for your environment.
 
 ## Environment Variables
 
-Required environment variables in `.env`:
+See `.env.example` for a complete reference. Key variables:
+
+### Service Ports (for multiple dev instances)
+- `API_PORT` - Express API server port (default: `3030`)
+- `ASTRO_PORT` - Astro web frontend port (default: `3000`)
+- `ADMIN_PORT` - Admin interface port (default: `4000`)
+- `DB_PORT` - PostgreSQL port (default: `5432`)
+
+### Database Configuration
+- `DB_HOST` - Database host (default: `localhost`)
+- `DB_PORT` - Database port (default: `5432`)
+- `DB_USER` - Database username (default: `postgres`)
+- `DB_PASSWORD` - Database password (default: `password`)
+- `DB_NAME` - Database name (default: `mega_directory`)
+- `DATABASE_URL` - Full connection string (overrides individual DB_* settings)
 
 ### Authentication
-- `ADMIN_API_TOKEN` - Admin UI authentication token (must match `CRAWLER_BEARER_TOKEN`)
+- `ADMIN_API_TOKEN` - Admin UI authentication token
 - `CRAWLER_BEARER_TOKEN` - Crawler authentication token
 - `ADMIN_JWT_SECRET` - JWT signing secret for admin sessions
 - `ADMIN_LOGIN_EMAIL` - Admin login email
@@ -59,10 +73,6 @@ Required environment variables in `.env`:
 - `API_BASE_URL` - API server base URL (default: `http://localhost:3030`)
 - `PUBLIC_API_BASE_URL` - Public API URL for Astro frontend (default: `http://localhost:3030`)
 - `ADMIN_API_BASE_URL` - Admin API URL (default: `http://localhost:3030`)
-- `PORT` - Admin UI server port (default: `3001`)
-
-### Database
-- `DATABASE_URL` - PostgreSQL connection string
 
 ### External APIs (optional)
 - `OPENAI_API_KEY` - OpenAI API key for LLM features
@@ -72,9 +82,25 @@ Required environment variables in `.env`:
 - `GOOGLEMAPS_API_KEY` - Google Maps API key
 
 ### Features
-- `SKIP_CRAWLER=1` - Disable automatic crawler startup
+- `SKIP_CRAWLER=1` - Disable automatic crawler startup in dev-bootstrap.sh
 
 **Important:** `ADMIN_API_TOKEN` and `CRAWLER_BEARER_TOKEN` must have identical values.
+
+### Running Multiple Development Instances
+
+To run multiple instances on the same machine, use different ports:
+
+```bash
+# Instance 1 (default)
+./scripts/dev-bootstrap.sh
+
+# Instance 2 (custom ports)
+DB_PORT=5433 DB_NAME=mega_directory_2 \
+API_PORT=3031 ASTRO_PORT=3001 ADMIN_PORT=4001 \
+./scripts/dev-bootstrap.sh
+```
+
+See [DEVOPS.md](./DEVOPS.md#running-multiple-development-instances) for complete details.
 
 ### Initialize a brand-new database
 

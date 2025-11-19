@@ -93,7 +93,14 @@ PY
 API_PORT="${API_PORT:-3030}"
 ASTRO_PORT="${ASTRO_PORT:-3000}"
 ADMIN_PORT="${ADMIN_PORT:-4000}"
+DB_PORT="${DB_PORT:-5432}"
 CRAWLER_INTERVAL="${CRAWLER_INTERVAL:-45}"
+
+# Database configuration
+DB_HOST="${DB_HOST:-localhost}"
+DB_USER="${DB_USER:-postgres}"
+DB_PASSWORD="${DB_PASSWORD:-password}"
+DB_NAME="${DB_NAME:-mega_directory}"
 
 DEFAULT_API_BASE_URL="http://localhost:${API_PORT}"
 API_BASE_URL_VALUE="${API_BASE_URL:-$DEFAULT_API_BASE_URL}"
@@ -104,7 +111,7 @@ ADMIN_LOGIN_PASSCODE_VALUE="${ADMIN_LOGIN_PASSCODE:-localpass}"
 CRAWLER_TOKEN_VALUE="${CRAWLER_API_TOKEN:-${CRAWLER_BEARER_TOKEN:-crawler-dev-token}}"
 CRAWLER_ENDPOINT_VALUE="${CRAWLER_API_ENDPOINT:-${API_BASE_URL_VALUE}/v1/crawler/listings}"
 ADMIN_API_TOKEN_VALUE="${ADMIN_API_TOKEN:-admin-dev-token}"
-DATABASE_URL_VALUE="${DATABASE_URL:-postgresql://postgres:password@localhost:5432/mega_directory}"
+DATABASE_URL_VALUE="${DATABASE_URL:-postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
 
 declare -a PIDS=()
 declare -a NAMES=()
@@ -151,6 +158,7 @@ echo "[dev-bootstrap] Booting Mega Directory stack:"
 echo "  API       -> http://localhost:${API_PORT}"
 echo "  Web       -> http://localhost:${ASTRO_PORT}"
 echo "  Admin     -> http://localhost:${ADMIN_PORT}"
+echo "  Database  -> ${DB_HOST}:${DB_PORT}/${DB_NAME}"
 echo "  Crawler   -> posting to ${CRAWLER_ENDPOINT_VALUE}"
 echo
 
