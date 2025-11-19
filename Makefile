@@ -1,31 +1,179 @@
-.PHONY: sops-encryptkeys sops-updatekeys sops-decrypt sops-env-export
+.PHONY: help dev dev-stop dev-clean dev-logs health check-deps install build test db-setup db-migrate db-seed db-reset clean docker-up docker-down docker-logs sops-encryptkeys sops-updatekeys sops-decrypt sops-env-export
 
+.DEFAULT_GOAL := help
 
-sops-encryptkeys:
+##@ General
+
+help: ## Display this help message
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+##@ Development
+
+dev: check-deps ## Start all development services (API, Web, Admin, Crawler)
+	@echo "🚀 Starting development environment..."
+	@./scripts/dev-bootstrap.sh
+
+dev-quick: ## Start development without dependency checks
+	@echo "🚀 Starting development environment (quick mode)..."
+	@./scripts/dev-bootstrap.sh
+
+dev-no-crawler: ## Start development without crawler
+	@echo "🚀 Starting development environment (no crawler)..."
+	@SKIP_CRAWLER=1 ./scripts/dev-bootstrap.sh
+
+dev-stop: ## Stop all development services
+	@echo "🛑 Stopping development services..."
+	@pkill -f "node.*dist/server.js" || true
+	@pkill -f "node.*index.js" || true
+	@pkill -f "astro dev" || true
+	@pkill -f "dev_runner.py" || true
+	@echo "✓ Development services stopped"
+
+dev-clean: dev-stop ## Stop services and clean build artifacts
+	@echo "🧹 Cleaning build artifacts..."
+	@rm -rf apps/api/dist apps/web/dist apps/admin/dist
+	@rm -rf apps/*/.astro
+	@echo "✓ Clean complete"
+
+dev-logs: ## Follow development logs (requires systemd or journalctl)
+	@if command -v journalctl >/dev/null 2>&1; then \
+		sudo journalctl -f -u megadir-* 2>/dev/null || echo "No systemd services found"; \
+	else \
+		echo "Logs are output to console when using dev-bootstrap.sh"; \
+	fi
+
+##@ Dependencies & Setup
+
+check-deps: ## Validate required dependencies are installed
+	@./scripts/check-dependencies.sh
+
+install: check-deps ## Install all project dependencies
+	@echo "📦 Installing dependencies..."
+	@npm install
+	@echo "📦 Installing Python dependencies..."
+	@python3 -m pip install --user -r apps/crawler/requirements-dev.txt
+	@echo "✓ Dependencies installed"
+
+build: ## Build all applications
+	@echo "🔨 Building applications..."
+	@npm run build
+	@echo "✓ Build complete"
+
+##@ Testing
+
+test: ## Run all tests
+	@echo "🧪 Running tests..."
+	@cd apps/api && npm test
+
+test-api: ## Run API tests only
+	@echo "🧪 Running API tests..."
+	@cd apps/api && npm test
+
+test-coverage: ## Run tests with coverage report
+	@echo "🧪 Running tests with coverage..."
+	@cd apps/api && npm run test:coverage
+
+##@ Database
+
+db-setup: ## Initialize database (migrate + seed)
+	@./scripts/db-init.sh
+
+db-migrate: ## Run database migrations
+	@echo "🗄️  Running database migrations..."
+	@npx prisma migrate deploy --schema=db/schema.prisma
+
+db-seed: ## Seed database with sample data
+	@echo "🌱 Seeding database..."
+	@npx ts-node db/seed.ts
+	@echo "✓ Database seeded"
+
+db-seed-geo: ## Seed geographic data
+	@echo "🌍 Seeding geographic data..."
+	@npx ts-node db/scripts/seedGeography.ts
+	@echo "✓ Geographic data seeded"
+
+db-reset: ## Reset database (WARNING: destroys all data)
+	@echo "⚠️  WARNING: This will destroy all data!"
+	@read -p "Are you sure? [y/N] " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		npx prisma migrate reset --schema=db/schema.prisma; \
+	else \
+		echo "Aborted"; \
+	fi
+
+db-studio: ## Open Prisma Studio (database GUI)
+	@echo "🎨 Opening Prisma Studio..."
+	@npx prisma studio --schema=db/schema.prisma
+
+##@ Docker
+
+docker-up: ## Start all services with Docker Compose
+	@echo "🐳 Starting Docker services..."
+	@docker compose up -d
+	@echo "✓ Docker services started"
+
+docker-down: ## Stop all Docker services
+	@echo "🐳 Stopping Docker services..."
+	@docker compose down
+	@echo "✓ Docker services stopped"
+
+docker-build: ## Build Docker images
+	@echo "🐳 Building Docker images..."
+	@docker compose build
+
+docker-logs: ## Follow Docker service logs
+	@docker compose logs -f
+
+docker-clean: ## Remove Docker containers and volumes
+	@echo "🐳 Cleaning Docker resources..."
+	@docker compose down -v
+	@echo "✓ Docker resources cleaned"
+
+##@ Health & Monitoring
+
+health: ## Check health of all services
+	@./scripts/health-check.sh
+
+status: health ## Alias for health check
+
+##@ Utilities
+
+clean: dev-clean ## Clean all build artifacts and caches
+	@echo "🧹 Deep cleaning..."
+	@rm -rf node_modules apps/*/node_modules
+	@rm -rf .turbo apps/*/.turbo
+	@echo "✓ Deep clean complete"
+
+format: ## Format code (if prettier/formatter is configured)
+	@echo "💅 Formatting code..."
+	@npm run format 2>/dev/null || echo "No format script found"
+
+lint: ## Run linters
+	@echo "🔍 Running linters..."
+	@npm run lint 2>/dev/null || echo "No lint script found"
+
+##@ SOPS (Secret Management)
+
+sops-encryptkeys: ## Encrypt env.json with SOPS
 	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
         if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
         if [ ! -f "$$file" ]; then echo "File not found: $$file"; exit 1; fi; \
         sops -e "$$file" > "$$file.tmp" && mv "$$file.tmp" "$$file"
 
-## Rewrap SOPS file with new recipients from .sops.yaml
-## Usage: make sops-updatekeys [FILE=env.json]
-sops-updatekeys:
+sops-updatekeys: ## Rewrap SOPS file with new recipients from .sops.yaml
 	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
         if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
         if [ ! -f "$$file" ]; then echo "File not found: $$file"; exit 1; fi; \
         sops updatekeys "$$file"
 
-## Decrypt a SOPS file to stdout (or redirect to a file)
-## Usage: make sops-decrypt [FILE=env.json]
-sops-decrypt:
+sops-decrypt: ## Decrypt a SOPS file to stdout (or redirect to a file)
 	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
         if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
         if [ ! -f "$$file" ]; then echo "File not found: $$file"; exit 1; fi; \
         sops -d "$$file"
 
-## Print export lines for env.json
-## Usage: make sops-env-export [FILE=env.json]
-sops-env-export:
+sops-env-export: ## Print export lines for env.json
 	@file="$(FILE)"; if [ -z "$$file" ]; then file=env.json; fi; \
         if ! command -v sops >/dev/null 2>&1; then echo "sops not found; install sops first"; exit 1; fi; \
         if ! command -v jq >/dev/null 2>&1; then echo "jq not found; install jq first"; exit 1; fi; \
