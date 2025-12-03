@@ -317,7 +317,15 @@ export async function deleteListing(id: number): Promise<void> {
  * Batch update listing statuses
  */
 export async function batchUpdateListings(
-  updates: Array<{ id: number; status?: ListingStatus; title?: string; websiteUrl?: string | null; notes?: string | null }>
+  updates: Array<{
+    id: number;
+    status?: ListingStatus;
+    title?: string;
+    websiteUrl?: string | null;
+    notes?: string | null;
+    summary?: string | null;
+    description?: string | null;
+  }>
 ): Promise<{ delivered: number; failed: Array<{ id: number; reason: string }> }> {
   let delivered = 0;
   const failed: Array<{ id: number; reason: string }> = [];
@@ -331,6 +339,8 @@ export async function batchUpdateListings(
           ...(update.title !== undefined && { title: update.title }),
           ...(update.websiteUrl !== undefined && { websiteUrl: update.websiteUrl }),
           ...(update.notes !== undefined && { notes: update.notes }),
+          ...(update.summary !== undefined && { summary: update.summary }),
+          ...(update.description !== undefined && { description: update.description }),
         },
       });
       delivered++;

@@ -39,9 +39,19 @@ async function submitListingUpdates(updates = []) {
   }
 }
 
-async function fetchDirectories() {
-  const data = await callApi('/v1/admin/directories');
-  return Array.isArray(data) ? data : [];
+async function fetchDirectories({ page, limit } = {}) {
+  const query = new URLSearchParams();
+  if (Number.isFinite(page) && page > 0) {
+    query.set('page', Math.trunc(page));
+  }
+  if (Number.isFinite(limit) && limit > 0) {
+    query.set('limit', Math.trunc(limit));
+  }
+  const path = query.toString() ? `/v1/admin/directories?${query.toString()}` : '/v1/admin/directories';
+  const payload = await callApi(path, { unwrapData: false });
+  const data = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+  const meta = payload?.meta || null;
+  return { data, meta };
 }
 
 async function fetchDirectory(directoryId) {
@@ -85,7 +95,7 @@ async function fetchListings() {
   return Array.isArray(data) ? data : [];
 }
 
-async function callApi(path, { method = 'GET', body } = {}) {
+async function callApi(path, { method = 'GET', body, unwrapData = true } = {}) {
   const { baseUrl, token } = resolveConfig();
   ensureFetchAvailable();
   const url = new URL(path, baseUrl);
@@ -121,6 +131,10 @@ async function callApi(path, { method = 'GET', body } = {}) {
       status: response.status,
       payload
     });
+  }
+
+  if (!unwrapData) {
+    return payload ?? null;
   }
 
   return payload?.data ?? payload ?? null;

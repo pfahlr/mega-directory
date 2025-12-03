@@ -1,0 +1,71 @@
+---
+import DirectoryPage from '../components/DirectoryPage.astro';
+import { fetchDirectoryCatalog, fetchDirectoryBySlug } from '../data/directory-service.js';
+import {
+  buildDirectoryRouteConfig,
+  buildSubcategoryFilterNav,
+  filterListingsBySubcategory,
+  segmentFeaturedListings,
+  sortListingsByScore,
+} from '../lib/directory-helpers.js';
+
+export async function getStaticPaths() {
+  const directories = await fetchDirectoryCatalog();
+  return directories.map((directory) => ({
+    params: { directorySlug: directory.slug },
+    props: { directorySlug: directory.slug },
+  }));
+}
+
+const { directorySlug } = Astro.props;
+const directory = await fetchDirectoryBySlug(directorySlug);
+
+if (!directory) {
+  throw new Error(`Directory not found for slug "${directorySlug}"`);
+}
+
+const hydratedDirectory = {
+  ...directory,
+  routes: buildDirectoryRouteConfig(directory),
+};
+
+const sortedListings = sortListingsByScore(directory.listings ?? []);
+const subcategoryNav = buildSubcategoryFilterNav(hydratedDirectory, null);
+const filteredDirectory = { ...hydratedDirectory, listings: filterListingsBySubcategory(sortedListings, null) };
+const { hero: featuredHero, tierTwo: featuredTierTwo, remainingListings } =
+  segmentFeaturedListings(filteredDirectory);
+
+const averageScore =
+  sortedListings.length === 0
+    ? '0.0'
+    : (
+        sortedListings.reduce(
+          (sum, listing) => sum + (typeof listing.score === 'number' ? listing.score : 0),
+          0,
+        ) / sortedListings.length
+      ).toFixed(1);
+
+const navItems = [
+  { href: '#hero', label: 'Overview' },
+  { href: '#listings', label: 'Listings' },
+  { href: '#review-notes', label: 'Notes' },
+];
+---
+
+<DirectoryPage
+  directory={hydratedDirectory}
+  navItems={navItems}
+  heroStats={[
+    { label: 'Listings live', value: sortedListings.length },
+    { label: 'Avg score', value: averageScore },
+    { label: 'Coverage', value: directory.stats?.coverage ?? directory.location?.name },
+    { label: 'Response SLA', value: directory.stats?.responseSla ?? '—' },
+  ]}
+  featuredHero={featuredHero}
+  featuredTierTwo={featuredTierTwo}
+  listings={remainingListings}
+  mapListings={sortedListings}
+  totalListings={sortedListings.length}
+  subcategoryNav={subcategoryNav}
+  subcategorySlug={null}
+/>

@@ -25,6 +25,7 @@ export interface CreateDirectoryDto {
   metaDescription?: string | null;
   metaKeywords?: string | null;
   ogImageUrl?: string | null;
+  featuredLimit?: number | null;
 }
 
 export interface UpdateDirectoryDto {
@@ -43,6 +44,7 @@ export interface UpdateDirectoryDto {
   metaDescription?: string | null;
   metaKeywords?: string | null;
   ogImageUrl?: string | null;
+  featuredLimit?: number | null;
 }
 
 export interface DirectoryWithRelations extends Directory {
@@ -121,6 +123,27 @@ export async function getActiveDirectories(
           },
         },
       },
+    },
+    listings: {
+      where: { status: 'APPROVED' },
+      include: {
+        addresses: true,
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    },
+    featuredSlots: {
+      include: {
+        listing: {
+          include: {
+            addresses: true,
+          },
+        },
+      },
+      orderBy: [{ tier: 'asc' }, { position: 'asc' }],
     },
   };
 
@@ -237,6 +260,7 @@ export async function getDirectoryBySlug(slug: string): Promise<DirectoryWithRel
  */
 export async function createDirectory(data: CreateDirectoryDto): Promise<DirectoryWithRelations> {
   try {
+    const locationId = await resolveLocationId(data.locationId as any, data.locationAgnostic);
     const directory = await prisma.directory.create({
       data: {
         title: data.title,
@@ -244,8 +268,8 @@ export async function createDirectory(data: CreateDirectoryDto): Promise<Directo
         subdomain: (data.subdomain ?? null) as any,
         subdirectory: (data.subdirectory ?? null) as any,
         categoryId: data.categoryId,
-        locationId: (data.locationId ? parseInt(data.locationId, 10) : null) as any,
-        locationAgnostic: data.locationAgnostic || false,
+        locationId: locationId as any,
+        locationAgnostic: Boolean(data.locationAgnostic),
         status: data.status || 'DRAFT',
         heroTitle: data.heroTitle ?? null,
         heroSubtitle: data.heroSubtitle ?? null,
@@ -254,6 +278,7 @@ export async function createDirectory(data: CreateDirectoryDto): Promise<Directo
         metaDescription: data.metaDescription ?? null,
         metaKeywords: data.metaKeywords ?? null,
         ogImageUrl: data.ogImageUrl ?? null,
+        featuredLimit: data.featuredLimit ?? undefined,
       },
       include: {
         category: true,
@@ -284,6 +309,10 @@ export async function updateDirectory(
   data: UpdateDirectoryDto
 ): Promise<DirectoryWithRelations> {
   try {
+    const locationId =
+      data.locationId !== undefined || data.locationAgnostic !== undefined
+        ? await resolveLocationId(data.locationId as any, data.locationAgnostic)
+        : undefined;
     const directory = await prisma.directory.update({
       where: { id },
       data: {
@@ -292,7 +321,7 @@ export async function updateDirectory(
         ...(data.subdomain !== undefined && { subdomain: data.subdomain }),
         ...(data.subdirectory !== undefined && { subdirectory: data.subdirectory }),
         ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
-        ...(data.locationId !== undefined && { locationId: data.locationId }),
+        ...(locationId !== undefined && { locationId }),
         ...(data.locationAgnostic !== undefined && { locationAgnostic: data.locationAgnostic }),
         ...(data.status !== undefined && { status: data.status }),
         ...(data.heroTitle !== undefined && { heroTitle: data.heroTitle }),
@@ -301,6 +330,7 @@ export async function updateDirectory(
         ...(data.metaTitle !== undefined && { metaTitle: data.metaTitle }),
         ...(data.metaDescription !== undefined && { metaDescription: data.metaDescription }),
         ...(data.metaKeywords !== undefined && { metaKeywords: data.metaKeywords }),
+        ...(data.featuredLimit !== undefined && { featuredLimit: data.featuredLimit }),
         ...(data.ogImageUrl !== undefined && { ogImageUrl: data.ogImageUrl }),
       } as any,
       include: {
@@ -347,4 +377,32 @@ export async function deleteDirectory(id: number): Promise<void> {
     }
     throw error;
   }
+}
+
+async function resolveLocationId(
+  input: string | number | null | undefined,
+  locationAgnostic?: boolean
+): Promise<number | null> {
+  if (locationAgnostic) {
+    return null;
+  }
+  if (input === undefined || input === null || input === '') {
+    return null;
+  }
+
+  const numeric = typeof input === 'string' ? Number(input) : input;
+  if (typeof numeric === 'number' && Number.isInteger(numeric) && numeric > 0) {
+    return numeric;
+  }
+
+  if (typeof input === 'string') {
+    const location = await prisma.location.findUnique({
+      where: { slug: input }
+    });
+    if (location) {
+      return location.id;
+    }
+  }
+
+  throw new BadRequestError('Invalid locationId');
 }

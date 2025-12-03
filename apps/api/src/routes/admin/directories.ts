@@ -153,7 +153,7 @@ router.get(
  *                 example: 1
  *               status:
  *                 type: string
- *                 enum: [DRAFT, PUBLISHED, ARCHIVED]
+ *                 enum: [DRAFT, ACTIVE, ARCHIVED]
  *                 default: DRAFT
  *     responses:
  *       201:
@@ -244,7 +244,7 @@ router.post(
  *                 type: integer
  *               status:
  *                 type: string
- *                 enum: [DRAFT, PUBLISHED, ARCHIVED]
+ *                 enum: [DRAFT, ACTIVE, ARCHIVED]
  *     responses:
  *       200:
  *         description: Directory updated successfully

@@ -51,12 +51,11 @@ router.post('/', async (req, res, next) => {
 router.get('/manage', async (req, res, next) => {
   try {
     const page = parsePage(req.query.page);
-    const directories = await getDirectoryPages();
-    const pagination = paginateRecords(directories, page, PAGE_SIZE);
+    const { records, pagination } = await getDirectoryPages({ page, perPage: PAGE_SIZE });
     res.render('directory-pages/manage', {
       title: 'Manage Directory Pages',
-      directories: pagination.records,
-      pagination: pagination.meta,
+      directories: records,
+      pagination,
       updatedCount: parseCount(req.query.updated),
       deletedCount: parseCount(req.query.deleted),
       active: 'directory-pages'
@@ -173,8 +172,16 @@ function buildEmptyDraft() {
 function buildEditDraft(record) {
   return {
     title: record.title || '',
-    categoryId: String(record.categoryIds?.[0] ?? ''),
-    locationId: record.locationAgnostic ? '' : (record.locationIds?.[0] ?? ''),
+    categoryId: record.categoryId
+      ? String(record.categoryId)
+      : record.category?.id
+        ? String(record.category.id)
+        : '',
+    locationId: record.locationAgnostic
+      ? ''
+      : record.locationId
+        ? String(record.locationId)
+        : record.location?.slug || '',
     locationAgnostic: Boolean(record.locationAgnostic),
     subdomain: record.subdomain || '',
     subdirectory: record.subdirectory || '',

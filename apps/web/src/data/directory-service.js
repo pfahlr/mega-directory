@@ -18,15 +18,28 @@ async function fetchJson(url) {
 
 export { directoryCatalog };
 
+function extractData(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+  return null;
+}
+
 export async function fetchDirectoryCatalog() {
   if (!API_BASE_URL) {
     return directoryCatalog;
   }
 
   try {
-    const payload = await fetchJson(`${API_BASE_URL.replace(/\/$/, '')}/v1/directories`);
-    if (Array.isArray(payload) && payload.length > 0) {
-      return payload;
+    const payload = await fetchJson(
+      `${API_BASE_URL.replace(/\/$/, '')}/v1/directories?limit=200`
+    );
+    const directories = extractData(payload);
+    if (Array.isArray(directories) && directories.length > 0) {
+      return directories;
     }
   } catch {
     // Swallow errors and fall back to static data.
@@ -48,8 +61,9 @@ export async function fetchDirectoryBySlug(slug) {
     const payload = await fetchJson(
       `${API_BASE_URL.replace(/\/$/, '')}/v1/directories/${encodeURIComponent(slug)}`,
     );
-    if (payload) {
-      return payload;
+    const directory = payload?.data ?? payload;
+    if (directory) {
+      return directory;
     }
   } catch {
     // Fallback below

@@ -1,5 +1,15 @@
 import { siteConfig } from '../config/site-config.js';
 
+const getEnv = (name) => {
+  if (typeof import.meta !== 'undefined' && import.meta?.env && typeof import.meta.env[name] === 'string') {
+    return import.meta.env[name];
+  }
+  if (typeof process !== 'undefined' && process.env && typeof process.env[name] === 'string') {
+    return process.env[name];
+  }
+  return undefined;
+};
+
 const FALLBACK_SCORE = -Infinity;
 const DEFAULT_FEATURED_LIMIT = 3;
 const FALLBACK_HERO_LABEL = 'Top pick';
@@ -8,7 +18,17 @@ const FEATURED_TIER_ORDER = { HERO: 0, PREMIUM: 1, STANDARD: 2 };
 const DEFAULT_DIRECTORY_NAME = 'Mega Directory';
 const DEFAULT_CATEGORY_DESCRIPTION_TEMPLATE =
   'Discover curated NAME listings on Mega Directory.';
-const directoryRouting = siteConfig.directoryRouting ?? {};
+const envSubdirectoryBase = getEnv('PUBLIC_DIRECTORY_BASE_PATH');
+const envPrimaryMode = getEnv('PUBLIC_DIRECTORY_ROUTING_MODE');
+const envSubdomainRoot = getEnv('PUBLIC_DIRECTORY_SUBDOMAIN_ROOT');
+
+const directoryRouting = {
+  ...(siteConfig.directoryRouting ?? {}),
+  ...(envSubdirectoryBase ? { subdirectoryBase: envSubdirectoryBase } : {}),
+  ...(envPrimaryMode ? { primary: envPrimaryMode } : {}),
+  ...(envSubdomainRoot ? { subdomainRoot: envSubdomainRoot } : {})
+};
+
 const SUBDIRECTORY_BASE = normalizeBasePath(directoryRouting.subdirectoryBase ?? '/directories');
 const SUBDOMAIN_ROOT = sanitizeHostname(directoryRouting.subdomainRoot ?? siteConfig.canonicalHost ?? '');
 const ROUTING_PROTOCOL = directoryRouting.protocol ?? 'https';

@@ -112,6 +112,20 @@
                       <label class="field-label">Website URL
                         <input class="field-control" type="url" name="listings[<%= index %>][website]" value="<%= listing.website %>" placeholder="https://example.com" />
                       </label>
+                      <label class="field-label">Short description
+                        <textarea
+                          class="field-control"
+                          name="listings[<%= index %>][summary]"
+                          rows="2"
+                          placeholder="One or two sentences that summarize the listing."><%= listing.summary %></textarea>
+                      </label>
+                      <label class="field-label">Full description
+                        <textarea
+                          class="field-control"
+                          name="listings[<%= index %>][description]"
+                          rows="4"
+                          placeholder="Longer body copy that will appear on directory pages."><%= listing.description %></textarea>
+                      </label>
                     </div>
                     <div class="listing-table__meta">
                       <p class="eyebrow"><%= listing.category %> • <%= listing.location %></p>
@@ -120,7 +134,6 @@
                       <p class="muted">Quality score <strong><%= listing.scoreLabel %></strong> • Source <strong><%= listing.source %></strong></p>
                       <p class="muted">Submitted <strong><%= submittedLabel %></strong> • Last edited <strong><%= updatedLabel %></strong></p>
                     </div>
-                    <p class="summary"><%= listing.summary %></p>
                   </td>
                   <td class="listing-table__notes">
                     <label class="field-label sr-only" for="notes-<%= listing.id %>">Moderator notes</label>

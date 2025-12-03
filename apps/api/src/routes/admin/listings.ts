@@ -448,12 +448,15 @@ router.post(
       throw new BadRequestError('listings must be an array');
     }
 
+    const trim = (value: any) => (typeof value === 'string' ? value.trim() : undefined);
     const updates = req.body.listings.map((entry: any) => ({
       id: entry.id,
       status: entry.status,
       title: entry.businessName || entry.title,
       websiteUrl: entry.website !== undefined ? entry.website : entry.websiteUrl,
-      notes: entry.notes,
+      notes: trim(entry.notes),
+      summary: trim(entry.summary),
+      description: trim(entry.description),
     }));
 
     const result = await listingService.batchUpdateListings(updates);

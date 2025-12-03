@@ -63,6 +63,8 @@ function normalizePayload(payload) {
       businessName: normalized.businessName?.trim() ?? '',
       website: normalized.website?.trim() ?? '',
       notes: normalized.notes?.trim() ?? '',
+      summary: normalized.summary?.trim() ?? '',
+      description: normalized.description?.trim() ?? '',
       shouldPersist,
       isActive: typeof isActive === 'boolean' ? isActive : undefined
     };

@@ -3,52 +3,54 @@ import { z } from 'zod';
 /**
  * Schema for creating a new directory
  */
-export const createDirectorySchema = z.object({
+const directoryStatusEnum = z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']);
+
+const baseDirectoryFields = {
   title: z.string().min(1, 'Title is required').max(200),
-  slug: z.string()
+  slug: z
+    .string()
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens')
     .min(1)
     .max(80),
-  subdomain: z.string()
+  subdomain: z
+    .string()
     .regex(/^[a-z0-9-]+$/, 'Subdomain must be lowercase alphanumeric with hyphens')
-    .max(63)
-    .optional()
-    .nullable(),
-  subdirectory: z.string()
+    .min(1)
+    .max(63),
+  subdirectory: z
+    .string()
     .regex(/^[a-z0-9-/]+$/, 'Subdirectory must be lowercase alphanumeric with hyphens and slashes')
-    .max(100)
-    .optional()
-    .nullable(),
-  description: z.string().max(1000).optional().nullable(),
+    .min(1)
+    .max(100),
   categoryId: z.number().int().positive('Category ID must be a positive integer'),
-  cityId: z.number().int().positive('City ID must be a positive integer'),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional().default('DRAFT')
-});
+  locationId: z.number().int().positive('Location ID must be a positive integer').optional().nullable(),
+  locationAgnostic: z.coerce.boolean().optional().default(false),
+  heroTitle: z.string().max(200).optional().nullable(),
+  heroSubtitle: z.string().max(300).optional().nullable(),
+  introMarkdown: z.string().max(5000).optional().nullable(),
+  metaTitle: z.string().max(255).optional().nullable(),
+  metaDescription: z.string().max(500).optional().nullable(),
+  metaKeywords: z.string().max(500).optional().nullable(),
+  ogImageUrl: z.string().url('ogImageUrl must be a valid URL').optional().nullable(),
+  featuredLimit: z.number().int().positive().max(50).optional(),
+  status: directoryStatusEnum.optional().default('DRAFT')
+};
+
+export const createDirectorySchema = z.object(baseDirectoryFields);
 
 /**
  * Schema for updating an existing directory
  */
 export const updateDirectorySchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200).optional(),
-  slug: z.string()
-    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens')
-    .min(1)
-    .max(80)
-    .optional(),
-  subdomain: z.string()
-    .regex(/^[a-z0-9-]+$/, 'Subdomain must be lowercase alphanumeric with hyphens')
-    .max(63)
-    .optional()
-    .nullable(),
-  subdirectory: z.string()
-    .regex(/^[a-z0-9-/]+$/, 'Subdirectory must be lowercase alphanumeric with hyphens and slashes')
-    .max(100)
-    .optional()
-    .nullable(),
-  description: z.string().max(1000).optional().nullable(),
-  categoryId: z.number().int().positive('Category ID must be a positive integer').optional(),
-  cityId: z.number().int().positive('City ID must be a positive integer').optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional()
+  ...Object.fromEntries(
+    Object.entries(baseDirectoryFields).map(([key, schema]) => [
+      key,
+      // For updates every field is optional but should keep the same validation rules.
+      (schema as z.ZodTypeAny).optional()
+    ])
+  ),
+  subdomain: (baseDirectoryFields.subdomain as z.ZodTypeAny).optional(),
+  subdirectory: (baseDirectoryFields.subdirectory as z.ZodTypeAny).optional()
 });
 
 /**

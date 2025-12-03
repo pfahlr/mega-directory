@@ -127,6 +127,7 @@ function normalizeListingRecord(record, categoryLookup) {
     businessName: record?.title || 'Untitled listing',
     website: record?.websiteUrl || '',
     summary: record?.summary || '',
+    description: record?.description || '',
     notes: record?.notes || '',
     status,
     category,
@@ -148,6 +149,7 @@ function buildFallbackListings() {
       businessName: entry.businessName,
       website: entry.website,
       summary: entry.summary,
+      description: entry.description || '',
       notes: entry.notes,
       status: typeof entry.status === 'string' ? entry.status.toLowerCase() : 'pending',
       category: entry.category ?? 'Uncategorized',
@@ -168,10 +170,21 @@ function buildApiPayload(update, status) {
     status
   };
 
+  if (typeof update.summary === 'string') {
+    const trimmed = update.summary.trim();
+    payload.summary = trimmed || null;
+  }
+
+  if (typeof update.description === 'string') {
+    const trimmed = update.description.trim();
+    payload.description = trimmed || null;
+  }
+
   if (typeof update.businessName === 'string') {
     const trimmed = update.businessName.trim();
     if (trimmed) {
       payload.businessName = trimmed;
+      payload.title = trimmed;
     }
   }
 

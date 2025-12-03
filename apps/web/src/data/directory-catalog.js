@@ -1,7 +1,4 @@
-/**
- * Directory catalog - static data for directories
- * This file is a placeholder for static directory data
- * In production, this should be generated from the database or API
- */
+import directoryCatalog from '@mega-directory/directory-data';
 
-export const directoryCatalog = [];
+// Static fallback catalog. Prefer fetching from the API when available.
+export { directoryCatalog };
