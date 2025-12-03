@@ -77,13 +77,20 @@ export async function getAllDirectories(
       include: {
         cityRecord: {
           include: {
-            stateRecord: {
+            state: {
               include: {
                 country: true,
               },
             },
+            country: true,
           },
         },
+        stateRecord: {
+          include: {
+            country: true,
+          },
+        },
+        countryRecord: true,
       },
     },
   };
@@ -115,13 +122,20 @@ export async function getActiveDirectories(
       include: {
         cityRecord: {
           include: {
-            stateRecord: {
+            state: {
               include: {
                 country: true,
               },
             },
+            country: true,
           },
         },
+        stateRecord: {
+          include: {
+            country: true,
+          },
+        },
+        countryRecord: true,
       },
     },
     listings: {

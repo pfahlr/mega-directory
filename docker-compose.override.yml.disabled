@@ -1,0 +1,36 @@
+# Docker Compose Override for Development
+# This file is automatically merged with docker-compose.yml when running docker compose
+# It adds development-specific configurations like volume mounts for hot reloading
+
+services:
+  api:
+    volumes:
+      # Mount source code for hot reloading (if using nodemon/watch mode)
+      - ./apps/api/src:/app/src:ro
+      - ./apps/api/dist:/app/dist
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    command: sh -c "npm run dev:watch & node dist/server.js"
+
+  web:
+    volumes:
+      # Mount Astro source for hot reloading
+      - ./apps/web/src:/app/src:ro
+      - ./apps/web/public:/app/public:ro
+    environment:
+      NODE_ENV: development
+
+  # Optional: Add pgAdmin for database management
+  # Uncomment to enable
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   ports:
+  #     - "${PGADMIN_PORT:-5050}:80"
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     - db

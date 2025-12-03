@@ -1,0 +1,56 @@
+# Docker Compose Override for Development
+# This file adds volume mounts for source code so changes are reflected immediately
+# without rebuilding containers. Only rebuild when dependencies change.
+
+services:
+  api:
+    volumes:
+      # Mount source code (for future dev workflow improvements)
+      - ./apps/api/src:/app/apps/api/src:ro
+      - ./db:/app/db:ro
+      - ./packages:/app/packages:ro
+      # Keep node_modules and dist in container (don't mount from host)
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/api/dist
+    environment:
+      NODE_ENV: development
+    # Use pre-compiled code from image for now (Task 107: add proper dev watch mode)
+
+  web:
+    volumes:
+      # Mount source code (for future dev workflow improvements)
+      - ./apps/web/src:/app/apps/web/src:ro
+      - ./apps/web/public:/app/apps/web/public:ro
+      - ./packages:/app/packages:ro
+      # Keep node_modules and build artifacts in container
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/dist
+    environment:
+      NODE_ENV: development
+    # Use pre-compiled code from image for now (Task 107: add proper dev watch mode)
+
+  admin:
+    volumes:
+      # Mount source code
+      - ./apps/admin/views:/app/views:ro
+      - ./apps/admin/public:/app/public:ro
+      - ./apps/admin/routes:/app/routes:ro
+      - ./apps/admin/services:/app/services:ro
+      - ./apps/admin/middleware:/app/middleware:ro
+      # Keep node_modules in container
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    command: npm run dev
+
+  crawler:
+    volumes:
+      # Mount Python source code
+      - ./apps/crawler/crawler:/app/crawler:ro
+      - ./apps/crawler/configs:/app/configs:ro
+      # Keep Python packages in container
+      - /app/.venv
+    environment:
+      PYTHONUNBUFFERED: 1
