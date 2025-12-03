@@ -1,0 +1,12 @@
+id: 116
+filename: 116_breadcrumb_and_og_schema_completion.yaml
+title: Breadcrumb and OG/Schema Completion
+description: >
+  Fill remaining SEO/meta gaps:
+  - Implement breadcrumb schema for directory routes and ensure OG/Twitter tags are emitted sitewide (home, directory index, directory detail, subcategories).
+  - Add tests/snapshots to assert presence and correctness of canonical, OG/Twitter, and breadcrumb JSON-LD.
+  - Ensure admin-editable meta fields flow through to rendered tags (with fallbacks) across subdomain/subdirectory routing.
+dependencies:
+  - 92
+  - 94
+  - 103

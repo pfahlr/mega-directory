@@ -1,0 +1,75 @@
+## Double-digit Codex tasks (<99) status snapshot
+
+- 00 Prepare repository — Done
+- 01 Initialize Astro frontend — Done
+- 02 Setup API server with Express/JWT — Done
+- 03 Design PostgreSQL schema — Done
+- 04 Implement listing ingestion endpoint — Partial (ingestion/review flow incomplete)
+- 05 Admin auth route/middleware — Done
+- 06 Frontend directory page rendering — Done
+- 07 Frontend subcategory UI/layout — Done
+- 08 Setup featured listings logic — Done
+- 09 Category meta/SEO controls — Partial (fixtures; not API-backed)
+- 10 Scaffold Python crawler agent — Done
+- 11 LLM field generation (Jinja2) — Partial (not wired/validated)
+- 12 Post listings from crawler to API — Partial (no end-to-end posting/auth handling)
+- 13 JSON crawler config schema — Partial (schema exists; enforcement limited)
+- 14 Scaffold admin UI — Done
+- 15 Admin listing review table — Partial (UI present; ingestion source not live)
+- 16 Admin category/location approval — Missing (fixture-based)
+- 17 Admin SEO field editor — Missing (fixture-based)
+- 18 Deploy web + API to Railway — Partial (Docker present; pipeline not validated)
+- 19 Logging/healthchecks/monitoring — Partial (basic health/logging only)
+- 20 Verify dev env bootstraps cleanly — Partial (compose override disabled; env bootstrap not automated)
+- 21 Dockerize API — Partial (needs validation)
+- 22 Dockerize Astro frontend — Partial (needs validation)
+- 23 Docker compose local dev — Partial (stack not verified)
+- 24 Project scaffolding/config — Done
+- 25 Define directory page model/metadata — Partial (validators/docs not fully aligned)
+- 26 Geographic location tables/seed — Done
+- 27 Directory pages table/metadata fields — Partial (fields exist; admin exposure/validation gaps)
+- 28 Admin UI for directory create/edit — Partial (API-aligned but limited options)
+- 29 Listings table multi-category/location — Partial (schema supports; UI/admin lacks)
+- 30 Geocoding integration — Missing
+- 31 Map widget/location-aware listings — Partial (maps render if coords exist; no pipeline)
+- 32 Admin API endpoints (listings/etc.) — Partial/Done (exists; validation/docs gaps)
+- 33 Directory routing logic — Done
+- 34 Crawler address/category assignment — Partial
+- 35 Post-processing for crawler/import — Partial
+- 36 Text import script (LLM/HTML modes) — Partial (needs validation/tests)
+- 37 Admin UI for reviewing imported JSON — Partial (still static source)
+- 39 Render canonical meta tags — Partial (not comprehensive)
+- 40 Dev setup/env/SOPS docs — Partial (needs compose/SOPS clarity)
+- 50 Fix environment variables/config — Partial (API base URLs, etc.)
+- 51 Integrate Prisma client — Done
+- 52 Seed database with test data — Done
+- 53 Test/verify admin API integration — Partial
+- 54 Test text import script — Missing/Partial
+- 60 Automated testing — Partial (limited coverage; no CI)
+- 61 Refactor monolithic server file — Done/Partial (API modularized; admin simple)
+- 62 Input validation layer — Partial (Zod/docs drift)
+- 63 Error handling middleware — Done
+- 64 API documentation (OpenAPI) — Partial (likely stale)
+- 65 Pagination for list endpoints — Done
+- 66 Caching layer with Redis — Partial (present; not fully wired/configured)
+- 67 Rate limiting — Partial (middleware present; config unclear)
+- 68 DB migration management — Partial (Prisma migrations; process not documented here)
+- 69 Structured logging/monitoring — Partial (logger only)
+- 70 DB connection pooling — Done
+- 71 Environment-specific seeding — Partial (single seed)
+- 72 Import script error reporting — Missing/Partial
+- 73 TypeScript strict mode — Partial (not strict across apps)
+- 74 CI/CD pipeline — Missing/Partial
+- 75 Refactor admin UI CRUD patterns — Partial (directories/listings better; category/location/SEO not)
+- 76 Research cutting-edge SEO — Done (docs)
+- 77 Research WCAG low vision — Done (docs)
+- 78 Research WCAG motor/mobility — Done (docs)
+- 79 Research WCAG multiple categories — Done (docs)
+- 80 Frontend enhancement plan — Done
+- 81–98 Accessibility tasks — Mostly Missing (skip links, focus mgmt, contrast, alt-text, map a11y, etc.)
+- 92 Open Graph/Twitter meta — Partial (needs consistency/global coverage)
+- 94 Breadcrumb schema — Missing
+- 95 High contrast mode — Missing
+- 96 Accessibility testing suite — Missing
+- 97 Keyboard shortcuts docs — Missing
+- 98 WCAG AAA (where feasible) — Missing

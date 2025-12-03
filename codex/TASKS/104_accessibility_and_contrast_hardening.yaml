@@ -1,0 +1,23 @@
+id: 104
+filename: 104_accessibility_and_contrast_hardening.yaml
+title: Accessibility and Contrast Hardening
+description: >
+  Implement the outstanding WCAG tasks for directory/admin UIs:
+  - Add skip links, focus management, ARIA landmarks/roles, keyboard navigation parity, and large click targets across public and admin pages.
+  - Enforce WCAG AA color contrast (and optional high-contrast mode toggle), with alt-text standards and plain-language cues.
+  - Improve map accessibility (keyboard focus, announcements, reduced motion) and ensure components degrade gracefully without JS.
+  - Add automated accessibility checks (axe/vitest or pa11y) for key pages: home, directory page with map, admin listings table.
+dependencies:
+  - 81
+  - 83
+  - 84
+  - 85
+  - 87
+  - 88
+  - 89
+  - 90
+  - 91
+  - 93
+  - 95
+  - 96
+  - 98

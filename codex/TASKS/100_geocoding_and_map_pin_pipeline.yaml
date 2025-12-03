@@ -1,0 +1,13 @@
+id: 100
+filename: 100_geocoding_and_map_pin_pipeline.yaml
+title: Geocoding + Map Pin Pipeline
+description: >
+  Implement reliable geocoding for listings and directories so map pins render accurately:
+  - Add geocoding service with primary + fallback providers (configurable keys) used by crawler/import scripts and admin edits.
+  - Persist normalized lat/lon on listings/addresses (and directory locations when available) in the DB; backfill existing seed/demo data.
+  - Ensure directory map pins use stored coordinates and gracefully handle missing/invalid data.
+  - Add smoke tests for geocode utility and a fixture-driven integration test that renders a directory with map pins populated from DB data.
+dependencies:
+  - 30
+  - 31
+  - 35

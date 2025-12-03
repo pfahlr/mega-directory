@@ -1,0 +1,16 @@
+id: 101
+filename: 101_crawler_api_alignment_and_enrichment.yaml
+title: Crawler → API Alignment & Enrichment
+description: >
+  Close the loop between the Python crawler and the admin/API ingestion pipeline:
+  - Finalize JSON/YAML crawler config schema and validation (targets, categories, locations, enrichment flags).
+  - Implement address/category assignment and LLM field generation hooks per task specs, with retries and rate limits.
+  - Post crawler output to the live admin ingestion endpoint with auth, handling batch size, dedupe, and error reporting.
+  - Add unit tests for normalization/enrichment and an end-to-end smoke test that exercises posting to a stub API.
+dependencies:
+  - 10
+  - 11
+  - 12
+  - 13
+  - 34
+  - 35

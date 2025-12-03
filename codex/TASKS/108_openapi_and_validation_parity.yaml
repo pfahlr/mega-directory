@@ -1,0 +1,12 @@
+id: 108
+filename: 108_openapi_and_validation_parity.yaml
+title: OpenAPI & Validation Parity
+description: >
+  Bring API docs and validators up to date with the current Prisma schema and admin/public behaviors:
+  - Audit OpenAPI docs to include directory/listing fields (locationAgnostic, featuredLimit, introMarkdown, description/summary) and correct status enums (ACTIVE vs PUBLISHED).
+  - Ensure Zod validation schemas, route validators, and Prisma DTOs stay in sync; add tests that fail when schema/docs diverge.
+  - Regenerate/serve Swagger UI with updated schemas and add a contract test that validates sample payloads against OpenAPI.
+dependencies:
+  - 62
+  - 64
+  - 65

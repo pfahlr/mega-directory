@@ -1,0 +1,13 @@
+id: 114
+filename: 114_caching_rate_limiting_and_config.yaml
+title: Caching, Rate Limiting, and Config Wiring
+description: >
+  Wire Redis caching and rate limiting with observable config:
+  - Ensure cache init uses env-configured Redis and is exercised for directory/listing endpoints with cache invalidation hooks.
+  - Verify rate limiting is enabled with sensible defaults and exposed metrics/logs.
+  - Add healthcheck/diagnostics endpoints or logs to confirm cache/limit status, and tests that verify caching behavior and limits.
+dependencies:
+  - 66
+  - 67
+  - 19
+  - 69

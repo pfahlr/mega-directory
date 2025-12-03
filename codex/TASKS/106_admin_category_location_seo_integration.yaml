@@ -1,0 +1,14 @@
+id: 106
+filename: 106_admin_category_location_seo_integration.yaml
+title: Admin Category/Location Approval + SEO Editor Integration
+description: >
+  Replace placeholder admin flows for category/location approvals and SEO edits with live API-backed CRUD:
+  - Wire the admin category/location approval UI to real API endpoints (pending/new categories/locations), including pagination, validation, and optimistic feedback.
+  - Persist SEO fields (meta title/description/keywords) for categories and category-location pages via admin API; handle validation errors and success states.
+  - Remove in-memory fixtures; ensure data loads from the DB/API and errors are surfaced in the UI.
+  - Add functional tests (API contract + UI smoke) to cover approve/reject flows and SEO updates.
+dependencies:
+  - 16
+  - 17
+  - 39
+  - 53

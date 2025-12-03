@@ -1,0 +1,14 @@
+id: 111
+filename: 111_import_scripts_error_reporting_and_validation.yaml
+title: Import Scripts Error Reporting & Validation
+description: >
+  Harden crawler/text import pipelines with validation and actionable errors:
+  - Enforce targets/config schema validation with clear errors before runs.
+  - Improve text_import and crawler post-processing to surface per-record failures, retries, and skipped items.
+  - Add integration tests for text_import and crawler runs against stubbed endpoints, including malformed input cases.
+  - Document runbook and troubleshooting for import failures.
+dependencies:
+  - 36
+  - 54
+  - 72
+  - 101

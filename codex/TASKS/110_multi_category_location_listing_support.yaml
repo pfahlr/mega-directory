@@ -1,0 +1,13 @@
+id: 110
+filename: 110_multi_category_location_listing_support.yaml
+title: Multi-Category/Location Listing Support
+description: >
+  Expose and manage multi-category and multi-location data for listings:
+  - Update admin listing edit/review flows to select multiple categories and assign locations/addresses per listing (with primary flags).
+  - Ensure API DTOs/validation and Prisma updates handle multiple categories and addresses without data loss.
+  - Render category/location badges on public directory pages reflecting multiple associations.
+  - Add tests covering creation/update and public rendering of multi-category/location listings.
+dependencies:
+  - 29
+  - 32
+  - 65

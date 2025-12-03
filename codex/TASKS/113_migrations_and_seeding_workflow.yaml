@@ -1,0 +1,12 @@
+id: 113
+filename: 113_migrations_and_seeding_workflow.yaml
+title: Migrations and Environment-Specific Seeding
+description: >
+  Solidify migration and seeding practices:
+  - Define a repeatable workflow for Prisma migrations (dev/stage/prod), including safeguards and rollback guidance.
+  - Add environment-specific seeds (dev/demo/test) and scripts/Make targets to run them.
+  - Document how to reset/refresh DB locally and in CI; ensure seeds don’t pollute prod.
+dependencies:
+  - 68
+  - 71
+  - 52

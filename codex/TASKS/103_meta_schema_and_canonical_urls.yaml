@@ -1,0 +1,14 @@
+id: 103
+filename: 103_meta_schema_and_canonical_urls.yaml
+title: Meta, Schema, and Canonical URL Coverage
+description: >
+  Ensure directory and listing pages emit complete SEO/OG/JSON-LD metadata from stored configuration:
+  - Render canonical URLs, meta title/description/keywords, og:image, and Twitter cards from directory config for all directory routes (including dynamic slugs).
+  - Add JSON-LD (CollectionPage/ItemList + LocalBusiness where applicable) driven by directory/listing data with fallbacks.
+  - Verify subdomain/subdirectory canonical handling matches routing config.
+  - Provide tests or snapshots that validate meta/schema output for at least one active directory and one with featured listings.
+dependencies:
+  - 39
+  - 82
+  - 92
+  - 94

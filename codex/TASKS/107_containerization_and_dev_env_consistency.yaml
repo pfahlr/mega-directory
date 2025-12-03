@@ -1,0 +1,15 @@
+id: 107
+filename: 107_containerization_and_dev_env_consistency.yaml
+title: Containerization and Dev Environment Consistency
+description: >
+  Ensure local and deployable environments match the task specs:
+  - Validate and, if needed, fix Dockerfiles for API/web/admin and provide a working docker-compose stack (DB/Redis/api/web/admin) with sane defaults.
+  - Add environment bootstrap scripts/Make targets to set required env vars (including ADMIN_API_BASE_URL/PUBLIC_API_BASE_URL) and optional SOPS loading.
+  - Document Railway (or equivalent) deploy steps and health checks; add smoke test command to verify the stack after `docker-compose up`.
+  - Include basic CI job to build images and run compose-based smoke tests.
+dependencies:
+  - 18
+  - 20
+  - 21
+  - 22
+  - 23

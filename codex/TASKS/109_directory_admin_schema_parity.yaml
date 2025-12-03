@@ -1,0 +1,14 @@
+id: 109
+filename: 109_directory_admin_schema_parity.yaml
+title: Directory Admin UI Schema Parity
+description: >
+  Align the directory admin create/edit UI and payloads with the Prisma schema and validation:
+  - Support all directory fields (location lookup from API, locationAgnostic, introMarkdown, featuredLimit, meta fields, hero text, ogImageUrl).
+  - Use live categories/locations from API (no fixtures), with validation feedback mapped from API errors.
+  - Ensure slug/subdomain/subdirectory normalization matches backend rules; enforce ACTIVE/DRAFT/ARCHIVED status options.
+  - Add UI/contract tests to verify saving/updating/deleting directories through the admin API.
+dependencies:
+  - 25
+  - 27
+  - 28
+  - 32

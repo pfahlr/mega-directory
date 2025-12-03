@@ -1,0 +1,14 @@
+id: 102
+filename: 102_admin_import_review_and_api_sync.yaml
+title: Admin Import Review & API Sync
+description: >
+  Replace placeholder listing review data with the real ingestion queue and improve moderation UX:
+  - Wire the admin listings table to the admin API (pagination, filters, status toggles) instead of static JSON.
+  - Persist moderator edits (name, URLs, notes, summary, description, activation) via batch review endpoint with clear success/failure messaging.
+  - Add error handling, empty states, and loading indicators; ensure long/short descriptions are editable and saved.
+  - Add integration tests (or contract tests) covering happy path, validation errors, and pagination.
+dependencies:
+  - 15
+  - 37
+  - 53
+  - 54

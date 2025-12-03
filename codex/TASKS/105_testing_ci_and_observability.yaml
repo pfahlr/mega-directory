@@ -1,0 +1,15 @@
+id: 105
+filename: 105_testing_ci_and_observability.yaml
+title: Testing, CI, and Observability
+description: >
+  Stand up repeatable testing and monitoring to cover the MVP surface:
+  - Establish a CI pipeline (lint, typecheck, unit/integration tests for API, web, admin, crawler) with fixtures for DB/Redis.
+  - Add health checks and structured logging coverage for API/web/admin; expose metrics or logs suitable for monitoring.
+  - Expand automated tests to cover directory/listing endpoints, routing middleware, and admin review flows (unit + integration).
+  - Document how to run the suite locally (Makefile/script) and ensure CI artifacts (coverage reports) are generated.
+dependencies:
+  - 19
+  - 60
+  - 66
+  - 69
+  - 74

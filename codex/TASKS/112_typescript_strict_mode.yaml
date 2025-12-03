@@ -1,0 +1,11 @@
+id: 112
+filename: 112_typescript_strict_mode.yaml
+title: Enable TypeScript Strict Mode
+description: >
+  Turn on strict TypeScript settings across API, web, and admin packages:
+  - Enable strict mode and fix resulting type errors in shared helpers, services, and components.
+  - Add lint/typecheck scripts to CI and document local commands.
+  - Ensure generated Prisma types and Zod schemas are used to narrow API responses.
+dependencies:
+  - 73
+  - 60

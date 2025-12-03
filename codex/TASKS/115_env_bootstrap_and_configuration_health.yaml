@@ -1,0 +1,13 @@
+id: 115
+filename: 115_env_bootstrap_and_configuration_health.yaml
+title: Env Bootstrap and Configuration Health
+description: >
+  Make environment setup predictable and verifiable:
+  - Provide scripts/Make targets to load env (including SOPS) and set required variables (ADMIN_API_BASE_URL, PUBLIC_API_BASE_URL, tokens).
+  - Add a config self-check command that validates required vars and connectivity (API base URL, DB, Redis) for dev and CI.
+  - Update docs to reflect the canonical bootstrap flow for local and containerized environments.
+dependencies:
+  - 40
+  - 50
+  - 20
+  - 107
