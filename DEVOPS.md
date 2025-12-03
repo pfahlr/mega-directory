@@ -335,20 +335,70 @@ python dev_runner.py \
   --interval 45
 ```
 
-#### Option C: Docker Compose
+#### Option C: Docker Compose (Fully Containerized)
 
-Start the entire stack with Docker:
+Start the entire stack with Docker using profiles:
 
+**Core services only (api, web, db):**
 ```bash
 docker compose up --build
+# or
+make docker-up
 ```
 
-This creates containers for:
-- PostgreSQL database
-- API service
-- Web frontend
+**Full stack including admin and crawler:**
+```bash
+docker compose --profile admin --profile crawler up --build
+# or
+make docker-up-full
+```
 
-**Note:** The Docker Compose setup doesn't include Admin or Crawler by default.
+**With admin UI only:**
+```bash
+docker compose --profile admin up --build
+# or
+make docker-up-admin
+```
+
+**With crawler only:**
+```bash
+docker compose --profile crawler up --build
+# or
+make docker-up-crawler
+```
+
+**Environment Setup:**
+Before running Docker Compose, ensure environment variables are configured:
+```bash
+# Option 1: Using SOPS (recommended for teams)
+eval "$(make sops-env-export)"
+
+# Option 2: Using .env file
+cp .env.example .env
+# Edit .env with your values
+```
+
+**Health Checks:**
+All services include health checks. Verify status with:
+```bash
+docker compose ps
+# or
+make docker-health
+```
+
+**Viewing Logs:**
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f api
+docker compose logs -f admin
+docker compose logs -f crawler
+
+# Or use Make
+make docker-logs
+```
 
 ### Step 8: Verify Installation
 

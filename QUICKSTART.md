@@ -2,7 +2,31 @@
 
 Get Mega Directory running in minutes with these streamlined instructions.
 
-## TL;DR
+## TL;DR - Docker (Fully Containerized) ⭐ Recommended
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-org/mega-directory.git
+cd mega-directory
+
+# 2. Set up environment variables
+eval "$(make sops-env-export)"
+# OR
+cp .env.example .env
+
+# 3. Start everything with Docker
+make docker-up-full
+
+# 4. Initialize database (first time only)
+docker compose exec api npx prisma migrate deploy --schema=/workspace/db/schema.prisma
+```
+
+Visit:
+- **API**: http://localhost:3030/health
+- **Web**: http://localhost:3000
+- **Admin**: http://localhost:4000
+
+## TL;DR - Traditional (Mixed Docker + Host)
 
 ```bash
 # 1. Clone and install
@@ -10,9 +34,8 @@ git clone https://github.com/your-org/mega-directory.git
 cd mega-directory
 make install
 
-# 2. Start database (choose one)
-docker compose up -d db              # Option A: Docker
-# OR configure local PostgreSQL      # Option B: Local
+# 2. Start database
+docker compose up -d db
 
 # 3. Initialize database
 make db-setup

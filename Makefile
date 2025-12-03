@@ -108,27 +108,62 @@ db-studio: ## Open Prisma Studio (database GUI)
 
 ##@ Docker
 
-docker-up: ## Start all services with Docker Compose
-	@echo "🐳 Starting Docker services..."
+docker-up: ## Start core services (api, web, db) with Docker Compose
+	@echo "🐳 Starting core Docker services (api, web, db)..."
 	@docker compose up -d
 	@echo "✓ Docker services started"
+	@echo "  API       -> http://localhost:$${API_PORT:-3030}"
+	@echo "  Web       -> http://localhost:$${ASTRO_PORT:-3000}"
+	@echo "  Database  -> localhost:$${DB_PORT:-5432}"
+
+docker-up-full: ## Start all services including admin and crawler
+	@echo "🐳 Starting full Docker stack (api, web, db, admin, crawler)..."
+	@docker compose --profile admin --profile crawler up -d
+	@echo "✓ Full Docker stack started"
+	@echo "  API       -> http://localhost:$${API_PORT:-3030}"
+	@echo "  Web       -> http://localhost:$${ASTRO_PORT:-3000}"
+	@echo "  Admin     -> http://localhost:$${ADMIN_PORT:-4000}"
+	@echo "  Database  -> localhost:$${DB_PORT:-5432}"
+	@echo "  Crawler   -> running"
+
+docker-up-admin: ## Start services with admin UI
+	@echo "🐳 Starting Docker with admin (api, web, db, admin)..."
+	@docker compose --profile admin up -d
+	@echo "✓ Docker services with admin started"
+	@echo "  API       -> http://localhost:$${API_PORT:-3030}"
+	@echo "  Web       -> http://localhost:$${ASTRO_PORT:-3000}"
+	@echo "  Admin     -> http://localhost:$${ADMIN_PORT:-4000}"
+	@echo "  Database  -> localhost:$${DB_PORT:-5432}"
+
+docker-up-crawler: ## Start services with crawler
+	@echo "🐳 Starting Docker with crawler (api, web, db, crawler)..."
+	@docker compose --profile crawler up -d
+	@echo "✓ Docker services with crawler started"
+	@echo "  API       -> http://localhost:$${API_PORT:-3030}"
+	@echo "  Web       -> http://localhost:$${ASTRO_PORT:-3000}"
+	@echo "  Database  -> localhost:$${DB_PORT:-5432}"
+	@echo "  Crawler   -> running"
 
 docker-down: ## Stop all Docker services
 	@echo "🐳 Stopping Docker services..."
-	@docker compose down
+	@docker compose --profile admin --profile crawler down
 	@echo "✓ Docker services stopped"
 
-docker-build: ## Build Docker images
+docker-build: ## Build Docker images for all services
 	@echo "🐳 Building Docker images..."
-	@docker compose build
+	@docker compose --profile admin --profile crawler build
 
 docker-logs: ## Follow Docker service logs
-	@docker compose logs -f
+	@docker compose --profile admin --profile crawler logs -f
 
 docker-clean: ## Remove Docker containers and volumes
 	@echo "🐳 Cleaning Docker resources..."
-	@docker compose down -v
+	@docker compose --profile admin --profile crawler down -v
 	@echo "✓ Docker resources cleaned"
+
+docker-health: ## Check health status of all running Docker services
+	@echo "🩺 Checking Docker service health..."
+	@docker compose ps
 
 ##@ Health & Monitoring
 

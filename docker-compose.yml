@@ -1,3 +1,17 @@
+# Mega Directory Docker Compose Configuration
+#
+# Core services (api, web, db):
+#   docker compose up --build
+#
+# Full stack with admin and crawler:
+#   docker compose --profile admin --profile crawler up --build
+#
+# With admin only:
+#   docker compose --profile admin up --build
+#
+# With crawler only:
+#   docker compose --profile crawler up --build
+#
 services:
   api:
     build:
@@ -64,6 +78,56 @@ services:
       start_period: 5s
     networks:
       - app-network
+
+  admin:
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
+    ports:
+      - '${ADMIN_PORT:-4000}:4000'
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      API_BASE_URL: http://api:3030
+      ADMIN_API_BASE_URL: http://api:3030
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-admin-dev-token}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:4000/ || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - app-network
+    profiles:
+      - admin
+
+  crawler:
+    build:
+      context: ./apps/crawler
+      dockerfile: Dockerfile
+    environment:
+      API_BASE_URL: http://api:3030
+      CRAWLER_API_ENDPOINT: http://api:3030/v1/crawler/listings
+      CRAWLER_BEARER_TOKEN: ${CRAWLER_BEARER_TOKEN:-crawler-dev-token}
+      CRAWLER_API_TOKEN: ${CRAWLER_BEARER_TOKEN:-crawler-dev-token}
+      CRAWLER_LOG_LEVEL: ${CRAWLER_LOG_LEVEL:-INFO}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'python -c "import crawler; import requests; import bs4" || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-network
+    profiles:
+      - crawler
 
 volumes:
   pgdata:

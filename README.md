@@ -154,13 +154,43 @@ All services expect the same `DATABASE_URL` and shared secrets so moderation act
 
 ## Running with Docker Compose
 
-`docker-compose.yml` defines only the core platform services: `api`, `db`, and the Astro-powered `web` frontend. Bring them up together with:
+The `docker-compose.yml` file defines all platform services with optional profiles for admin and crawler:
+
+### Core Stack (API, Web, Database)
 
 ```bash
 docker compose up --build
+# or
+make docker-up
 ```
 
-Provide an `.env` file for the API service (e.g., JWT secrets, database URLs) before running Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
+### Full Stack (including Admin & Crawler)
+
+```bash
+docker compose --profile admin --profile crawler up --build
+# or
+make docker-up-full
+```
+
+### With Admin UI only
+
+```bash
+docker compose --profile admin up --build
+# or
+make docker-up-admin
+```
+
+### With Crawler only
+
+```bash
+docker compose --profile crawler up --build
+# or
+make docker-up-crawler
+```
+
+**Environment Variables:** Ensure you have environment variables configured via `.env` file or by running `eval "$(make sops-env-export)"` before starting Docker Compose. Postgres data is stored in the `pgdata` volume declared in the compose file.
+
+**Health Checks:** All services include health checks. Use `docker compose ps` or `make docker-health` to verify all services are healthy.
 
 ### Production node (Web + API + DB)
 
@@ -203,14 +233,33 @@ The repository is ready to deploy on [Railway](https://railway.app) using the Do
 
 ## Admin & Crawler Tools
 
-The admin interface and crawler agent run outside Docker so that they can be operated from developer machines or private servers.
+The admin interface and crawler agent can run either **in Docker (recommended for consistency)** or **outside Docker** (traditional approach).
 
-- Admin interface:  
+### Running in Docker (Recommended)
+
+Use Docker Compose profiles to include admin and/or crawler:
+
+```bash
+# With admin UI
+docker compose --profile admin up --build
+
+# With crawler
+docker compose --profile crawler up --build
+
+# With both
+docker compose --profile admin --profile crawler up --build
+# or
+make docker-up-full
+```
+
+### Running Outside Docker (Traditional)
+
+- Admin interface:
   ```bash
   cd apps/admin
   npm run dev
   ```
-- Python crawler agent (configure `apps/crawler/config/targets.json` first):  
+- Python crawler agent (configure `apps/crawler/config/targets.json` first):
   ```bash
   cd apps/crawler
   python main.py
@@ -219,6 +268,8 @@ The admin interface and crawler agent run outside Docker so that they can be ope
   ```bash
   python apps/crawler/dev_runner.py --run-once
   ```
+
+**Note:** When running admin or crawler outside Docker, they connect to the API at `http://localhost:${API_PORT}`. When running in Docker, they use the internal service name `http://api:3030`.
 
 Additional details about each agent live in `docs/AGENTS.md`.
 
