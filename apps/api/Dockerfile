@@ -1,24 +1,45 @@
-FROM node:18-slim AS build
+FROM node:20-slim AS build
 WORKDIR /workspace
 
-# Copy only what we need for dependency installation
-COPY apps ./apps
-COPY packages ./packages
+# Copy root package files for npm workspaces
+COPY package*.json ./
 COPY tsconfig.json ./tsconfig.json
 
-WORKDIR /workspace/apps/api
-RUN npm ci
-RUN npm run build && npm prune --omit=dev
+# Copy workspace packages
+COPY apps ./apps
+COPY packages ./packages
+COPY db ./db
 
-FROM node:18-slim
+# Install all dependencies from root (npm workspaces)
+RUN npm ci
+
+# Build the API
+WORKDIR /workspace/apps/api
+RUN npm run build
+
+# Prune dev dependencies from root
+WORKDIR /workspace
+RUN npm prune --omit=dev
+
+FROM node:20-slim
 WORKDIR /app
+
+# Install curl for healthcheck
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends curl && \
+  rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV PORT=3030
 
-COPY --from=build /workspace/apps/api/package*.json ./
-COPY --from=build /workspace/apps/api/node_modules ./node_modules
-COPY --from=build /workspace/apps/api/dist ./dist
+# Copy from workspace root to maintain npm workspaces structure
+COPY --from=build /workspace/package*.json ./
+COPY --from=build /workspace/node_modules ./node_modules
+COPY --from=build /workspace/apps/api ./apps/api
+COPY --from=build /workspace/packages ./packages
+COPY --from=build /workspace/db ./db
+
+WORKDIR /app/apps/api
 
 EXPOSE 3030
 
