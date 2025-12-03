@@ -18,9 +18,8 @@ RUN npm ci
 WORKDIR /workspace/apps/web
 RUN npm run build
 
-# Prune dev dependencies from root
+# Note: Not pruning dev dependencies because preview mode needs them
 WORKDIR /workspace
-RUN npm prune --omit=dev
 
 FROM node:20-alpine AS runner
 WORKDIR /app
